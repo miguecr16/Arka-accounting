@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import './NewExpenseForm.css';
 
-export default function NewExpenseForm() {
+export default function NewExpenseForm({ projectId }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
-    Project_Link: '',
     Date: new Date().toISOString().split('T')[0],
     Category: 'Materials',
     Cost_Amount: '',
@@ -45,7 +44,7 @@ export default function NewExpenseForm() {
         .from('Expenses_and_Hours')
         .insert([
           {
-            Project_Link: formData.Project_Link,
+            Project_Link: projectId, // Passed directly via props
             Date: formData.Date,
             Category: formData.Category,
             Cost_Amount: isLabor ? 0 : parseFloat(formData.Cost_Amount || 0),
@@ -81,20 +80,8 @@ export default function NewExpenseForm() {
       {error && <div className="alert error">{error}</div>}
 
       <form onSubmit={handleSubmit} className="expense-form">
-        <div className="form-group">
-          <label htmlFor="Project_Link">Project Record ID</label>
-          <input
-            type="text"
-            id="Project_Link"
-            name="Project_Link"
-            value={formData.Project_Link}
-            onChange={handleChange}
-            placeholder="The UUID of a row in your 'Projects' table"
-            required
-          />
-          <small>This links the expense to a specific project in your database.</small>
-        </div>
-
+        {/* Project Link is now managed automatically and hidden from UI */}
+        
         <div className="form-group">
           <label htmlFor="Date">Date</label>
           <input
