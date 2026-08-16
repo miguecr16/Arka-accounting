@@ -10,19 +10,18 @@ export default function Dashboard({ onSelectProject }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
   const fetchProjects = async () => {
     try {
+      // Fetch strictly from the view
       const { data, error: dbError } = await supabase
-        .from('Projects')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from('projects_dashboard_view')
+        .select('*');
 
       if (dbError) throw dbError;
-      setProjects(data || []);
+      
+      // Sort projects by name since created_at is not in the view
+      const sortedData = (data || []).sort((a, b) => a.project_name.localeCompare(b.project_name));
+      setProjects(sortedData);
     } catch (err) {
       console.error('Error fetching projects:', err);
       setError('Could not load projects. Please check connection.');
@@ -31,8 +30,12 @@ export default function Dashboard({ onSelectProject }) {
     }
   };
 
-  const handleProjectCreated = (newProject) => {
-    setProjects([newProject, ...projects]);
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const handleProjectCreated = () => {
+    fetchProjects(); // Re-fetch to get calculations
     setIsModalOpen(false);
   };
 
@@ -55,7 +58,7 @@ export default function Dashboard({ onSelectProject }) {
         <div className="projects-grid">
           {projects.map(project => (
             <ProjectCard 
-              key={project.id} 
+              key={project.project_id} 
               project={project} 
               onSelectProject={onSelectProject} 
             />

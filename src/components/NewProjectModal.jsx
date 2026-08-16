@@ -4,8 +4,8 @@ import './Dashboard.css';
 
 export default function NewProjectModal({ onClose, onProjectCreated }) {
   const [formData, setFormData] = useState({
-    Project_Name: '',
-    Client_Name: ''
+    project_name: '',
+    client_name: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -16,21 +16,16 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
     setError('');
 
     try {
-      const { data, error: dbError } = await supabase
-        .from('Projects')
+      const { error: dbError } = await supabase
+        .from('projects') // Strictly lowercase table
         .insert([{
-          Project_Name: formData.Project_Name,
-          Client_Name: formData.Client_Name,
-          Status: 'Planning', // Default enum value
-          Base_Contract_Value: 0,
-          Deposit_Received: 0,
-          Start_Date: new Date().toISOString().split('T')[0]
-        }])
-        .select();
+          project_name: formData.project_name,
+          client_name: formData.client_name
+        }]);
 
       if (dbError) throw dbError;
 
-      onProjectCreated(data[0]);
+      onProjectCreated();
     } catch (err) {
       console.error(err);
       setError(err.message || 'Failed to create project');
@@ -47,24 +42,24 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
         
         <form onSubmit={handleSubmit} className="expense-form">
           <div className="form-group">
-            <label htmlFor="Project_Name">Project Name</label>
+            <label htmlFor="project_name">Project Name</label>
             <input
               type="text"
-              id="Project_Name"
-              value={formData.Project_Name}
-              onChange={(e) => setFormData({...formData, Project_Name: e.target.value})}
+              id="project_name"
+              value={formData.project_name}
+              onChange={(e) => setFormData({...formData, project_name: e.target.value})}
               required
               autoFocus
             />
           </div>
           
           <div className="form-group">
-            <label htmlFor="Client_Name">Client Name</label>
+            <label htmlFor="client_name">Client Name</label>
             <input
               type="text"
-              id="Client_Name"
-              value={formData.Client_Name}
-              onChange={(e) => setFormData({...formData, Client_Name: e.target.value})}
+              id="client_name"
+              value={formData.client_name}
+              onChange={(e) => setFormData({...formData, client_name: e.target.value})}
               required
             />
           </div>

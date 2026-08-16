@@ -76,6 +76,44 @@
   margin: 0;
 }
 
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.project-metrics {
+  display: flex;
+  justify-content: space-between;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #f3f4f6;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metric span {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.metric strong {
+  font-size: 1.125rem;
+  color: #111827;
+}
+
 .enter-btn {
   width: 100%;
   padding: 0.75rem;
