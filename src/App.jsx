@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Dashboard from './components/Dashboard.jsx'
-import NewExpenseForm from './components/NewExpenseForm.jsx'
+import Dashboard from './components/Dashboard.jsx';
+import ProjectDetails from './components/ProjectDetails.jsx';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -8,7 +8,7 @@ function App() {
 
   const handleSelectProject = (projectId) => {
     setSelectedProjectId(projectId);
-    setCurrentView('expense-form');
+    setCurrentView('project-details');
   };
 
   const handleBackToDashboard = () => {
@@ -20,40 +20,39 @@ function App() {
     <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '1px' }}>
       <header style={{ 
         textAlign: 'center', 
-        padding: '2rem 1rem', 
+        padding: '1.25rem 1rem', 
         backgroundColor: '#ffffff',
         borderBottom: '1px solid #e5e7eb',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '1rem'
+        justifyContent: 'center',
+        alignItems: 'center'
       }}>
-        <h1 style={{ margin: 0, color: '#1f2937', fontSize: '1.5rem' }}>Arka Design OS</h1>
-        {currentView === 'expense-form' && (
-          <button 
-            onClick={handleBackToDashboard}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#e5e7eb',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 500
-            }}
-          >
-            ← Back to Dashboard
-          </button>
-        )}
+        <h1 
+          onClick={handleBackToDashboard}
+          style={{ 
+            margin: 0, 
+            color: '#1f2937', 
+            fontSize: '1.4rem', 
+            fontWeight: 700,
+            cursor: 'pointer',
+            letterSpacing: '-0.02em'
+          }}
+        >
+          Arka Design OS
+        </h1>
       </header>
       <main>
         {currentView === 'dashboard' ? (
           <Dashboard onSelectProject={handleSelectProject} />
         ) : (
-          <NewExpenseForm projectId={selectedProjectId} />
+          <ProjectDetails 
+            projectId={selectedProjectId} 
+            onBack={handleBackToDashboard} 
+          />
         )}
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
