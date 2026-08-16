@@ -1,19 +1,25 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import NewExpenseForm from './NewExpenseForm.jsx';
+import NewChangeOrderModal from './NewChangeOrderModal.jsx';
 import './ProjectDetails.css';
 
 export default function ProjectDetails({ projectId, onBack }) {
   const [projectData, setProjectData] = useState(null);
   const [expenses, setExpenses] = useState([]);
+  const [changeOrders, setChangeOrders] = useState([]);
+  const [activeTab, setActiveTab] = useState('expenses'); // 'expenses' | 'change_orders'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [isChangeOrderModalOpen, setIsChangeOrderModalOpen] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
 
   const formatCurrency = (val) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
-  const fetchProjectDetails = async () => {
+  const fetchAllData = async () => {
     try {
       setLoading(true);
       setError('');
@@ -37,6 +43,17 @@ export default function ProjectDetails({ projectId, onBack }) {
 
       if (expenseError) throw expenseError;
       setExpenses(expenseData || []);
+
+      // 3. Fetch change orders for this project
+      const { data: coData, error: coError } = await supabase
+        .from('change_orders')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('id', { ascending: false });
+
+      if (coError) throw coError;
+      setChangeOrders(coData || []);
+
     } catch (err) {
       console.error('Error fetching project details:', err);
       setError('Could not load project details. Please check connection.');
@@ -47,13 +64,35 @@ export default function ProjectDetails({ projectId, onBack }) {
 
   useEffect(() => {
     if (projectId) {
-      fetchProjectDetails();
+      fetchAllData();
     }
   }, [projectId]);
 
-  const handleExpenseSaved = () => {
-    setIsExpenseModalOpen(false);
-    fetchProjectDetails();
+  const handleApproveChangeOrder = async (changeOrderId) => {
+    try {
+      setActionLoadingId(changeOrderId);
+      const { error: updateError } = await supabase
+        .from('change_orders')
+        .update({ status: 'Aprobado' })
+        .eq('id', changeOrderId);
+
+      if (updateError) throw updateError;
+
+      // Refresh data so financial view updates with newly approved change order
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error approving change order:', err);
+      alert('Failed to approve change order: ' + (err.message || 'Unknown error'));
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const getStatusClass = (status) => {
+    const s = (status || '').toLowerCase();
+    if (s === 'aprobado' || s === 'approved') return 'aprobado';
+    if (s === 'rechazado' || s === 'rejected') return 'rechazado';
+    return 'borrador';
   };
 
   if (loading && !projectData) {
@@ -127,68 +166,178 @@ export default function ProjectDetails({ projectId, onBack }) {
         </div>
       </div>
 
-      {/* Expense History Section */}
-      <div className="history-section-header">
-        <h3>Expense & Hours History</h3>
+      {/* Tabs Navigation */}
+      <div className="tabs-navigation">
         <button 
-          className="log-expense-btn"
-          onClick={() => setIsExpenseModalOpen(true)}
+          className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`}
+          onClick={() => setActiveTab('expenses')}
         >
-          + Log Expense / Hours
+          Expenses & Hours <span className="tab-count">{expenses.length}</span>
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'change_orders' ? 'active' : ''}`}
+          onClick={() => setActiveTab('change_orders')}
+        >
+          Change Orders (Extras) <span className="tab-count">{changeOrders.length}</span>
         </button>
       </div>
 
-      <div className="table-responsive">
-        <table className="expenses-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Category</th>
-              <th>Cost Amount</th>
-              <th>Hours</th>
-              <th>Receipt</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="no-data-cell">
-                  No expenses or hours logged yet for this project.
-                </td>
-              </tr>
-            ) : (
-              expenses.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.date}</td>
-                  <td>
-                    <span className={`category-tag ${item.category === 'Mano de Obra' ? 'labor' : ''}`}>
-                      {item.category}
-                    </span>
-                  </td>
-                  <td>{item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-'}</td>
-                  <td>{item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-'}</td>
-                  <td>
-                    {item.receipt_image_url ? (
-                      <span title={item.receipt_image_url} style={{ color: '#2563eb', fontSize: '0.85rem' }}>
-                        📎 Attached
-                      </span>
-                    ) : (
-                      <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>None</span>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* TAB 1: Expenses & Hours */}
+      {activeTab === 'expenses' && (
+        <div>
+          <div className="section-header-actions">
+            <h3>Expense & Hours History</h3>
+            <button 
+              className="primary-action-btn"
+              onClick={() => setIsExpenseModalOpen(true)}
+            >
+              + Log Expense / Hours
+            </button>
+          </div>
 
-      {/* Log Expense Modal */}
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Cost Amount</th>
+                  <th>Hours</th>
+                  <th>Receipt</th>
+                </tr>
+              </thead>
+              <tbody>
+                {expenses.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="no-data-cell">
+                      No expenses or hours logged yet for this project.
+                    </td>
+                  </tr>
+                ) : (
+                  expenses.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.date}</td>
+                      <td>
+                        <span className={`category-tag ${item.category === 'Mano de Obra' ? 'labor' : ''}`}>
+                          {item.category}
+                        </span>
+                      </td>
+                      <td>{item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-'}</td>
+                      <td>{item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-'}</td>
+                      <td>
+                        {item.receipt_image_url ? (
+                          <span title={item.receipt_image_url} style={{ color: '#2563eb', fontSize: '0.85rem' }}>
+                            📎 Attached
+                          </span>
+                        ) : (
+                          <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>None</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: Change Orders (Extras) */}
+      {activeTab === 'change_orders' && (
+        <div>
+          <div className="info-callout">
+            <span>ℹ️</span>
+            <div>
+              <strong>Financial Impact:</strong> Only <strong>Aprobado</strong> change orders are added to the Final Contract Value and Gross Profit above.
+            </div>
+          </div>
+
+          <div className="section-header-actions">
+            <h3>Change Orders (Extras)</h3>
+            <button 
+              className="primary-action-btn"
+              onClick={() => setIsChangeOrderModalOpen(true)}
+            >
+              + New Change Order
+            </button>
+          </div>
+
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Extra Charge to Client</th>
+                  <th>Status</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {changeOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="no-data-cell">
+                      No change orders created yet for this project.
+                    </td>
+                  </tr>
+                ) : (
+                  changeOrders.map((co) => {
+                    const isApproved = (co.status || '').toLowerCase() === 'aprobado' || (co.status || '').toLowerCase() === 'approved';
+
+                    return (
+                      <tr key={co.id}>
+                        <td><strong>{co.description}</strong></td>
+                        <td>{formatCurrency(co.extra_charge_to_client)}</td>
+                        <td>
+                          <span className={`status-pill ${getStatusClass(co.status)}`}>
+                            {co.status || 'Borrador'}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          {!isApproved && (
+                            <button
+                              className="approve-btn"
+                              disabled={actionLoadingId === co.id}
+                              onClick={() => handleApproveChangeOrder(co.id)}
+                            >
+                              {actionLoadingId === co.id ? 'Approving...' : '✓ Approve'}
+                            </button>
+                          )}
+                          {isApproved && (
+                            <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
+                              ✓ Active
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Modals */}
       {isExpenseModalOpen && (
         <NewExpenseForm
           projectId={projectId}
-          onSuccess={handleExpenseSaved}
+          onSuccess={() => {
+            setIsExpenseModalOpen(false);
+            fetchAllData();
+          }}
           onClose={() => setIsExpenseModalOpen(false)}
+        />
+      )}
+
+      {isChangeOrderModalOpen && (
+        <NewChangeOrderModal
+          projectId={projectId}
+          onClose={() => setIsChangeOrderModalOpen(false)}
+          onCreated={() => {
+            setIsChangeOrderModalOpen(false);
+            fetchAllData();
+          }}
         />
       )}
     </div>
