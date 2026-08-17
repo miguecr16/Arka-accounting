@@ -78,7 +78,6 @@ export default function ProjectDetails({ projectId, onBack }) {
 
       if (updateError) throw updateError;
 
-      // Refresh data so financial view updates with newly approved change order
       await fetchAllData();
     } catch (err) {
       console.error('Error approving change order:', err);
@@ -93,6 +92,47 @@ export default function ProjectDetails({ projectId, onBack }) {
     if (s === 'aprobado' || s === 'approved') return 'aprobado';
     if (s === 'rechazado' || s === 'rejected') return 'rechazado';
     return 'borrador';
+  };
+
+  const renderExpenseDetails = (item) => {
+    const d = item.details;
+    if (!d || typeof d !== 'object' || Object.keys(d).length === 0) {
+      return <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>-</span>;
+    }
+
+    if (item.category === 'Cabinets') {
+      return (
+        <div style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
+          {d.provider && <strong>{d.provider} </strong>}
+          {d.model && <span>• {d.model} </span>}
+          {d.color && <span style={{ color: '#4b5563' }}>({d.color}) </span>}
+          {d.quantity && <span className="detail-pill">{d.quantity} units</span>}
+        </div>
+      );
+    }
+
+    if (item.category === 'Countertops') {
+      return (
+        <div style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
+          {d.material && <strong>{d.material} </strong>}
+          {d.provider && <span style={{ color: '#4b5563' }}>({d.provider}) </span>}
+          {(d.slabs || d.sqft) && (
+            <span className="detail-pill">
+              {d.slabs ? `${d.slabs} slabs` : ''}
+              {d.slabs && d.sqft ? ' • ' : ''}
+              {d.sqft ? `${d.sqft} sqft` : ''}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    // Generic JSON presentation for other categories
+    return (
+      <div style={{ fontSize: '0.8rem', color: '#4b5563' }}>
+        {Object.entries(d).map(([k, v]) => `${k}: ${v}`).join(' • ')}
+      </div>
+    );
   };
 
   if (loading && !projectData) {
@@ -201,6 +241,7 @@ export default function ProjectDetails({ projectId, onBack }) {
                 <tr>
                   <th>Date</th>
                   <th>Category</th>
+                  <th>Specifications / Details</th>
                   <th>Cost Amount</th>
                   <th>Hours</th>
                   <th>Receipt</th>
@@ -209,7 +250,7 @@ export default function ProjectDetails({ projectId, onBack }) {
               <tbody>
                 {expenses.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="no-data-cell">
+                    <td colSpan="6" className="no-data-cell">
                       No expenses or hours logged yet for this project.
                     </td>
                   </tr>
@@ -222,6 +263,7 @@ export default function ProjectDetails({ projectId, onBack }) {
                           {item.category}
                         </span>
                       </td>
+                      <td>{renderExpenseDetails(item)}</td>
                       <td>{item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-'}</td>
                       <td>{item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-'}</td>
                       <td>
