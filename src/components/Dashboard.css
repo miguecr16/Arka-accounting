@@ -162,7 +162,7 @@
 
 /* Wizard Modal Expanded Size */
 .modal-content.wizard-modal {
-  max-width: 750px;
+  max-width: 780px;
   width: 95%;
 }
 
@@ -196,6 +196,12 @@
   font-size: 0.85rem;
 }
 
+.live-cost-badge.countertop-badge {
+  background: #fdf4ff;
+  color: #86198f;
+  border-color: #f5d0fe;
+}
+
 .wizard-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -204,7 +210,7 @@
 
 .wizard-grid-3 {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 1rem;
 }
 

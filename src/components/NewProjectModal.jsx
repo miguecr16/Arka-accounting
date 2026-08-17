@@ -9,7 +9,7 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
     base_contract_value: '',
     deposit_received: '',
     project_type: 'Cocina',
-    // Cabinet Scope fields
+    // 1. Cabinet Scope fields
     tipo_construccion: '',
     proveedor: '',
     linea_modelo: 'Shaker',
@@ -20,13 +20,26 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
     costo_hardware: '',
     costo_accesorios: '',
     costo_delivery: '',
-    costo_instalacion: ''
+    costo_instalacion: '',
+    // 2. Countertop Scope fields
+    countertop_material: 'Quartz',
+    countertop_color: '',
+    countertop_proveedor: '',
+    valor_slab: '',
+    cantidad_slabs: '',
+    sqft_estimados: '',
+    costo_fabricacion: '',
+    costo_instalacion: '',
+    costo_transporte: ''
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const isKitchenProject = (formData.project_type || '').includes('Cocina');
+  const hasCountertopScope = (formData.project_type || '').includes('Cocina') || 
+                             (formData.project_type || '').includes('Baños') || 
+                             (formData.project_type || '').includes('Remodelación Completa');
 
   // Real-time calculation of Total Cabinets Cost
   const totalCabinetsCost = (
@@ -37,6 +50,13 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
     parseFloat(formData.costo_delivery || 0) +
     parseFloat(formData.costo_instalacion || 0)
   );
+
+  // Real-time calculation of Total Countertop Cost
+  const slabCost = parseFloat(formData.valor_slab || 0) * parseFloat(formData.cantidad_slabs || 0);
+  const sqft = parseFloat(formData.sqft_estimados || 0);
+  const fabAndInstall = (parseFloat(formData.costo_fabricacion || 0) + parseFloat(formData.costo_instalacion || 0)) * (sqft > 0 ? sqft : 1);
+  const transportCost = parseFloat(formData.costo_transporte || 0);
+  const totalCountertopCost = slabCost + fabAndInstall + transportCost;
 
   const formatCurrency = (val) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
@@ -55,10 +75,11 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
       const baseContract = parseFloat(formData.base_contract_value || 0);
       const deposit = parseFloat(formData.deposit_received || 0);
 
-      // Build scope_details JSONB if kitchen project
-      let scopeDetailsJson = null;
+      // Build structured scope_details JSONB
+      const scopeDetails = {};
+
       if (isKitchenProject) {
-        scopeDetailsJson = {
+        scopeDetails.cabinets = {
           tipo_construccion: formData.tipo_construccion.trim(),
           proveedor: formData.proveedor.trim(),
           linea_modelo: formData.linea_modelo,
@@ -74,13 +95,28 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
         };
       }
 
+      if (hasCountertopScope) {
+        scopeDetails.countertops = {
+          material: formData.countertop_material,
+          color: formData.countertop_color.trim(),
+          proveedor: formData.countertop_proveedor.trim(),
+          valor_slab: parseFloat(formData.valor_slab || 0),
+          cantidad_slabs: parseFloat(formData.cantidad_slabs || 0),
+          sqft_estimados: parseFloat(formData.sqft_estimados || 0),
+          costo_fabricacion: parseFloat(formData.costo_fabricacion || 0),
+          costo_instalacion: parseFloat(formData.costo_instalacion || 0),
+          costo_transporte: parseFloat(formData.costo_transporte || 0),
+          total_countertop_cost: totalCountertopCost
+        };
+      }
+
       const payload = {
         project_name: formData.project_name.trim(),
         client_name: formData.client_name.trim(),
         base_contract_value: isNaN(baseContract) ? 0 : baseContract,
         deposit_received: isNaN(deposit) ? 0 : deposit,
         project_type: formData.project_type,
-        scope_details: scopeDetailsJson
+        scope_details: Object.keys(scopeDetails).length > 0 ? scopeDetails : null
       };
 
       const { error: dbError } = await supabase
@@ -200,7 +236,7 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
           {isKitchenProject && (
             <div className="wizard-section slide-down">
               <div className="wizard-section-title">
-                <span>🗄️ 2. Cabinets Scope Breakdown (Scope Details)</span>
+                <span>🗄️ 2. Cabinets Scope Breakdown</span>
                 <span className="live-cost-badge">
                   Est. Cabinets Total: <strong>{formatCurrency(totalCabinetsCost)}</strong>
                 </span>
@@ -355,6 +391,149 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
                     value={formData.costo_instalacion}
                     onChange={handleChange}
                     placeholder="0.00"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 3: CONDITIONAL COUNTERTOP SCOPE (JSONB) */}
+          {hasCountertopScope && (
+            <div className="wizard-section slide-down">
+              <div className="wizard-section-title">
+                <span>🪨 3. Countertop Scope Breakdown</span>
+                <span className="live-cost-badge countertop-badge">
+                  Est. Countertop Total: <strong>{formatCurrency(totalCountertopCost)}</strong>
+                </span>
+              </div>
+
+              <div className="wizard-grid-3">
+                <div className="form-group">
+                  <label htmlFor="countertop_material">Material</label>
+                  <select
+                    id="countertop_material"
+                    name="countertop_material"
+                    value={formData.countertop_material}
+                    onChange={handleChange}
+                  >
+                    <option value="Quartz">Quartz</option>
+                    <option value="Granite">Granite</option>
+                    <option value="Quartzite">Quartzite</option>
+                    <option value="Porcelain">Porcelain</option>
+                    <option value="Laminate">Laminate</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="countertop_color">Color / Pattern</label>
+                  <input
+                    type="text"
+                    id="countertop_color"
+                    name="countertop_color"
+                    value={formData.countertop_color}
+                    onChange={handleChange}
+                    placeholder="e.g. Calacatta Gold"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="countertop_proveedor">Proveedor / Fabricator</label>
+                  <input
+                    type="text"
+                    id="countertop_proveedor"
+                    name="countertop_proveedor"
+                    value={formData.countertop_proveedor}
+                    onChange={handleChange}
+                    placeholder="e.g. STSTONES"
+                  />
+                </div>
+              </div>
+
+              <div className="wizard-grid-3">
+                <div className="form-group">
+                  <label htmlFor="valor_slab">Valor Slab ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="valor_slab"
+                    name="valor_slab"
+                    value={formData.valor_slab}
+                    onChange={handleChange}
+                    placeholder="e.g. 750.00"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="cantidad_slabs">Cantidad de Slabs</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    id="cantidad_slabs"
+                    name="cantidad_slabs"
+                    value={formData.cantidad_slabs}
+                    onChange={handleChange}
+                    placeholder="e.g. 2"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="sqft_estimados">Sq Ft Estimados</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    id="sqft_estimados"
+                    name="sqft_estimados"
+                    value={formData.sqft_estimados}
+                    onChange={handleChange}
+                    placeholder="e.g. 60.5"
+                  />
+                </div>
+              </div>
+
+              <div className="wizard-grid-3">
+                <div className="form-group">
+                  <label htmlFor="costo_fabricacion">Costo Fabricación ($/sqft)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="costo_fabricacion"
+                    name="costo_fabricacion"
+                    value={formData.costo_fabricacion}
+                    onChange={handleChange}
+                    placeholder="e.g. 25.00"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="costo_instalacion">Costo Instalación ($/sqft)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="costo_instalacion"
+                    name="costo_instalacion"
+                    value={formData.costo_instalacion}
+                    onChange={handleChange}
+                    placeholder="e.g. 15.00"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="costo_transporte">Costo Transporte / Delivery ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="costo_transporte"
+                    name="costo_transporte"
+                    value={formData.costo_transporte}
+                    onChange={handleChange}
+                    placeholder="e.g. 150.00"
                   />
                 </div>
               </div>
