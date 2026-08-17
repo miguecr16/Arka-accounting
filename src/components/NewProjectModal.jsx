@@ -33,6 +33,16 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
     costo_transporte: ''
   });
 
+  // 3. Dynamic Measurements Table (Tabla de Medidas)
+  const [medidas, setMedidas] = useState([
+    { area: 'Island', largo: '', profundidad: '' },
+    { area: 'Perimeter', largo: '', profundidad: '' },
+    { area: 'Back Splash', largo: '', profundidad: '' },
+    { area: 'Laundry', largo: '', profundidad: '' },
+    { area: 'Bathroom Master', largo: '', profundidad: '' },
+    { area: 'Bathroom Guest 1', largo: '', profundidad: '' }
+  ]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -40,6 +50,18 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
   const hasCountertopScope = (formData.project_type || '').includes('Cocina') || 
                              (formData.project_type || '').includes('Baños') || 
                              (formData.project_type || '').includes('Remodelación Completa');
+
+  // Real-time calculation of Measurements Table Total SQ FT
+  const totalMedidasSqFt = medidas.reduce((sum, item) => {
+    const l = parseFloat(item.largo || 0);
+    const p = parseFloat(item.profundidad || 0);
+    return sum + (l * p);
+  }, 0);
+
+  // Effective SQ FT: uses calculated total from measurements table if present, otherwise manual input
+  const effectiveSqFt = totalMedidasSqFt > 0 
+    ? totalMedidasSqFt 
+    : parseFloat(formData.sqft_estimados || 0);
 
   // Real-time calculation of Total Cabinets Cost
   const totalCabinetsCost = (
@@ -53,8 +75,7 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
 
   // Real-time calculation of Total Countertop Cost
   const slabCost = parseFloat(formData.valor_slab || 0) * parseFloat(formData.cantidad_slabs || 0);
-  const sqft = parseFloat(formData.sqft_estimados || 0);
-  const fabAndInstall = (parseFloat(formData.costo_fabricacion || 0) + parseFloat(formData.costo_instalacion || 0)) * (sqft > 0 ? sqft : 1);
+  const fabAndInstall = (parseFloat(formData.costo_fabricacion || 0) + parseFloat(formData.costo_instalacion || 0)) * (effectiveSqFt > 0 ? effectiveSqFt : 1);
   const transportCost = parseFloat(formData.costo_transporte || 0);
   const totalCountertopCost = slabCost + fabAndInstall + transportCost;
 
@@ -64,6 +85,22 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleMedidaChange = (index, field, value) => {
+    setMedidas((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const handleAddArea = () => {
+    setMedidas((prev) => [...prev, { area: '', largo: '', profundidad: '' }]);
+  };
+
+  const handleRemoveArea = (index) => {
+    setMedidas((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -96,17 +133,32 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
       }
 
       if (hasCountertopScope) {
+        // Prepare clean measurements array with calculated sq_ft per row
+        const cleanedMedidas = medidas
+          .filter((m) => m.area.trim() || m.largo || m.profundidad)
+          .map((m) => {
+            const l = parseFloat(m.largo || 0);
+            const p = parseFloat(m.profundidad || 0);
+            return {
+              area: m.area.trim() || 'Custom Area',
+              largo: l,
+              profundidad: p,
+              sq_ft: parseFloat((l * p).toFixed(2))
+            };
+          });
+
         scopeDetails.countertops = {
           material: formData.countertop_material,
           color: formData.countertop_color.trim(),
           proveedor: formData.countertop_proveedor.trim(),
           valor_slab: parseFloat(formData.valor_slab || 0),
           cantidad_slabs: parseFloat(formData.cantidad_slabs || 0),
-          sqft_estimados: parseFloat(formData.sqft_estimados || 0),
+          sqft_estimados: parseFloat(effectiveSqFt.toFixed(2)),
           costo_fabricacion: parseFloat(formData.costo_fabricacion || 0),
           costo_instalacion: parseFloat(formData.costo_instalacion || 0),
           costo_transporte: parseFloat(formData.costo_transporte || 0),
-          total_countertop_cost: totalCountertopCost
+          total_countertop_cost: totalCountertopCost,
+          medidas: cleanedMedidas
         };
       }
 
@@ -480,16 +532,19 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="sqft_estimados">Sq Ft Estimados</label>
+                  <label htmlFor="sqft_estimados">
+                    Sq Ft Estimados {totalMedidasSqFt > 0 && <span style={{ color: '#059669', fontSize: '0.75rem' }}>(Auto-calculado)</span>}
+                  </label>
                   <input
                     type="number"
                     step="0.1"
                     min="0"
                     id="sqft_estimados"
                     name="sqft_estimados"
-                    value={formData.sqft_estimados}
+                    value={totalMedidasSqFt > 0 ? totalMedidasSqFt.toFixed(2) : formData.sqft_estimados}
                     onChange={handleChange}
                     placeholder="e.g. 60.5"
+                    style={totalMedidasSqFt > 0 ? { backgroundColor: '#f0fdf4', fontWeight: 600, borderColor: '#86efac' } : {}}
                   />
                 </div>
               </div>
@@ -524,7 +579,7 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="costo_transporte">Costo Transporte / Delivery ($)</label>
+                  <label htmlFor="costo_transporte">Costo Transporte ($)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -536,6 +591,101 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
                     placeholder="e.g. 150.00"
                   />
                 </div>
+              </div>
+
+              {/* 4. TABLA DE MEDIDAS (MEASUREMENTS TABLE) */}
+              <div className="medidas-container">
+                <div className="medidas-header">
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b' }}>📐 Tabla de Medidas</h4>
+                    <small style={{ color: '#64748b' }}>Calcula el total de Sq Ft multiplicando Largo × Profundidad</small>
+                  </div>
+                  <div className="medidas-total-badge">
+                    Total Medidas: <strong>{totalMedidasSqFt.toFixed(2)} sqft</strong>
+                  </div>
+                </div>
+
+                <div className="medidas-table-wrapper">
+                  <table className="medidas-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '40%' }}>Área</th>
+                        <th style={{ width: '22%' }}>Largo (ft)</th>
+                        <th style={{ width: '22%' }}>Profundidad (ft)</th>
+                        <th style={{ width: '16%' }}>Sq Ft</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {medidas.map((item, idx) => {
+                        const l = parseFloat(item.largo || 0);
+                        const p = parseFloat(item.profundidad || 0);
+                        const rowSqFt = (l * p).toFixed(2);
+
+                        return (
+                          <tr key={idx}>
+                            <td>
+                              <input
+                                type="text"
+                                value={item.area}
+                                onChange={(e) => handleMedidaChange(idx, 'area', e.target.value)}
+                                placeholder="Nombre de Área"
+                                className="medida-input"
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                value={item.largo}
+                                onChange={(e) => handleMedidaChange(idx, 'largo', e.target.value)}
+                                placeholder="0.0"
+                                className="medida-input"
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                value={item.profundidad}
+                                onChange={(e) => handleMedidaChange(idx, 'profundidad', e.target.value)}
+                                placeholder="0.0"
+                                className="medida-input"
+                              />
+                            </td>
+                            <td>
+                              <span className="row-sqft-badge">
+                                {l > 0 && p > 0 ? rowSqFt : '0.00'}
+                              </span>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              {medidas.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveArea(idx)}
+                                  className="remove-area-btn"
+                                  title="Remove area"
+                                >
+                                  &times;
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddArea}
+                  className="add-area-btn"
+                >
+                  + Add Area
+                </button>
               </div>
             </div>
           )}
