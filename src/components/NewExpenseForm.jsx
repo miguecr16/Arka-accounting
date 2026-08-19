@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import './NewExpenseForm.css';
 
-export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
+export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseToEdit }) {
+  const isEditMode = !!expenseToEdit;
+
   const [loading, setLoading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState(''); // 'Uploading image...' | 'Saving record...'
+  const [uploadStatus, setUploadStatus] = useState('');
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
@@ -15,6 +17,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
     cost_amount: '',
     hours_worked: '',
     receipt_image_file: null,
+    existing_receipt_url: null,
     // Cabinets specific
     cabinet_provider: '',
     cabinet_model: '',
@@ -26,6 +29,33 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
     countertop_slabs: '',
     countertop_sqft: ''
   });
+
+  // Pre-populate if editing existing expense
+  useEffect(() => {
+    if (expenseToEdit) {
+      const d = expenseToEdit.details || {};
+
+      setFormData({
+        project_id: expenseToEdit.project_id || projectId || '',
+        date: expenseToEdit.date || new Date().toISOString().split('T')[0],
+        category: expenseToEdit.category || 'Materiales',
+        cost_amount: expenseToEdit.cost_amount !== undefined ? String(expenseToEdit.cost_amount) : '',
+        hours_worked: expenseToEdit.hours_worked !== undefined ? String(expenseToEdit.hours_worked) : '',
+        receipt_image_file: null,
+        existing_receipt_url: expenseToEdit.receipt_image_url || null,
+        // Cabinets
+        cabinet_provider: d.provider || '',
+        cabinet_model: d.model || '',
+        cabinet_color: d.color || '',
+        cabinet_quantity: d.quantity !== undefined && d.quantity !== null ? String(d.quantity) : '',
+        // Countertops
+        countertop_material: d.material || '',
+        countertop_provider: d.provider || '',
+        countertop_slabs: d.slabs !== undefined && d.slabs !== null ? String(d.slabs) : '',
+        countertop_sqft: d.sqft !== undefined && d.sqft !== null ? String(d.sqft) : ''
+      });
+    }
+  }, [expenseToEdit, projectId]);
 
   const isLabor = formData.category === 'Mano de Obra';
   const isCabinets = formData.category === 'Cabinets';
@@ -43,7 +73,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
   const uploadReceiptImage = async (file) => {
     if (!file) return null;
 
-    // Generate unique sanitized filename
     const fileExt = file.name.split('.').pop();
     const cleanBaseName = file.name.substring(0, file.name.lastIndexOf('.'))
       .replace(/[^a-zA-Z0-9_-]/g, '_')
@@ -65,7 +94,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
       throw new Error(`Image upload failed: ${uploadError.message}`);
     }
 
-    // Retrieve public URL
     const { data: urlData } = supabase
       .storage
       .from('imagenes_arka')
@@ -94,13 +122,15 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
     }
 
     try {
-      // 1. Handle file upload to Supabase Storage if an image was selected
-      let publicImageUrl = null;
+      // 1. Handle image upload: new file uploaded -> new URL; else keep existing if in edit mode
+      let finalImageUrl = formData.existing_receipt_url;
       if (!isLabor && formData.receipt_image_file) {
-        publicImageUrl = await uploadReceiptImage(formData.receipt_image_file);
+        finalImageUrl = await uploadReceiptImage(formData.receipt_image_file);
+      } else if (isLabor) {
+        finalImageUrl = null;
       }
 
-      setUploadStatus('Saving record...');
+      setUploadStatus(isEditMode ? 'Updating record...' : 'Saving record...');
 
       // 2. Build category-specific details JSONB
       let detailsJson = null;
@@ -126,15 +156,24 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
         category: formData.category,
         cost_amount: isLabor ? 0 : parseFloat(formData.cost_amount || 0),
         hours_worked: isLabor ? parseFloat(formData.hours_worked || 0) : 0,
-        receipt_image_url: publicImageUrl,
+        receipt_image_url: finalImageUrl,
         details: detailsJson
       };
 
-      const { error: dbError } = await supabase
-        .from('expenses_and_hours')
-        .insert([payload]);
+      if (isEditMode) {
+        const { error: dbError } = await supabase
+          .from('expenses_and_hours')
+          .update(payload)
+          .eq('id', expenseToEdit.id);
 
-      if (dbError) throw dbError;
+        if (dbError) throw dbError;
+      } else {
+        const { error: dbError } = await supabase
+          .from('expenses_and_hours')
+          .insert([payload]);
+
+        if (dbError) throw dbError;
+      }
 
       setSuccess(true);
       if (onSuccess) {
@@ -155,7 +194,9 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
     <div className={onClose ? "modal-overlay" : "form-container"}>
       <div className={onClose ? "modal-content" : ""}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Log Expense / Hours</h2>
+          <h2 style={{ margin: 0, fontSize: '1.4rem' }}>
+            {isEditMode ? 'Edit Expense / Hours' : 'Log Expense / Hours'}
+          </h2>
           {onClose && (
             <button 
               type="button" 
@@ -167,7 +208,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
           )}
         </div>
         
-        {success && <div className="alert success">Record saved successfully!</div>}
+        {success && <div className="alert success">{isEditMode ? 'Record updated successfully!' : 'Record saved successfully!'}</div>}
         {error && <div className="alert error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="expense-form">
@@ -357,7 +398,9 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
               )}
 
               <div className="form-group slide-down">
-                <label htmlFor="receipt_file">Receipt Image (Upload to Cloud Storage)</label>
+                <label htmlFor="receipt_file">
+                  Receipt Image {formData.existing_receipt_url && <span style={{ color: '#059669', fontSize: '0.8rem' }}>(Current: Attached)</span>}
+                </label>
                 <input
                   type="file"
                   id="receipt_file"
@@ -366,7 +409,11 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
                   capture="environment"
                   onChange={handleChange}
                 />
-                <small>Take a photo or upload receipt (Stored securely in Supabase Storage bucket: imagenes_arka)</small>
+                <small>
+                  {formData.existing_receipt_url 
+                    ? 'Leave empty to keep existing receipt, or select a new file to replace it.' 
+                    : 'Take a photo or upload receipt (Stored securely in Supabase Storage bucket: imagenes_arka)'}
+                </small>
               </div>
             </>
           )}
@@ -378,7 +425,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
               </button>
             )}
             <button type="submit" className="submit-btn" disabled={loading} style={{ margin: 0 }}>
-              {loading ? (uploadStatus || 'Saving...') : 'Save Record'}
+              {loading ? (uploadStatus || (isEditMode ? 'Updating...' : 'Saving...')) : (isEditMode ? 'Update Record' : 'Save Record')}
             </button>
           </div>
         </form>

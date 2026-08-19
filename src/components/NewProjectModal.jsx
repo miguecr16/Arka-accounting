@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import './Dashboard.css';
 
-export default function NewProjectModal({ onClose, onProjectCreated }) {
+export default function NewProjectModal({ onClose, onProjectCreated, projectToEdit }) {
+  const isEditMode = !!projectToEdit;
+
   const [formData, setFormData] = useState({
     project_name: '',
     client_name: '',
@@ -46,6 +48,54 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Pre-fill fields if editing existing project
+  useEffect(() => {
+    if (projectToEdit) {
+      const scope = projectToEdit.scope_details || {};
+      const cabs = scope.cabinets || {};
+      const counts = scope.countertops || {};
+      const medList = counts.medidas;
+
+      setFormData({
+        project_name: projectToEdit.project_name || '',
+        client_name: projectToEdit.client_name || '',
+        base_contract_value: projectToEdit.base_contract_value !== undefined ? String(projectToEdit.base_contract_value) : '',
+        deposit_received: projectToEdit.deposit_received !== undefined ? String(projectToEdit.deposit_received) : '',
+        project_type: projectToEdit.project_type || 'Cocina',
+        // Cabinets
+        tipo_construccion: cabs.tipo_construccion || '',
+        proveedor: cabs.proveedor || '',
+        linea_modelo: cabs.linea_modelo || 'Shaker',
+        color: cabs.color || '',
+        cantidad_cabinets: cabs.cantidad_cabinets !== undefined ? String(cabs.cantidad_cabinets) : '',
+        costo_cabinets: cabs.costo_cabinets !== undefined ? String(cabs.costo_cabinets) : '',
+        ensamble: cabs.ensamble !== undefined ? String(cabs.ensamble) : '',
+        costo_hardware: cabs.costo_hardware !== undefined ? String(cabs.costo_hardware) : '',
+        costo_accesorios: cabs.costo_accesorios !== undefined ? String(cabs.costo_accesorios) : '',
+        costo_delivery: cabs.costo_delivery !== undefined ? String(cabs.costo_delivery) : '',
+        costo_instalacion: cabs.costo_instalacion !== undefined ? String(cabs.costo_instalacion) : '',
+        // Countertops
+        countertop_material: counts.material || 'Quartz',
+        countertop_color: counts.color || '',
+        countertop_proveedor: counts.proveedor || '',
+        valor_slab: counts.valor_slab !== undefined ? String(counts.valor_slab) : '',
+        cantidad_slabs: counts.cantidad_slabs !== undefined ? String(counts.cantidad_slabs) : '',
+        sqft_estimados: counts.sqft_estimados !== undefined ? String(counts.sqft_estimados) : '',
+        costo_fabricacion: counts.costo_fabricacion !== undefined ? String(counts.costo_fabricacion) : '',
+        costo_instalacion: counts.costo_instalacion !== undefined ? String(counts.costo_instalacion) : '',
+        costo_transporte: counts.costo_transporte !== undefined ? String(counts.costo_transporte) : ''
+      });
+
+      if (Array.isArray(medList) && medList.length > 0) {
+        setMedidas(medList.map((m) => ({
+          area: m.area || '',
+          largo: m.largo !== undefined ? String(m.largo) : '',
+          profundidad: m.profundidad !== undefined ? String(m.profundidad) : ''
+        })));
+      }
+    }
+  }, [projectToEdit]);
+
   const isKitchenProject = (formData.project_type || '').includes('Cocina');
   const hasCountertopScope = (formData.project_type || '').includes('Cocina') || 
                              (formData.project_type || '').includes('Baños') || 
@@ -58,12 +108,10 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
     return sum + (l * p);
   }, 0);
 
-  // Effective SQ FT: uses calculated total from measurements table if present, otherwise manual input
   const effectiveSqFt = totalMedidasSqFt > 0 
     ? totalMedidasSqFt 
     : parseFloat(formData.sqft_estimados || 0);
 
-  // Real-time calculation of Total Cabinets Cost
   const totalCabinetsCost = (
     parseFloat(formData.costo_cabinets || 0) +
     parseFloat(formData.ensamble || 0) +
@@ -73,7 +121,6 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
     parseFloat(formData.costo_instalacion || 0)
   );
 
-  // Real-time calculation of Total Countertop Cost
   const slabCost = parseFloat(formData.valor_slab || 0) * parseFloat(formData.cantidad_slabs || 0);
   const fabAndInstall = (parseFloat(formData.costo_fabricacion || 0) + parseFloat(formData.costo_instalacion || 0)) * (effectiveSqFt > 0 ? effectiveSqFt : 1);
   const transportCost = parseFloat(formData.costo_transporte || 0);
@@ -133,7 +180,6 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
       }
 
       if (hasCountertopScope) {
-        // Prepare clean measurements array with calculated sq_ft per row
         const cleanedMedidas = medidas
           .filter((m) => m.area.trim() || m.largo || m.profundidad)
           .map((m) => {
@@ -171,16 +217,26 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
         scope_details: Object.keys(scopeDetails).length > 0 ? scopeDetails : null
       };
 
-      const { error: dbError } = await supabase
-        .from('projects')
-        .insert([payload]);
+      if (isEditMode) {
+        const targetId = projectToEdit.id || projectToEdit.project_id;
+        const { error: dbError } = await supabase
+          .from('projects')
+          .update(payload)
+          .eq('id', targetId);
 
-      if (dbError) throw dbError;
+        if (dbError) throw dbError;
+      } else {
+        const { error: dbError } = await supabase
+          .from('projects')
+          .insert([payload]);
+
+        if (dbError) throw dbError;
+      }
 
       onProjectCreated();
     } catch (err) {
-      console.error('Error creating project intake:', err);
-      setError(err.message || 'Failed to create project.');
+      console.error('Error saving project:', err);
+      setError(err.message || 'Failed to save project.');
     } finally {
       setLoading(false);
     }
@@ -190,7 +246,9 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
     <div className="modal-overlay">
       <div className="modal-content wizard-modal">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.4rem' }}>New Project Intake Wizard</h3>
+          <h3 style={{ margin: 0, fontSize: '1.4rem' }}>
+            {isEditMode ? 'Edit Project Details' : 'New Project Intake Wizard'}
+          </h3>
           <button 
             type="button" 
             onClick={onClose}
@@ -695,7 +753,7 @@ export default function NewProjectModal({ onClose, onProjectCreated }) {
               Cancel
             </button>
             <button type="submit" className="submit-btn" disabled={loading} style={{ margin: 0, padding: '0.85rem 1.75rem' }}>
-              {loading ? 'Creating Project...' : 'Complete Intake & Create Project'}
+              {loading ? (isEditMode ? 'Saving Changes...' : 'Creating Project...') : (isEditMode ? 'Save Project Changes' : 'Complete Intake & Create Project')}
             </button>
           </div>
         </form>

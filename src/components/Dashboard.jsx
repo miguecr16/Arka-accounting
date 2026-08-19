@@ -8,6 +8,7 @@ export default function Dashboard({ onSelectProject }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
   const [error, setError] = useState('');
 
   const fetchProjects = async () => {
@@ -19,7 +20,6 @@ export default function Dashboard({ onSelectProject }) {
 
       if (dbError) throw dbError;
       
-      // Sort projects by name since created_at is not in the view
       const sortedData = (data || []).sort((a, b) => a.project_name.localeCompare(b.project_name));
       setProjects(sortedData);
     } catch (err) {
@@ -34,16 +34,43 @@ export default function Dashboard({ onSelectProject }) {
     fetchProjects();
   }, []);
 
-  const handleProjectCreated = () => {
-    fetchProjects(); // Re-fetch to get calculations
+  const handleOpenCreateModal = () => {
+    setEditingProject(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = async (projectSummary) => {
+    try {
+      const targetId = projectSummary.project_id || projectSummary.id;
+      // Fetch full project record from projects table to get scope_details JSONB
+      const { data: fullProject, error: fetchErr } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', targetId)
+        .single();
+
+      if (fetchErr) throw fetchErr;
+      setEditingProject(fullProject);
+      setIsModalOpen(true);
+    } catch (err) {
+      console.error('Error fetching project for edit:', err);
+      // Fallback to summary object if fetch fails
+      setEditingProject(projectSummary);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleProjectSaved = () => {
+    fetchProjects();
     setIsModalOpen(false);
+    setEditingProject(null);
   };
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h2>Your Projects</h2>
-        <button className="create-btn" onClick={() => setIsModalOpen(true)}>
+        <button className="create-btn" onClick={handleOpenCreateModal}>
           + Create New Project
         </button>
       </div>
@@ -58,9 +85,10 @@ export default function Dashboard({ onSelectProject }) {
         <div className="projects-grid">
           {projects.map(project => (
             <ProjectCard 
-              key={project.project_id} 
+              key={project.project_id || project.id} 
               project={project} 
-              onSelectProject={onSelectProject} 
+              onSelectProject={onSelectProject}
+              onEditProject={handleOpenEditModal}
             />
           ))}
         </div>
@@ -68,8 +96,12 @@ export default function Dashboard({ onSelectProject }) {
 
       {isModalOpen && (
         <NewProjectModal 
-          onClose={() => setIsModalOpen(false)}
-          onProjectCreated={handleProjectCreated}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingProject(null);
+          }}
+          onProjectCreated={handleProjectSaved}
+          projectToEdit={editingProject}
         />
       )}
     </div>

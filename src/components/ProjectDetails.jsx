@@ -13,7 +13,11 @@ export default function ProjectDetails({ projectId, onBack }) {
   const [error, setError] = useState('');
   
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
+
   const [isChangeOrderModalOpen, setIsChangeOrderModalOpen] = useState(false);
+  const [editingChangeOrder, setEditingChangeOrder] = useState(null);
+
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
   const formatCurrency = (val) =>
@@ -228,7 +232,10 @@ export default function ProjectDetails({ projectId, onBack }) {
             <h3>Expense & Hours History</h3>
             <button 
               className="primary-action-btn"
-              onClick={() => setIsExpenseModalOpen(true)}
+              onClick={() => {
+                setEditingExpense(null);
+                setIsExpenseModalOpen(true);
+              }}
             >
               + Log Expense / Hours
             </button>
@@ -244,12 +251,13 @@ export default function ProjectDetails({ projectId, onBack }) {
                   <th>Cost Amount</th>
                   <th>Hours</th>
                   <th>Receipt</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {expenses.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="no-data-cell">
+                    <td colSpan="7" className="no-data-cell">
                       No expenses or hours logged yet for this project.
                     </td>
                   </tr>
@@ -293,6 +301,18 @@ export default function ProjectDetails({ projectId, onBack }) {
                           <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>None</span>
                         )}
                       </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button
+                          className="table-action-edit-btn"
+                          title="Edit this expense"
+                          onClick={() => {
+                            setEditingExpense(item);
+                            setIsExpenseModalOpen(true);
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -316,7 +336,10 @@ export default function ProjectDetails({ projectId, onBack }) {
             <h3>Change Orders (Extras)</h3>
             <button 
               className="primary-action-btn"
-              onClick={() => setIsChangeOrderModalOpen(true)}
+              onClick={() => {
+                setEditingChangeOrder(null);
+                setIsChangeOrderModalOpen(true);
+              }}
             >
               + New Change Order
             </button>
@@ -353,20 +376,33 @@ export default function ProjectDetails({ projectId, onBack }) {
                           </span>
                         </td>
                         <td style={{ textAlign: 'right' }}>
-                          {!isApproved && (
+                          <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
                             <button
-                              className="approve-btn"
-                              disabled={actionLoadingId === co.id}
-                              onClick={() => handleApproveChangeOrder(co.id)}
+                              className="table-action-edit-btn"
+                              title="Edit this change order"
+                              onClick={() => {
+                                setEditingChangeOrder(co);
+                                setIsChangeOrderModalOpen(true);
+                              }}
                             >
-                              {actionLoadingId === co.id ? 'Approving...' : '✓ Approve'}
+                              ✏️ Edit
                             </button>
-                          )}
-                          {isApproved && (
-                            <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
-                              ✓ Active
-                            </span>
-                          )}
+
+                            {!isApproved && (
+                              <button
+                                className="approve-btn"
+                                disabled={actionLoadingId === co.id}
+                                onClick={() => handleApproveChangeOrder(co.id)}
+                              >
+                                {actionLoadingId === co.id ? 'Approving...' : '✓ Approve'}
+                              </button>
+                            )}
+                            {isApproved && (
+                              <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
+                                ✓ Active
+                              </span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -382,20 +418,30 @@ export default function ProjectDetails({ projectId, onBack }) {
       {isExpenseModalOpen && (
         <NewExpenseForm
           projectId={projectId}
+          expenseToEdit={editingExpense}
           onSuccess={() => {
             setIsExpenseModalOpen(false);
+            setEditingExpense(null);
             fetchAllData();
           }}
-          onClose={() => setIsExpenseModalOpen(false)}
+          onClose={() => {
+            setIsExpenseModalOpen(false);
+            setEditingExpense(null);
+          }}
         />
       )}
 
       {isChangeOrderModalOpen && (
         <NewChangeOrderModal
           projectId={projectId}
-          onClose={() => setIsChangeOrderModalOpen(false)}
+          changeOrderToEdit={editingChangeOrder}
+          onClose={() => {
+            setIsChangeOrderModalOpen(false);
+            setEditingChangeOrder(null);
+          }}
           onCreated={() => {
             setIsChangeOrderModalOpen(false);
+            setEditingChangeOrder(null);
             fetchAllData();
           }}
         />

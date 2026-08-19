@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import './Dashboard.css';
 
-export default function NewChangeOrderModal({ projectId, onClose, onCreated }) {
+export default function NewChangeOrderModal({ projectId, onClose, onCreated, changeOrderToEdit }) {
+  const isEditMode = !!changeOrderToEdit;
+
   const [formData, setFormData] = useState({
     description: '',
     extra_charge_to_client: '',
@@ -11,12 +13,22 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (changeOrderToEdit) {
+      setFormData({
+        description: changeOrderToEdit.description || '',
+        extra_charge_to_client: changeOrderToEdit.extra_charge_to_client !== undefined ? String(changeOrderToEdit.extra_charge_to_client) : '',
+        status: changeOrderToEdit.status || 'Borrador'
+      });
+    }
+  }, [changeOrderToEdit]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    if (!projectId) {
+    if (!projectId && !isEditMode) {
       setError('Project reference missing.');
       setLoading(false);
       return;
@@ -25,23 +37,35 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated }) {
     try {
       const charge = parseFloat(formData.extra_charge_to_client || 0);
 
-      const { error: dbError } = await supabase
-        .from('change_orders')
-        .insert([
-          {
-            project_id: projectId,
-            description: formData.description.trim(),
-            extra_charge_to_client: isNaN(charge) ? 0 : charge,
-            status: formData.status
-          }
-        ]);
+      const payload = {
+        description: formData.description.trim(),
+        extra_charge_to_client: isNaN(charge) ? 0 : charge,
+        status: formData.status
+      };
 
-      if (dbError) throw dbError;
+      if (!isEditMode) {
+        payload.project_id = projectId;
+      }
+
+      if (isEditMode) {
+        const { error: dbError } = await supabase
+          .from('change_orders')
+          .update(payload)
+          .eq('id', changeOrderToEdit.id);
+
+        if (dbError) throw dbError;
+      } else {
+        const { error: dbError } = await supabase
+          .from('change_orders')
+          .insert([payload]);
+
+        if (dbError) throw dbError;
+      }
 
       onCreated();
     } catch (err) {
-      console.error('Error creating change order:', err);
-      setError(err.message || 'Failed to create change order.');
+      console.error('Error saving change order:', err);
+      setError(err.message || 'Failed to save change order.');
     } finally {
       setLoading(false);
     }
@@ -51,7 +75,9 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated }) {
     <div className="modal-overlay">
       <div className="modal-content">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ margin: 0 }}>New Change Order (Extra)</h3>
+          <h3 style={{ margin: 0 }}>
+            {isEditMode ? 'Edit Change Order (Extra)' : 'New Change Order (Extra)'}
+          </h3>
           <button 
             type="button" 
             onClick={onClose}
@@ -121,7 +147,7 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated }) {
               Cancel
             </button>
             <button type="submit" className="submit-btn" disabled={loading} style={{ margin: 0 }}>
-              {loading ? 'Saving...' : 'Save Change Order'}
+              {loading ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Change Order' : 'Save Change Order')}
             </button>
           </div>
         </form>

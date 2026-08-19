@@ -87,6 +87,24 @@
   margin-bottom: 0.75rem;
 }
 
+.card-edit-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-edit-btn:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+  border-color: #d1d5db;
+}
+
 .project-metrics {
   display: flex;
   justify-content: space-between;

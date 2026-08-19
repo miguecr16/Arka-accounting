@@ -300,6 +300,24 @@
 }
 
 /* Action Buttons in Table */
+.table-action-edit-btn {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.table-action-edit-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
 .approve-btn {
   background-color: #10b981;
   color: white;
