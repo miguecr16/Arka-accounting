@@ -40,7 +40,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
         date: expenseToEdit.date || new Date().toISOString().split('T')[0],
         category: expenseToEdit.category || 'Materiales',
         cost_amount: expenseToEdit.cost_amount !== undefined ? String(expenseToEdit.cost_amount) : '',
-        hours_worked: expenseToEdit.hours_worked !== undefined ? String(expenseToEdit.hours_worked) : '',
+        hours_worked: expenseToEdit.hours_worked !== undefined ? String(Math.floor(Number(expenseToEdit.hours_worked))) : '',
         receipt_image_file: null,
         existing_receipt_url: expenseToEdit.receipt_image_url || null,
         // Cabinets
@@ -70,6 +70,21 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
     }
   };
 
+  // Strict Natural Number (positive integer) handler for hours_worked
+  const handleHoursChange = (e) => {
+    const rawVal = e.target.value;
+    // Strip everything that isn't a digit (0-9)
+    const sanitizedVal = rawVal.replace(/[^0-9]/g, '');
+    setFormData((prev) => ({ ...prev, hours_worked: sanitizedVal }));
+  };
+
+  const handleHoursKeyDown = (e) => {
+    // Block decimal point, negative sign, exponent, and comma
+    if (['.', ',', 'e', 'E', '-', '+'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
   const uploadReceiptImage = async (file) => {
     if (!file) return null;
 
@@ -82,7 +97,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
 
     setUploadStatus('Uploading image...');
 
-    const { data: uploadData, error: uploadError } = await supabase
+    const { error: uploadError } = await supabase
       .storage
       .from('imagenes_arka')
       .upload(filePath, file, {
@@ -121,8 +136,17 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
       return;
     }
 
+    // Validate integer hours if Labor
+    if (isLabor) {
+      const parsedHours = parseInt(formData.hours_worked, 10);
+      if (isNaN(parsedHours) || parsedHours <= 0) {
+        setError('Please enter a valid positive whole number of hours (e.g. 1, 2, 8).');
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
-      // 1. Handle image upload: new file uploaded -> new URL; else keep existing if in edit mode
       let finalImageUrl = formData.existing_receipt_url;
       if (!isLabor && formData.receipt_image_file) {
         finalImageUrl = await uploadReceiptImage(formData.receipt_image_file);
@@ -132,7 +156,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
 
       setUploadStatus(isEditMode ? 'Updating record...' : 'Saving record...');
 
-      // 2. Build category-specific details JSONB
       let detailsJson = null;
       if (isCabinets) {
         detailsJson = {
@@ -155,7 +178,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
         date: formData.date,
         category: formData.category,
         cost_amount: isLabor ? 0 : parseFloat(formData.cost_amount || 0),
-        hours_worked: isLabor ? parseFloat(formData.hours_worked || 0) : 0,
+        hours_worked: isLabor ? parseInt(formData.hours_worked, 10) : 0,
         receipt_image_url: finalImageUrl,
         details: detailsJson
       };
@@ -241,22 +264,26 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
             </select>
           </div>
 
-          {/* 1. MANO DE OBRA / LABOR */}
+          {/* 1. MANO DE OBRA / LABOR - STRICT NATURAL NUMBERS VALIDATION */}
           {isLabor && (
             <div className="form-group slide-down">
-              <label htmlFor="hours_worked">Hours Worked</label>
+              <label htmlFor="hours_worked">
+                Hours Worked <span style={{ color: '#059669', fontSize: '0.75rem', fontWeight: 600 }}>(Whole Numbers Only: 1, 2, 8...)</span>
+              </label>
               <input
                 type="number"
-                step="0.25"
-                min="0"
+                min="1"
+                step="1"
                 id="hours_worked"
                 name="hours_worked"
                 value={formData.hours_worked}
-                onChange={handleChange}
-                placeholder="e.g. 4.5"
+                onChange={handleHoursChange}
+                onKeyDown={handleHoursKeyDown}
+                placeholder="e.g. 8"
                 required
                 autoFocus
               />
+              <small style={{ color: '#64748b' }}>Decimals and negative values are strictly disabled.</small>
             </div>
           )}
 
@@ -412,7 +439,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                 <small>
                   {formData.existing_receipt_url 
                     ? 'Leave empty to keep existing receipt, or select a new file to replace it.' 
-                    : 'Take a photo or upload receipt (Stored securely in Supabase Storage bucket: imagenes_arka)'}
+                    : 'Take a photo or upload receipt (Stored securely in Supabase Storage: imagenes_arka)'}
                 </small>
               </div>
             </>

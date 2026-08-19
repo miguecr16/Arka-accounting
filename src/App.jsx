@@ -17,30 +17,77 @@ function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '1px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: 0 }}>
+      {/* Top Studio Navbar */}
       <header style={{ 
-        textAlign: 'center', 
-        padding: '1.25rem 1rem', 
+        padding: '1.25rem 2rem', 
         backgroundColor: '#ffffff',
-        borderBottom: '1px solid #e5e7eb',
+        borderBottom: '1px solid #e2e8f0',
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.02)'
       }}>
-        <h1 
+        <div 
           onClick={handleBackToDashboard}
           style={{ 
-            margin: 0, 
-            color: '#1f2937', 
-            fontSize: '1.4rem', 
-            fontWeight: 700,
-            cursor: 'pointer',
-            letterSpacing: '-0.02em'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            cursor: 'pointer'
           }}
         >
-          Arka Design OS
-        </h1>
+          <div style={{
+            background: '#0f172a',
+            color: '#ffffff',
+            fontWeight: 800,
+            fontSize: '1rem',
+            padding: '0.35rem 0.65rem',
+            borderRadius: '8px',
+            letterSpacing: '0.05em'
+          }}>
+            ARKA
+          </div>
+          <div>
+            <h1 style={{ 
+              margin: 0, 
+              color: '#0f172a', 
+              fontSize: '1.15rem', 
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              lineHeight: 1.1
+            }}>
+              Arka Design OS
+            </h1>
+            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+              Architecture & Job Costing Studio
+            </span>
+          </div>
+        </div>
+
+        {currentView === 'project-details' && (
+          <button 
+            onClick={handleBackToDashboard}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#f1f5f9',
+              border: '1px solid #cbd5e1',
+              color: '#334155',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            ← Back to Overview
+          </button>
+        )}
       </header>
+
       <main>
         {currentView === 'dashboard' ? (
           <Dashboard onSelectProject={handleSelectProject} />
