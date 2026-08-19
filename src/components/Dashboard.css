@@ -71,10 +71,21 @@
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
-.global-kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.06);
-  border-color: #cbd5e1;
+/* Interactive KPI Card Hover Effects */
+.global-kpi-card.interactive-kpi {
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.global-kpi-card.interactive-kpi:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -3px rgba(15, 23, 42, 0.1);
+  border-color: #3b82f6;
+}
+
+.global-kpi-card.interactive-kpi:active {
+  transform: translateY(-1px);
 }
 
 .kpi-icon-wrapper {
@@ -118,7 +129,8 @@
 
 .kpi-subtext {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #2563eb;
+  font-weight: 500;
 }
 
 /* 2. Projects Section Header */
@@ -375,6 +387,67 @@
 .modal-content.wizard-modal {
   max-width: 840px;
   width: 95%;
+}
+
+/* KPI Drilldown Modal */
+.modal-content.kpi-drilldown-modal {
+  max-width: 780px;
+  width: 95%;
+}
+
+.kpi-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.kpi-modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.75rem;
+  cursor: pointer;
+  color: #64748b;
+  transition: color 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.kpi-modal-close-btn:hover {
+  color: #0f172a;
+}
+
+.kpi-modal-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.kpi-drilldown-row:hover td {
+  background-color: #f8fafc;
+}
+
+.drilldown-enter-btn {
+  background-color: #ffffff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.drilldown-enter-btn:hover {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
 }
 
 .wizard-section {
