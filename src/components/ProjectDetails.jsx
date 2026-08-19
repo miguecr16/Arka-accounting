@@ -10,6 +10,7 @@ export default function ProjectDetails({ projectId, onBack }) {
   const [changeOrders, setChangeOrders] = useState([]);
   const [activeTab, setActiveTab] = useState('expenses'); // 'expenses' | 'change_orders'
   const [loading, setLoading] = useState(true);
+  const [statusUpdating, setStatusUpdating] = useState(false);
   const [error, setError] = useState('');
   
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -72,6 +73,28 @@ export default function ProjectDetails({ projectId, onBack }) {
     }
   }, [projectId]);
 
+  // Handle live project status change
+  const handleStatusChange = async (newStatus) => {
+    try {
+      setStatusUpdating(true);
+      const { error: updateError } = await supabase
+        .from('projects')
+        .update({ status: newStatus })
+        .eq('id', projectId);
+
+      if (updateError) throw updateError;
+
+      // Update local view state immediately & re-fetch calculations
+      setProjectData((prev) => (prev ? { ...prev, status: newStatus } : prev));
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error updating project status:', err);
+      alert('Failed to update status: ' + (err.message || 'Unknown error'));
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
   const handleApproveChangeOrder = async (changeOrderId) => {
     try {
       setActionLoadingId(changeOrderId);
@@ -89,6 +112,14 @@ export default function ProjectDetails({ projectId, onBack }) {
     } finally {
       setActionLoadingId(null);
     }
+  };
+
+  const getProjectStatusBadgeClass = (status) => {
+    const s = (status || '').toLowerCase().trim();
+    if (s.includes('ejecución') || s.includes('ejecucion') || s.includes('progress')) return 'en-ejecucion';
+    if (s.includes('pausado') || s.includes('paused')) return 'pausado';
+    if (s.includes('finalizado') || s.includes('completed') || s.includes('terminado')) return 'finalizado';
+    return 'planeacion';
   };
 
   const getStatusClass = (status) => {
@@ -155,14 +186,35 @@ export default function ProjectDetails({ projectId, onBack }) {
     );
   }
 
+  const currentStatus = projectData?.status || 'Planeación';
+
   return (
     <div className="project-details-container">
-      {/* Navigation Header */}
+      {/* Navigation Header with Live Status Selector */}
       <div className="details-header-nav">
         <button className="back-btn" onClick={onBack}>
           ← Back to Dashboard
         </button>
-        <span className="status-badge">{projectData?.status || 'Planning'}</span>
+        
+        {/* Interactive Quick Status Selector */}
+        <div className="status-selector-container">
+          <label htmlFor="quick-status-select" className="status-selector-label">
+            Project Status:
+          </label>
+          <select
+            id="quick-status-select"
+            value={currentStatus}
+            disabled={statusUpdating}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            className={`status-dropdown-select ${getProjectStatusBadgeClass(currentStatus)}`}
+          >
+            <option value="Planeación">Planeación</option>
+            <option value="En Ejecución">En Ejecución</option>
+            <option value="Pausado">Pausado</option>
+            <option value="Finalizado">Finalizado</option>
+          </select>
+          {statusUpdating && <small style={{ color: '#64748b', fontSize: '0.75rem' }}>Updating...</small>}
+        </div>
       </div>
 
       <div className="project-title-area">

@@ -3,11 +3,23 @@ import './Dashboard.css';
 export default function ProjectCard({ project, onSelectProject, onEditProject }) {
   const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
+  const getStatusBadgeClass = (status) => {
+    const s = (status || '').toLowerCase().trim();
+    if (s.includes('ejecución') || s.includes('ejecucion') || s.includes('progress')) return 'en-ejecucion';
+    if (s.includes('pausado') || s.includes('paused')) return 'pausado';
+    if (s.includes('finalizado') || s.includes('completed') || s.includes('terminado')) return 'finalizado';
+    return 'planeacion';
+  };
+
+  const statusText = project.status || 'Planeación';
+
   return (
     <div className="project-card">
       <div className="project-card-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-          <div className="status-badge" style={{ margin: 0 }}>{project.status || 'Planning'}</div>
+          <div className={`status-badge ${getStatusBadgeClass(statusText)}`} style={{ margin: 0 }}>
+            {statusText}
+          </div>
           {onEditProject && (
             <button
               onClick={(e) => {

@@ -8,6 +8,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
   const [formData, setFormData] = useState({
     project_name: '',
     client_name: '',
+    status: 'Planeación',
     base_contract_value: '',
     deposit_received: '',
     project_type: 'Cocina',
@@ -59,6 +60,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
       setFormData({
         project_name: projectToEdit.project_name || '',
         client_name: projectToEdit.client_name || '',
+        status: projectToEdit.status || 'Planeación',
         base_contract_value: projectToEdit.base_contract_value !== undefined ? String(projectToEdit.base_contract_value) : '',
         deposit_received: projectToEdit.deposit_received !== undefined ? String(projectToEdit.deposit_received) : '',
         project_type: projectToEdit.project_type || 'Cocina',
@@ -211,6 +213,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
       const payload = {
         project_name: formData.project_name.trim(),
         client_name: formData.client_name.trim(),
+        status: formData.status,
         base_contract_value: isNaN(baseContract) ? 0 : baseContract,
         deposit_received: isNaN(deposit) ? 0 : deposit,
         project_type: formData.project_type,
@@ -265,7 +268,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
           <div className="wizard-section">
             <div className="wizard-section-title">1. General & Financial Baseline</div>
             
-            <div className="wizard-grid-2">
+            <div className="wizard-grid-3">
               <div className="form-group">
                 <label htmlFor="project_name">Project Name</label>
                 <input
@@ -291,6 +294,22 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   placeholder="e.g. John & Sarah Doe"
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="status">Project Status</label>
+                <select
+                  id="status"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="Planeación">Planeación</option>
+                  <option value="En Ejecución">En Ejecución</option>
+                  <option value="Pausado">Pausado</option>
+                  <option value="Finalizado">Finalizado</option>
+                </select>
               </div>
             </div>
 
