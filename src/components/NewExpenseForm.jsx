@@ -4,6 +4,7 @@ import './NewExpenseForm.css';
 
 export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
   const [loading, setLoading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState(''); // 'Uploading image...' | 'Saving record...'
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
@@ -13,7 +14,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
     category: 'Materiales',
     cost_amount: '',
     hours_worked: '',
-    receipt_image_url: null,
+    receipt_image_file: null,
     // Cabinets specific
     cabinet_provider: '',
     cabinet_model: '',
@@ -33,10 +34,44 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
-      setFormData({ ...formData, [name]: files[0] });
+      setFormData({ ...formData, receipt_image_file: files[0] || null });
     } else {
       setFormData({ ...formData, [name]: value });
     }
+  };
+
+  const uploadReceiptImage = async (file) => {
+    if (!file) return null;
+
+    // Generate unique sanitized filename
+    const fileExt = file.name.split('.').pop();
+    const cleanBaseName = file.name.substring(0, file.name.lastIndexOf('.'))
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .substring(0, 30);
+    const uniqueFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${cleanBaseName}.${fileExt}`;
+    const filePath = `receipts/${uniqueFileName}`;
+
+    setUploadStatus('Uploading image...');
+
+    const { data: uploadData, error: uploadError } = await supabase
+      .storage
+      .from('imagenes_arka')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      throw new Error(`Image upload failed: ${uploadError.message}`);
+    }
+
+    // Retrieve public URL
+    const { data: urlData } = supabase
+      .storage
+      .from('imagenes_arka')
+      .getPublicUrl(filePath);
+
+    return urlData?.publicUrl || null;
   };
 
   const handleSubmit = async (e) => {
@@ -59,12 +94,15 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
     }
 
     try {
-      let receiptPath = null;
-      if (!isLabor && formData.receipt_image_url) {
-        receiptPath = formData.receipt_image_url.name;
+      // 1. Handle file upload to Supabase Storage if an image was selected
+      let publicImageUrl = null;
+      if (!isLabor && formData.receipt_image_file) {
+        publicImageUrl = await uploadReceiptImage(formData.receipt_image_file);
       }
 
-      // Build category-specific details JSONB
+      setUploadStatus('Saving record...');
+
+      // 2. Build category-specific details JSONB
       let detailsJson = null;
       if (isCabinets) {
         detailsJson = {
@@ -88,7 +126,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
         category: formData.category,
         cost_amount: isLabor ? 0 : parseFloat(formData.cost_amount || 0),
         hours_worked: isLabor ? parseFloat(formData.hours_worked || 0) : 0,
-        receipt_image_url: receiptPath,
+        receipt_image_url: publicImageUrl,
         details: detailsJson
       };
 
@@ -105,10 +143,11 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
         }, 600);
       }
     } catch (err) {
-      console.error("Detailed Submission Error:", err);
+      console.error("Submission Error:", err);
       setError(err.message || 'An error occurred while saving the record.');
     } finally {
       setLoading(false);
+      setUploadStatus('');
     }
   };
 
@@ -318,16 +357,16 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
               )}
 
               <div className="form-group slide-down">
-                <label htmlFor="receipt_image_url">Receipt Image</label>
+                <label htmlFor="receipt_file">Receipt Image (Upload to Cloud Storage)</label>
                 <input
                   type="file"
-                  id="receipt_image_url"
-                  name="receipt_image_url"
+                  id="receipt_file"
+                  name="receipt_file"
                   accept="image/*"
                   capture="environment"
                   onChange={handleChange}
                 />
-                <small>Take a photo or upload receipt</small>
+                <small>Take a photo or upload receipt (Stored securely in Supabase Storage bucket: imagenes_arka)</small>
               </div>
             </>
           )}
@@ -339,7 +378,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose }) {
               </button>
             )}
             <button type="submit" className="submit-btn" disabled={loading} style={{ margin: 0 }}>
-              {loading ? 'Saving...' : 'Save Record'}
+              {loading ? (uploadStatus || 'Saving...') : 'Save Record'}
             </button>
           </div>
         </form>

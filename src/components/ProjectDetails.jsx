@@ -127,7 +127,6 @@ export default function ProjectDetails({ projectId, onBack }) {
       );
     }
 
-    // Generic JSON presentation for other categories
     return (
       <div style={{ fontSize: '0.8rem', color: '#4b5563' }}>
         {Object.entries(d).map(([k, v]) => `${k}: ${v}`).join(' • ')}
@@ -268,9 +267,28 @@ export default function ProjectDetails({ projectId, onBack }) {
                       <td>{item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-'}</td>
                       <td>
                         {item.receipt_image_url ? (
-                          <span title={item.receipt_image_url} style={{ color: '#2563eb', fontSize: '0.85rem' }}>
-                            📎 Attached
-                          </span>
+                          item.receipt_image_url.startsWith('http') ? (
+                            <a 
+                              href={item.receipt_image_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              style={{ 
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                color: '#2563eb', 
+                                textDecoration: 'none',
+                                fontWeight: 500,
+                                fontSize: '0.85rem'
+                              }}
+                            >
+                              📎 View Receipt ↗
+                            </a>
+                          ) : (
+                            <span style={{ color: '#2563eb', fontSize: '0.85rem' }}>
+                              📎 {item.receipt_image_url}
+                            </span>
+                          )
                         ) : (
                           <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>None</span>
                         )}
