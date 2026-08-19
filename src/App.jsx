@@ -6,21 +6,51 @@ import Auth from './components/Auth.jsx';
 
 function App() {
   const [session, setSession] = useState(null);
+  const [userRole, setUserRole] = useState('trabajador'); // 'admin' | 'trabajador'
   const [authLoading, setAuthLoading] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+
+  const fetchUserRole = async (userId) => {
+    try {
+      if (!userId) return;
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.warn('Could not fetch user profile role, defaulting to trabajador:', error.message);
+        setUserRole('trabajador');
+      } else if (profile?.role) {
+        setUserRole(profile.role.toLowerCase());
+      }
+    } catch (err) {
+      console.warn('Role fetch error:', err);
+      setUserRole('trabajador');
+    }
+  };
 
   // Initialize and listen to Supabase Auth session
   useEffect(() => {
     // 1. Check existing active session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
       setSession(existingSession);
+      if (existingSession?.user?.id) {
+        fetchUserRole(existingSession.user.id);
+      }
       setAuthLoading(false);
     });
 
     // 2. Listen to ongoing auth state changes (sign-in, sign-out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
+      if (newSession?.user?.id) {
+        fetchUserRole(newSession.user.id);
+      } else {
+        setUserRole('trabajador');
+      }
       setAuthLoading(false);
     });
 
@@ -33,6 +63,7 @@ function App() {
     try {
       await supabase.auth.signOut();
       setSession(null);
+      setUserRole('trabajador');
       setCurrentView('dashboard');
       setSelectedProjectId(null);
     } catch (err) {
@@ -75,18 +106,28 @@ function App() {
         }}>
           ARKA
         </div>
-        <p style={{ margin: 0, fontSize: '0.9rem' }}>Verifying secure session...</p>
+        <p style={{ margin: 0, fontSize: '0.9rem' }}>Verifying secure session & permissions...</p>
       </div>
     );
   }
 
   // If not authenticated, render Login/Register Auth Screen
   if (!session) {
-    return <Auth onAuthSuccess={(newSession) => setSession(newSession)} />;
+    return (
+      <Auth 
+        onAuthSuccess={(newSession) => {
+          setSession(newSession);
+          if (newSession?.user?.id) {
+            fetchUserRole(newSession.user.id);
+          }
+        }} 
+      />
+    );
   }
 
   // Authenticated Protected App
   const userEmail = session.user?.email || 'Authenticated User';
+  const isAdmin = userRole === 'admin';
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: 0 }}>
@@ -141,7 +182,7 @@ function App() {
         </div>
 
         {/* User Session & Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           {currentView === 'project-details' && (
             <button 
               onClick={handleBackToDashboard}
@@ -163,6 +204,21 @@ function App() {
               ← Back to Overview
             </button>
           )}
+
+          {/* Role Pill */}
+          <span style={{
+            backgroundColor: isAdmin ? '#0f172a' : '#f1f5f9',
+            color: isAdmin ? '#ffffff' : '#475569',
+            border: isAdmin ? '1px solid #0f172a' : '1px solid #cbd5e1',
+            padding: '0.3rem 0.7rem',
+            borderRadius: '9999px',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase'
+          }}>
+            {isAdmin ? '🛡️ Admin' : '👤 Trabajador'}
+          </span>
 
           {/* User Email Pill */}
           <div style={{
@@ -210,14 +266,18 @@ function App() {
         </div>
       </header>
 
-      {/* Main Content Area */}
+      {/* Main Content Area with Role Passed */}
       <main>
         {currentView === 'dashboard' ? (
-          <Dashboard onSelectProject={handleSelectProject} />
+          <Dashboard 
+            onSelectProject={handleSelectProject} 
+            userRole={userRole} 
+          />
         ) : (
           <ProjectDetails 
             projectId={selectedProjectId} 
             onBack={handleBackToDashboard} 
+            userRole={userRole} 
           />
         )}
       </main>

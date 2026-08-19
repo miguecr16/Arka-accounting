@@ -5,13 +5,15 @@ import NewProjectModal from './NewProjectModal.jsx';
 import KpiSummaryModal from './KpiSummaryModal.jsx';
 import './Dashboard.css';
 
-export default function Dashboard({ onSelectProject }) {
+export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [activeKpiModal, setActiveKpiModal] = useState(null); // 'profit' | 'hours' | 'active' | 'volume' | null
   const [error, setError] = useState('');
+
+  const isAdmin = userRole === 'admin';
 
   const formatCurrency = (val) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
@@ -167,6 +169,7 @@ export default function Dashboard({ onSelectProject }) {
           <h2 className="projects-heading">Client Projects</h2>
           <p className="projects-subheading">Manage job costing, specifications, and scope for each project</p>
         </div>
+        {/* Creation enabled for both roles */}
         <button className="create-btn" onClick={handleOpenCreateModal}>
           + Create New Project
         </button>
@@ -194,7 +197,7 @@ export default function Dashboard({ onSelectProject }) {
               key={project.project_id || project.id} 
               project={project} 
               onSelectProject={onSelectProject}
-              onEditProject={handleOpenEditModal}
+              onEditProject={isAdmin ? handleOpenEditModal : null}
             />
           ))}
         </div>

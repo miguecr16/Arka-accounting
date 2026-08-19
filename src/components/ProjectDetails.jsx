@@ -4,7 +4,9 @@ import NewExpenseForm from './NewExpenseForm.jsx';
 import NewChangeOrderModal from './NewChangeOrderModal.jsx';
 import './ProjectDetails.css';
 
-export default function ProjectDetails({ projectId, onBack }) {
+export default function ProjectDetails({ projectId, onBack, userRole = 'trabajador' }) {
+  const isAdmin = userRole === 'admin';
+
   const [projectData, setProjectData] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [changeOrders, setChangeOrders] = useState([]);
@@ -73,8 +75,10 @@ export default function ProjectDetails({ projectId, onBack }) {
     }
   }, [projectId]);
 
-  // Handle live project status change
+  // Handle live project status change (Admin only)
   const handleStatusChange = async (newStatus) => {
+    if (!isAdmin) return;
+
     try {
       setStatusUpdating(true);
       const { error: updateError } = await supabase
@@ -84,7 +88,6 @@ export default function ProjectDetails({ projectId, onBack }) {
 
       if (updateError) throw updateError;
 
-      // Update local view state immediately & re-fetch calculations
       setProjectData((prev) => (prev ? { ...prev, status: newStatus } : prev));
       await fetchAllData();
     } catch (err) {
@@ -96,6 +99,8 @@ export default function ProjectDetails({ projectId, onBack }) {
   };
 
   const handleApproveChangeOrder = async (changeOrderId) => {
+    if (!isAdmin) return;
+
     try {
       setActionLoadingId(changeOrderId);
       const { error: updateError } = await supabase
@@ -190,13 +195,13 @@ export default function ProjectDetails({ projectId, onBack }) {
 
   return (
     <div className="project-details-container">
-      {/* Navigation Header with Live Status Selector */}
+      {/* Navigation Header with Status Selector */}
       <div className="details-header-nav">
         <button className="back-btn" onClick={onBack}>
           ← Back to Dashboard
         </button>
         
-        {/* Interactive Quick Status Selector */}
+        {/* Status Selector (Interactive for Admin, Read-Only for Trabajador) */}
         <div className="status-selector-container">
           <label htmlFor="quick-status-select" className="status-selector-label">
             Project Status:
@@ -204,9 +209,11 @@ export default function ProjectDetails({ projectId, onBack }) {
           <select
             id="quick-status-select"
             value={currentStatus}
-            disabled={statusUpdating}
+            disabled={!isAdmin || statusUpdating}
             onChange={(e) => handleStatusChange(e.target.value)}
             className={`status-dropdown-select ${getProjectStatusBadgeClass(currentStatus)}`}
+            style={!isAdmin ? { cursor: 'default', opacity: 0.95 } : {}}
+            title={!isAdmin ? 'Status can only be modified by administrators' : 'Click to change status'}
           >
             <option value="Planeación">Planeación</option>
             <option value="En Ejecución">En Ejecución</option>
@@ -214,6 +221,7 @@ export default function ProjectDetails({ projectId, onBack }) {
             <option value="Finalizado">Finalizado</option>
           </select>
           {statusUpdating && <small style={{ color: '#64748b', fontSize: '0.75rem' }}>Updating...</small>}
+          {!isAdmin && <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>(Read-Only)</small>}
         </div>
       </div>
 
@@ -303,13 +311,13 @@ export default function ProjectDetails({ projectId, onBack }) {
                   <th>Cost Amount</th>
                   <th>Hours</th>
                   <th>Receipt</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  {isAdmin && <th style={{ textAlign: 'right' }}>Actions</th>}
                 </tr>
               </thead>
               <tbody>
                 {expenses.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="no-data-cell">
+                    <td colSpan={isAdmin ? 7 : 6} className="no-data-cell">
                       No expenses or hours logged yet for this project.
                     </td>
                   </tr>
@@ -353,18 +361,20 @@ export default function ProjectDetails({ projectId, onBack }) {
                           <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>None</span>
                         )}
                       </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <button
-                          className="table-action-edit-btn"
-                          title="Edit this expense"
-                          onClick={() => {
-                            setEditingExpense(item);
-                            setIsExpenseModalOpen(true);
-                          }}
-                        >
-                          ✏️ Edit
-                        </button>
-                      </td>
+                      {isAdmin && (
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            className="table-action-edit-btn"
+                            title="Edit this expense"
+                            onClick={() => {
+                              setEditingExpense(item);
+                              setIsExpenseModalOpen(true);
+                            }}
+                          >
+                            ✏️ Edit
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}
@@ -404,13 +414,13 @@ export default function ProjectDetails({ projectId, onBack }) {
                   <th>Description</th>
                   <th>Extra Charge to Client</th>
                   <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  {isAdmin && <th style={{ textAlign: 'right' }}>Actions</th>}
                 </tr>
               </thead>
               <tbody>
                 {changeOrders.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="no-data-cell">
+                    <td colSpan={isAdmin ? 4 : 3} className="no-data-cell">
                       No change orders created yet for this project.
                     </td>
                   </tr>
@@ -427,35 +437,37 @@ export default function ProjectDetails({ projectId, onBack }) {
                             {co.status || 'Borrador'}
                           </span>
                         </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <button
-                              className="table-action-edit-btn"
-                              title="Edit this change order"
-                              onClick={() => {
-                                setEditingChangeOrder(co);
-                                setIsChangeOrderModalOpen(true);
-                              }}
-                            >
-                              ✏️ Edit
-                            </button>
-
-                            {!isApproved && (
+                        {isAdmin && (
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
                               <button
-                                className="approve-btn"
-                                disabled={actionLoadingId === co.id}
-                                onClick={() => handleApproveChangeOrder(co.id)}
+                                className="table-action-edit-btn"
+                                title="Edit this change order"
+                                onClick={() => {
+                                  setEditingChangeOrder(co);
+                                  setIsChangeOrderModalOpen(true);
+                                }}
                               >
-                                {actionLoadingId === co.id ? 'Approving...' : '✓ Approve'}
+                                ✏️ Edit
                               </button>
-                            )}
-                            {isApproved && (
-                              <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
-                                ✓ Active
-                              </span>
-                            )}
-                          </div>
-                        </td>
+
+                              {!isApproved && (
+                                <button
+                                  className="approve-btn"
+                                  disabled={actionLoadingId === co.id}
+                                  onClick={() => handleApproveChangeOrder(co.id)}
+                                >
+                                  {actionLoadingId === co.id ? 'Approving...' : '✓ Approve'}
+                                </button>
+                              )}
+                              {isApproved && (
+                                <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
+                                  ✓ Active
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     );
                   })
@@ -466,7 +478,7 @@ export default function ProjectDetails({ projectId, onBack }) {
         </div>
       )}
 
-      {/* Modals */}
+      {/* Modals (Creation & Edit) */}
       {isExpenseModalOpen && (
         <NewExpenseForm
           projectId={projectId}

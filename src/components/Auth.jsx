@@ -10,6 +10,15 @@ export default function Auth({ onAuthSuccess }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
+  const handleToggleMode = (newMode) => {
+    setMode(newMode);
+    // Explicitly reset email and password state variables on toggle for security
+    setEmail('');
+    setPassword('');
+    setError('');
+    setMessage('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -35,18 +44,36 @@ export default function Auth({ onAuthSuccess }) {
           onAuthSuccess(data.session);
         }
       } else {
+        // Sign Up
+        const cleanEmail = email.trim();
         const { data, error: authError } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: cleanEmail,
           password
         });
 
         if (authError) throw authError;
 
+        // Insert new user profile into the `profiles` table
+        if (data?.user) {
+          try {
+            await supabase
+              .from('profiles')
+              .insert([
+                {
+                  id: data.user.id,
+                  email: cleanEmail
+                }
+              ]);
+          } catch (profileErr) {
+            console.warn('Profile insertion error (may be handled by DB trigger):', profileErr);
+          }
+        }
+
         if (data?.session && onAuthSuccess) {
           onAuthSuccess(data.session);
         } else {
-          setMessage('Account created! Please check your email for a confirmation link (if email verification is enabled in Supabase) or sign in directly.');
-          setMode('login');
+          setMessage('Account created! You can now sign in with your credentials.');
+          handleToggleMode('login');
         }
       }
     } catch (err) {
@@ -69,27 +96,19 @@ export default function Auth({ onAuthSuccess }) {
           </p>
         </div>
 
-        {/* Mode Toggle */}
+        {/* Mode Toggle with Explicit State Reset */}
         <div className="auth-mode-toggle">
           <button
             type="button"
             className={`auth-toggle-btn ${mode === 'login' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('login');
-              setError('');
-              setMessage('');
-            }}
+            onClick={() => handleToggleMode('login')}
           >
             Sign In
           </button>
           <button
             type="button"
             className={`auth-toggle-btn ${mode === 'register' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('register');
-              setError('');
-              setMessage('');
-            }}
+            onClick={() => handleToggleMode('register')}
           >
             Create Account
           </button>
@@ -138,7 +157,7 @@ export default function Auth({ onAuthSuccess }) {
         </form>
 
         <div className="auth-footer-text">
-          Protected by Supabase Row-Level Security (RLS)
+          Protected by Supabase Row-Level Security (RLS) & RBAC
         </div>
       </div>
     </div>
