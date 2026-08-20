@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { logAuditEvent } from '../utils/auditLogger';
 import './Dashboard.css';
 
 export default function NewChangeOrderModal({ projectId, onClose, onCreated, changeOrderToEdit }) {
@@ -54,12 +55,26 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
           .eq('id', changeOrderToEdit.id);
 
         if (dbError) throw dbError;
+
+        // Log audit event for Change Order update
+        await logAuditEvent({
+          action: 'Editó',
+          entity: 'Change Order',
+          details: `Actualizó Change Order: "${formData.description.trim()}" ($${charge}) - Estado: ${formData.status}`
+        });
       } else {
         const { error: dbError } = await supabase
           .from('change_orders')
           .insert([payload]);
 
         if (dbError) throw dbError;
+
+        // Log audit event for Change Order creation
+        await logAuditEvent({
+          action: 'Creó',
+          entity: 'Change Order',
+          details: `Creó Change Order: "${formData.description.trim()}" ($${charge}) - Estado: ${formData.status}`
+        });
       }
 
       onCreated();

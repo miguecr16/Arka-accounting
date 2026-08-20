@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { logAuditEvent } from '../utils/auditLogger';
 import './Dashboard.css';
 
 export default function NewProjectModal({ onClose, onProjectCreated, projectToEdit }) {
@@ -228,12 +229,26 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
           .eq('id', targetId);
 
         if (dbError) throw dbError;
+
+        // Log audit event for project edit
+        await logAuditEvent({
+          action: 'Editó',
+          entity: 'Proyecto',
+          details: `Actualizó proyecto "${formData.project_name.trim()}" (Cliente: ${formData.client_name.trim()}, Tipo: ${formData.project_type}, Valor: $${baseContract})`
+        });
       } else {
         const { error: dbError } = await supabase
           .from('projects')
           .insert([payload]);
 
         if (dbError) throw dbError;
+
+        // Log audit event for project creation
+        await logAuditEvent({
+          action: 'Creó',
+          entity: 'Proyecto',
+          details: `Creó nuevo proyecto "${formData.project_name.trim()}" (Cliente: ${formData.client_name.trim()}, Tipo: ${formData.project_type}, Valor: $${baseContract})`
+        });
       }
 
       onProjectCreated();

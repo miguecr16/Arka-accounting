@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { logAuditEvent } from '../utils/auditLogger';
 import './NewExpenseForm.css';
 
 export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseToEdit }) {
@@ -73,13 +74,11 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
   // Strict Natural Number (positive integer) handler for hours_worked
   const handleHoursChange = (e) => {
     const rawVal = e.target.value;
-    // Strip everything that isn't a digit (0-9)
     const sanitizedVal = rawVal.replace(/[^0-9]/g, '');
     setFormData((prev) => ({ ...prev, hours_worked: sanitizedVal }));
   };
 
   const handleHoursKeyDown = (e) => {
-    // Block decimal point, negative sign, exponent, and comma
     if (['.', ',', 'e', 'E', '-', '+'].includes(e.key)) {
       e.preventDefault();
     }
@@ -173,12 +172,15 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
         };
       }
 
+      const costAmount = isLabor ? 0 : parseFloat(formData.cost_amount || 0);
+      const hoursWorked = isLabor ? parseInt(formData.hours_worked, 10) : 0;
+
       const payload = {
         project_id: targetProjectId,
         date: formData.date,
         category: formData.category,
-        cost_amount: isLabor ? 0 : parseFloat(formData.cost_amount || 0),
-        hours_worked: isLabor ? parseInt(formData.hours_worked, 10) : 0,
+        cost_amount: costAmount,
+        hours_worked: hoursWorked,
         receipt_image_url: finalImageUrl,
         details: detailsJson
       };
@@ -190,12 +192,30 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
           .eq('id', expenseToEdit.id);
 
         if (dbError) throw dbError;
+
+        // Log audit event for expense update
+        await logAuditEvent({
+          action: 'Editó',
+          entity: isLabor ? 'Mano de Obra' : 'Gasto',
+          details: isLabor 
+            ? `Editó horas de Mano de Obra: ${hoursWorked} hrs (Fecha: ${formData.date})`
+            : `Editó gasto de ${formData.category}: $${costAmount} (Fecha: ${formData.date}${detailsJson?.provider ? `, Proveedor: ${detailsJson.provider}` : ''})`
+        });
       } else {
         const { error: dbError } = await supabase
           .from('expenses_and_hours')
           .insert([payload]);
 
         if (dbError) throw dbError;
+
+        // Log audit event for expense creation
+        await logAuditEvent({
+          action: 'Creó',
+          entity: isLabor ? 'Mano de Obra' : 'Gasto',
+          details: isLabor 
+            ? `Registró ${hoursWorked} hrs de Mano de Obra (Fecha: ${formData.date})`
+            : `Registró gasto de ${formData.category}: $${costAmount} (Fecha: ${formData.date}${detailsJson?.provider ? `, Proveedor: ${detailsJson.provider}` : ''})`
+        });
       }
 
       setSuccess(true);

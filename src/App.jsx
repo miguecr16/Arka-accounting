@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import Dashboard from './components/Dashboard.jsx';
 import ProjectDetails from './components/ProjectDetails.jsx';
+import TeamSettings from './components/TeamSettings.jsx';
 import Auth from './components/Auth.jsx';
 
 function App() {
   const [session, setSession] = useState(null);
   const [userRole, setUserRole] = useState('trabajador'); // 'admin' | 'trabajador'
   const [authLoading, setAuthLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard');
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'project-details' | 'team-settings'
   const [selectedProjectId, setSelectedProjectId] = useState(null);
 
   const fetchUserRole = async (userId) => {
@@ -79,6 +80,11 @@ function App() {
   const handleBackToDashboard = () => {
     setSelectedProjectId(null);
     setCurrentView('dashboard');
+  };
+
+  const handleOpenTeamSettings = () => {
+    setSelectedProjectId(null);
+    setCurrentView('team-settings');
   };
 
   // Prevent flash while loading session
@@ -181,9 +187,10 @@ function App() {
           </div>
         </div>
 
-        {/* User Session & Actions */}
+        {/* User Session & Navigation Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          {currentView === 'project-details' && (
+          {/* Back button when inside subviews */}
+          {currentView !== 'dashboard' && (
             <button 
               onClick={handleBackToDashboard}
               style={{
@@ -201,7 +208,31 @@ function App() {
                 transition: 'all 0.2s'
               }}
             >
-              ← Back to Overview
+              ← Back to Projects
+            </button>
+          )}
+
+          {/* Admin Organization & Activity Link */}
+          {isAdmin && currentView !== 'team-settings' && (
+            <button
+              onClick={handleOpenTeamSettings}
+              title="View Organization & Activity History"
+              style={{
+                padding: '0.45rem 0.9rem',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                color: '#0f172a',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s'
+              }}
+            >
+              🏢 Organization
             </button>
           )}
 
@@ -266,18 +297,25 @@ function App() {
         </div>
       </header>
 
-      {/* Main Content Area with Role Passed */}
+      {/* Main Content Area */}
       <main>
-        {currentView === 'dashboard' ? (
+        {currentView === 'dashboard' && (
           <Dashboard 
             onSelectProject={handleSelectProject} 
             userRole={userRole} 
           />
-        ) : (
+        )}
+        {currentView === 'project-details' && (
           <ProjectDetails 
             projectId={selectedProjectId} 
             onBack={handleBackToDashboard} 
             userRole={userRole} 
+          />
+        )}
+        {currentView === 'team-settings' && (
+          <TeamSettings
+            onBack={handleBackToDashboard}
+            userRole={userRole}
           />
         )}
       </main>

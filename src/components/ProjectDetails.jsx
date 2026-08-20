@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { logAuditEvent } from '../utils/auditLogger';
 import NewExpenseForm from './NewExpenseForm.jsx';
 import NewChangeOrderModal from './NewChangeOrderModal.jsx';
 import './ProjectDetails.css';
@@ -88,6 +89,13 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
 
       if (updateError) throw updateError;
 
+      // Log audit event for status change
+      await logAuditEvent({
+        action: 'Actualizó Estado',
+        entity: 'Proyecto',
+        details: `Cambió estado a "${newStatus}" en proyecto "${projectData?.project_name || projectId}"`
+      });
+
       setProjectData((prev) => (prev ? { ...prev, status: newStatus } : prev));
       await fetchAllData();
     } catch (err) {
@@ -98,7 +106,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     }
   };
 
-  const handleApproveChangeOrder = async (changeOrderId) => {
+  const handleApproveChangeOrder = async (changeOrderId, description, charge) => {
     if (!isAdmin) return;
 
     try {
@@ -109,6 +117,13 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
         .eq('id', changeOrderId);
 
       if (updateError) throw updateError;
+
+      // Log audit event for Change Order approval
+      await logAuditEvent({
+        action: 'Aprobó',
+        entity: 'Change Order',
+        details: `Aprobó Change Order "${description || '#' + changeOrderId}" ($${charge || 0}) en proyecto "${projectData?.project_name}"`
+      });
 
       await fetchAllData();
     } catch (err) {
@@ -455,7 +470,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                 <button
                                   className="approve-btn"
                                   disabled={actionLoadingId === co.id}
-                                  onClick={() => handleApproveChangeOrder(co.id)}
+                                  onClick={() => handleApproveChangeOrder(co.id, co.description, co.extra_charge_to_client)}
                                 >
                                   {actionLoadingId === co.id ? 'Approving...' : '✓ Approve'}
                                 </button>
