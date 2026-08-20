@@ -89,8 +89,24 @@ export default function Auth({ onAuthSuccess }) {
       <div className="auth-card">
         {/* Brand Header */}
         <div className="auth-brand-header">
-          <div className="auth-logo-badge">ARKA</div>
-          <h2 className="auth-brand-title">Arka Design OS</h2>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#0f172a',
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            marginBottom: '1rem',
+            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)'
+          }}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 3L21 21H16.5L12 11.5L7.5 21H3L12 3Z" fill="#ffffff"/>
+              <path d="M7 16H17" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
+
+          <h2 className="auth-brand-title">Arka Design Group</h2>
           <p className="auth-brand-subtitle">
             {mode === 'login' ? 'Sign in to your architecture & job costing studio' : 'Create an account for your studio'}
           </p>
@@ -126,7 +142,7 @@ export default function Auth({ onAuthSuccess }) {
               id="auth-email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="architect@arkadesign.com"
+              placeholder="architect@arkadesigngroup.com"
               required
               autoFocus
             />
