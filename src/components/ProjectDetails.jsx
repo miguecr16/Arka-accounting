@@ -52,15 +52,17 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       if (expenseError) throw expenseError;
       setExpenses(expenseData || []);
 
-      // 3. Fetch change orders for this project
-      const { data: coData, error: coError } = await supabase
-        .from('change_orders')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('id', { ascending: false });
+      // 3. Fetch change orders for this project (if admin)
+      if (isAdmin) {
+        const { data: coData, error: coError } = await supabase
+          .from('change_orders')
+          .select('*')
+          .eq('project_id', projectId)
+          .order('id', { ascending: false });
 
-      if (coError) throw coError;
-      setChangeOrders(coData || []);
+        if (coError) throw coError;
+        setChangeOrders(coData || []);
+      }
 
     } catch (err) {
       console.error('Error fetching project details:', err);
@@ -74,7 +76,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     if (projectId) {
       fetchAllData();
     }
-  }, [projectId]);
+  }, [projectId, isAdmin]);
 
   // Handle live project status change (Admin only)
   const handleStatusChange = async (newStatus) => {
@@ -245,63 +247,67 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
         <p>Client: <strong>{projectData?.client_name}</strong></p>
       </div>
 
-      {/* Financial KPI Summary Banner */}
-      <div className="financial-banner">
-        <h3 className="banner-title">Financial Summary & Job Costing</h3>
-        <div className="kpi-grid">
-          <div className="kpi-card">
-            <span>Base Contract</span>
-            <strong>{formatCurrency(projectData?.base_contract_value)}</strong>
-          </div>
-          <div className="kpi-card">
-            <span>Approved Changes</span>
-            <strong>{formatCurrency(projectData?.approved_change_orders)}</strong>
-          </div>
-          <div className="kpi-card highlight">
-            <span>Final Contract Value</span>
-            <strong>{formatCurrency(projectData?.final_contract_value)}</strong>
-          </div>
-          <div className="kpi-card">
-            <span>Total Direct Costs</span>
-            <strong>{formatCurrency(projectData?.total_direct_costs)}</strong>
-          </div>
-          <div className="kpi-card">
-            <span>Total Hours Logged</span>
-            <strong>{projectData?.total_hours || 0} hrs</strong>
-          </div>
-          <div className="kpi-card highlight-profit">
-            <span>Gross Profit</span>
-            <strong>{formatCurrency(projectData?.gross_profit)}</strong>
-          </div>
-          <div className="kpi-card highlight-profit">
-            <span>Gross Margin</span>
-            <strong>
-              {projectData?.gross_margin_percentage
-                ? `${parseFloat(projectData.gross_margin_percentage).toFixed(2)}%`
-                : '0%'}
-            </strong>
+      {/* Financial KPI Summary Banner (STRICTLY ADMIN ONLY) */}
+      {isAdmin && (
+        <div className="financial-banner">
+          <h3 className="banner-title">Financial Summary & Job Costing</h3>
+          <div className="kpi-grid">
+            <div className="kpi-card">
+              <span>Base Contract</span>
+              <strong>{formatCurrency(projectData?.base_contract_value)}</strong>
+            </div>
+            <div className="kpi-card">
+              <span>Approved Changes</span>
+              <strong>{formatCurrency(projectData?.approved_change_orders)}</strong>
+            </div>
+            <div className="kpi-card highlight">
+              <span>Final Contract Value</span>
+              <strong>{formatCurrency(projectData?.final_contract_value)}</strong>
+            </div>
+            <div className="kpi-card">
+              <span>Total Direct Costs</span>
+              <strong>{formatCurrency(projectData?.total_direct_costs)}</strong>
+            </div>
+            <div className="kpi-card">
+              <span>Total Hours Logged</span>
+              <strong>{projectData?.total_hours || 0} hrs</strong>
+            </div>
+            <div className="kpi-card highlight-profit">
+              <span>Gross Profit</span>
+              <strong>{formatCurrency(projectData?.gross_profit)}</strong>
+            </div>
+            <div className="kpi-card highlight-profit">
+              <span>Gross Margin</span>
+              <strong>
+                {projectData?.gross_margin_percentage
+                  ? `${parseFloat(projectData.gross_margin_percentage).toFixed(2)}%`
+                  : '0%'}
+              </strong>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Tabs Navigation */}
-      <div className="tabs-navigation">
-        <button 
-          className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`}
-          onClick={() => setActiveTab('expenses')}
-        >
-          Expenses & Hours <span className="tab-count">{expenses.length}</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'change_orders' ? 'active' : ''}`}
-          onClick={() => setActiveTab('change_orders')}
-        >
-          Change Orders (Extras) <span className="tab-count">{changeOrders.length}</span>
-        </button>
-      </div>
+      {/* Tabs Navigation (Admin only; workers focus on Expenses) */}
+      {isAdmin && (
+        <div className="tabs-navigation">
+          <button 
+            className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`}
+            onClick={() => setActiveTab('expenses')}
+          >
+            Expenses & Hours <span className="tab-count">{expenses.length}</span>
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'change_orders' ? 'active' : ''}`}
+            onClick={() => setActiveTab('change_orders')}
+          >
+            Change Orders (Extras) <span className="tab-count">{changeOrders.length}</span>
+          </button>
+        </div>
+      )}
 
-      {/* TAB 1: Expenses & Hours */}
-      {activeTab === 'expenses' && (
+      {/* TAB 1: Expenses & Hours (Visible to both Admin and Trabajador) */}
+      {(activeTab === 'expenses' || !isAdmin) && (
         <div>
           <div className="section-header-actions">
             <h3>Expense & Hours History</h3>
@@ -399,8 +405,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
         </div>
       )}
 
-      {/* TAB 2: Change Orders (Extras) */}
-      {activeTab === 'change_orders' && (
+      {/* TAB 2: Change Orders (Extras) (Strictly Admin Only) */}
+      {isAdmin && activeTab === 'change_orders' && (
         <div>
           <div className="info-callout">
             <span>ℹ️</span>
@@ -429,13 +435,13 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                   <th>Description</th>
                   <th>Extra Charge to Client</th>
                   <th>Status</th>
-                  {isAdmin && <th style={{ textAlign: 'right' }}>Actions</th>}
+                  <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {changeOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={isAdmin ? 4 : 3} className="no-data-cell">
+                    <td colSpan="4" className="no-data-cell">
                       No change orders created yet for this project.
                     </td>
                   </tr>
@@ -452,37 +458,35 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                             {co.status || 'Borrador'}
                           </span>
                         </td>
-                        {isAdmin && (
-                          <td style={{ textAlign: 'right' }}>
-                            <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
-                              <button
-                                className="table-action-edit-btn"
-                                title="Edit this change order"
-                                onClick={() => {
-                                  setEditingChangeOrder(co);
-                                  setIsChangeOrderModalOpen(true);
-                                }}
-                              >
-                                ✏️ Edit
-                              </button>
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <button
+                              className="table-action-edit-btn"
+                              title="Edit this change order"
+                              onClick={() => {
+                                setEditingChangeOrder(co);
+                                setIsChangeOrderModalOpen(true);
+                              }}
+                            >
+                              ✏️ Edit
+                            </button>
 
-                              {!isApproved && (
-                                <button
-                                  className="approve-btn"
-                                  disabled={actionLoadingId === co.id}
-                                  onClick={() => handleApproveChangeOrder(co.id, co.description, co.extra_charge_to_client)}
-                                >
-                                  {actionLoadingId === co.id ? 'Approving...' : '✓ Approve'}
-                                </button>
-                              )}
-                              {isApproved && (
-                                <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
-                                  ✓ Active
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                        )}
+                            {!isApproved && (
+                              <button
+                                className="approve-btn"
+                                disabled={actionLoadingId === co.id}
+                                onClick={() => handleApproveChangeOrder(co.id, co.description, co.extra_charge_to_client)}
+                              >
+                                {actionLoadingId === co.id ? 'Approving...' : '✓ Approve'}
+                              </button>
+                            )}
+                            {isApproved && (
+                              <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
+                                ✓ Active
+                              </span>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     );
                   })

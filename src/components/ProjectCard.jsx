@@ -1,6 +1,7 @@
 import './Dashboard.css';
 
-export default function ProjectCard({ project, onSelectProject, onEditProject }) {
+export default function ProjectCard({ project, onSelectProject, onEditProject, userRole = 'trabajador' }) {
+  const isAdmin = userRole === 'admin';
   const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
   const getStatusBadgeClass = (status) => {
@@ -20,7 +21,7 @@ export default function ProjectCard({ project, onSelectProject, onEditProject })
           <div className={`status-badge ${getStatusBadgeClass(statusText)}`} style={{ margin: 0 }}>
             {statusText}
           </div>
-          {onEditProject && (
+          {isAdmin && onEditProject && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -37,19 +38,23 @@ export default function ProjectCard({ project, onSelectProject, onEditProject })
         <p className="client-name">{project.client_name}</p>
       </div>
       
-      <div className="project-metrics">
-        <div className="metric">
-          <span>Gross Profit</span>
-          <strong>{formatCurrency(project.gross_profit)}</strong>
+      {/* Financial Metrics (Strictly Admin Only) */}
+      {isAdmin && (
+        <div className="project-metrics">
+          <div className="metric">
+            <span>Gross Profit</span>
+            <strong>{formatCurrency(project.gross_profit)}</strong>
+          </div>
+          <div className="metric">
+            <span>Margin</span>
+            <strong>{project.gross_margin_percentage ? `${parseFloat(project.gross_margin_percentage).toFixed(2)}%` : '0%'}</strong>
+          </div>
         </div>
-        <div className="metric">
-          <span>Margin</span>
-          <strong>{project.gross_margin_percentage ? `${parseFloat(project.gross_margin_percentage).toFixed(2)}%` : '0%'}</strong>
-        </div>
-      </div>
+      )}
 
       <button 
         className="enter-btn"
+        style={!isAdmin ? { marginTop: '1.25rem' } : {}}
         onClick={() => onSelectProject(project.project_id || project.id)}
       >
         Enter Project / Log Data

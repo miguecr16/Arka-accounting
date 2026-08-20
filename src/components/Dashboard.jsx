@@ -41,7 +41,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
     fetchProjects();
   }, []);
 
-  // Global Company Overview calculations
+  // Global Company Overview calculations (Admin only)
   const totalCompanyProfit = projects.reduce(
     (acc, p) => acc + (parseFloat(p.gross_profit) || 0),
     0
@@ -94,82 +94,87 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
 
   return (
     <div className="dashboard-container">
-      {/* 1. GLOBAL COMPANY OVERVIEW (INTERACTIVE EXECUTIVE KPI BANNER) */}
-      <section className="global-overview-section">
-        <div className="global-overview-header">
-          <div>
-            <h2 className="overview-title">Global Company Overview</h2>
-            <p className="overview-subtitle">Click any card to drill down into project-level breakdowns</p>
-          </div>
-          <div className="studio-pill">Architecture & Interior Design OS</div>
-        </div>
-
-        <div className="global-kpi-grid">
-          {/* KPI 1: Profit */}
-          <div 
-            className="global-kpi-card profit-card interactive-kpi"
-            onClick={() => setActiveKpiModal('profit')}
-            title="Click to view Profit drill-down"
-          >
-            <div className="kpi-icon-wrapper">💰</div>
-            <div className="kpi-content">
-              <span className="kpi-label">Total Company Profit</span>
-              <strong className="kpi-value profit-value">{formatCurrency(totalCompanyProfit)}</strong>
-              <small className="kpi-subtext">Click to view breakdown ↗</small>
+      {/* 1. GLOBAL COMPANY OVERVIEW (STRICTLY ADMIN ONLY) */}
+      {isAdmin && (
+        <section className="global-overview-section">
+          <div className="global-overview-header">
+            <div>
+              <h2 className="overview-title">Global Company Overview</h2>
+              <p className="overview-subtitle">Click any card to drill down into project-level breakdowns</p>
             </div>
+            <div className="studio-pill">Architecture & Interior Design OS</div>
           </div>
 
-          {/* KPI 2: Hours */}
-          <div 
-            className="global-kpi-card hours-card interactive-kpi"
-            onClick={() => setActiveKpiModal('hours')}
-            title="Click to view Hours drill-down"
-          >
-            <div className="kpi-icon-wrapper">⏱️</div>
-            <div className="kpi-content">
-              <span className="kpi-label">Total Hours Worked</span>
-              <strong className="kpi-value">{totalCompanyHours} hrs</strong>
-              <small className="kpi-subtext">Click to view breakdown ↗</small>
+          <div className="global-kpi-grid">
+            {/* KPI 1: Profit */}
+            <div 
+              className="global-kpi-card profit-card interactive-kpi"
+              onClick={() => setActiveKpiModal('profit')}
+              title="Click to view Profit drill-down"
+            >
+              <div className="kpi-icon-wrapper">💰</div>
+              <div className="kpi-content">
+                <span className="kpi-label">Total Company Profit</span>
+                <strong className="kpi-value profit-value">{formatCurrency(totalCompanyProfit)}</strong>
+                <small className="kpi-subtext">Click to view breakdown ↗</small>
+              </div>
             </div>
-          </div>
 
-          {/* KPI 3: Active Projects */}
-          <div 
-            className="global-kpi-card active-card interactive-kpi"
-            onClick={() => setActiveKpiModal('active')}
-            title="Click to view Active Projects list"
-          >
-            <div className="kpi-icon-wrapper">🏗️</div>
-            <div className="kpi-content">
-              <span className="kpi-label">Active Projects</span>
-              <strong className="kpi-value">{activeProjectsCount}</strong>
-              <small className="kpi-subtext">Click to view active list ↗</small>
+            {/* KPI 2: Hours */}
+            <div 
+              className="global-kpi-card hours-card interactive-kpi"
+              onClick={() => setActiveKpiModal('hours')}
+              title="Click to view Hours drill-down"
+            >
+              <div className="kpi-icon-wrapper">⏱️</div>
+              <div className="kpi-content">
+                <span className="kpi-label">Total Hours Worked</span>
+                <strong className="kpi-value">{totalCompanyHours} hrs</strong>
+                <small className="kpi-subtext">Click to view breakdown ↗</small>
+              </div>
             </div>
-          </div>
 
-          {/* KPI 4: Contract Volume */}
-          <div 
-            className="global-kpi-card volume-card interactive-kpi"
-            onClick={() => setActiveKpiModal('volume')}
-            title="Click to view Contract Volume breakdown"
-          >
-            <div className="kpi-icon-wrapper">📈</div>
-            <div className="kpi-content">
-              <span className="kpi-label">Total Contract Volume</span>
-              <strong className="kpi-value">{formatCurrency(totalContractVolume)}</strong>
-              <small className="kpi-subtext">Click to view breakdown ↗</small>
+            {/* KPI 3: Active Projects */}
+            <div 
+              className="global-kpi-card active-card interactive-kpi"
+              onClick={() => setActiveKpiModal('active')}
+              title="Click to view Active Projects list"
+            >
+              <div className="kpi-icon-wrapper">🏗️</div>
+              <div className="kpi-content">
+                <span className="kpi-label">Active Projects</span>
+                <strong className="kpi-value">{activeProjectsCount}</strong>
+                <small className="kpi-subtext">Click to view active list ↗</small>
+              </div>
+            </div>
+
+            {/* KPI 4: Contract Volume */}
+            <div 
+              className="global-kpi-card volume-card interactive-kpi"
+              onClick={() => setActiveKpiModal('volume')}
+              title="Click to view Contract Volume breakdown"
+            >
+              <div className="kpi-icon-wrapper">📈</div>
+              <div className="kpi-content">
+                <span className="kpi-label">Total Contract Volume</span>
+                <strong className="kpi-value">{formatCurrency(totalContractVolume)}</strong>
+                <small className="kpi-subtext">Click to view breakdown ↗</small>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 2. PROJECTS SECTION */}
       <div className="dashboard-header">
         <div>
           <h2 className="projects-heading">Client Projects</h2>
-          <p className="projects-subheading">Manage job costing, specifications, and scope for each project</p>
+          <p className="projects-subheading">
+            {isAdmin 
+              ? 'Manage job costing, specifications, and scope for each project' 
+              : 'Select a project to view details and log field labor or expenses'}
+          </p>
         </div>
-        {/* Creation enabled for both roles */}
         <button className="create-btn" onClick={handleOpenCreateModal}>
           + Create New Project
         </button>
@@ -179,7 +184,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
 
       {loading ? (
         <div className="loading-state">
-          <p>Loading projects & financial view...</p>
+          <p>Loading projects...</p>
         </div>
       ) : projects.length === 0 ? (
         <div className="empty-state-card">
@@ -198,6 +203,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               project={project} 
               onSelectProject={onSelectProject}
               onEditProject={isAdmin ? handleOpenEditModal : null}
+              userRole={userRole}
             />
           ))}
         </div>
@@ -215,8 +221,8 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
         />
       )}
 
-      {/* KPI Summary Drill-Down Modal */}
-      {activeKpiModal && (
+      {/* KPI Summary Drill-Down Modal (Admin only) */}
+      {isAdmin && activeKpiModal && (
         <KpiSummaryModal
           kpiType={activeKpiModal}
           projects={projects}
