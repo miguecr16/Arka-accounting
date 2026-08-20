@@ -100,22 +100,16 @@ function App() {
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
         color: '#64748b'
       }}>
-        <div style={{
-          background: '#0f172a',
-          width: '48px',
-          height: '48px',
-          borderRadius: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '1rem',
-          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)'
-        }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 3L21 21H16.5L12 11.5L7.5 21H3L12 3Z" fill="#ffffff"/>
-            <path d="M7 16H17" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </div>
+        <img 
+          src="/arka-logo.png" 
+          alt="Arka Design Group" 
+          style={{
+            height: '76px',
+            maxWidth: '220px',
+            objectFit: 'contain',
+            marginBottom: '1.25rem'
+          }}
+        />
         <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500 }}>Verifying secure session & permissions...</p>
       </div>
     );
@@ -141,9 +135,9 @@ function App() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: 0 }}>
-      {/* Top Studio Navbar with Arka Design Group Branding */}
+      {/* Top Studio Navbar with Official Golden Arka Design Group Logo */}
       <header style={{ 
-        padding: '1.1rem 2rem', 
+        padding: '0.85rem 2rem', 
         backgroundColor: '#ffffff',
         borderBottom: '1px solid #e2e8f0',
         display: 'flex',
@@ -153,49 +147,25 @@ function App() {
         flexWrap: 'wrap',
         gap: '1rem'
       }}>
-        {/* Brand */}
+        {/* Official Brand Logo */}
         <div 
           onClick={handleBackToDashboard}
           style={{ 
             display: 'flex',
             alignItems: 'center',
-            gap: '0.85rem',
             cursor: 'pointer'
           }}
+          title="Arka Design Group - Home"
         >
-          {/* Architectural Geometric Icon */}
-          <div style={{
-            background: '#0f172a',
-            width: '38px',
-            height: '38px',
-            borderRadius: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.15)',
-            flexShrink: 0
-          }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 3L21 21H16.5L12 11.5L7.5 21H3L12 3Z" fill="#ffffff"/>
-              <path d="M7 16H17" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </div>
-
-          <div>
-            <h1 style={{ 
-              margin: 0, 
-              color: '#0f172a', 
-              fontSize: '1.2rem', 
-              fontWeight: 800,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.15
-            }}>
-              Arka Design Group
-            </h1>
-            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500, letterSpacing: '0.01em' }}>
-              Architecture & Job Costing Operating System
-            </span>
-          </div>
+          <img 
+            src="/arka-logo.png" 
+            alt="Arka Design Group" 
+            style={{
+              height: '54px',
+              maxWidth: '180px',
+              objectFit: 'contain'
+            }}
+          />
         </div>
 
         {/* User Session & Navigation Actions */}

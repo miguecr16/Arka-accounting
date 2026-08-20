@@ -87,26 +87,18 @@ export default function Auth({ onAuthSuccess }) {
   return (
     <div className="auth-page-wrapper">
       <div className="auth-card">
-        {/* Brand Header */}
+        {/* Official Brand Header with Golden Logo */}
         <div className="auth-brand-header">
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#0f172a',
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            marginBottom: '1rem',
-            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)'
-          }}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 3L21 21H16.5L12 11.5L7.5 21H3L12 3Z" fill="#ffffff"/>
-              <path d="M7 16H17" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </div>
-
-          <h2 className="auth-brand-title">Arka Design Group</h2>
+          <img 
+            src="/arka-logo.png" 
+            alt="Arka Design Group" 
+            style={{
+              height: '92px',
+              maxWidth: '240px',
+              objectFit: 'contain',
+              marginBottom: '0.75rem'
+            }}
+          />
           <p className="auth-brand-subtitle">
             {mode === 'login' ? 'Sign in to your architecture & job costing studio' : 'Create an account for your studio'}
           </p>
