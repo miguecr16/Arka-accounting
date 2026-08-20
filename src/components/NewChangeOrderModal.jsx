@@ -1,26 +1,25 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import './Dashboard.css';
 
 export default function NewChangeOrderModal({ projectId, onClose, onCreated, changeOrderToEdit }) {
+  const { t } = useLanguage();
   const isEditMode = !!changeOrderToEdit;
 
-  const [formData, setFormData] = useState({
-    description: '',
-    extra_charge_to_client: '',
-    status: 'Borrador'
-  });
+  const [description, setDescription] = useState('');
+  const [extraCharge, setExtraCharge] = useState('');
+  const [status, setStatus] = useState('Borrador');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Populate data when editing
   useEffect(() => {
     if (changeOrderToEdit) {
-      setFormData({
-        description: changeOrderToEdit.description || '',
-        extra_charge_to_client: changeOrderToEdit.extra_charge_to_client !== undefined ? String(changeOrderToEdit.extra_charge_to_client) : '',
-        status: changeOrderToEdit.status || 'Borrador'
-      });
+      setDescription(changeOrderToEdit.description || '');
+      setExtraCharge(changeOrderToEdit.extra_charge_to_client !== undefined ? String(changeOrderToEdit.extra_charge_to_client) : '');
+      setStatus(changeOrderToEdit.status || 'Borrador');
     }
   }, [changeOrderToEdit]);
 
@@ -29,24 +28,14 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
     setLoading(true);
     setError('');
 
-    if (!projectId && !isEditMode) {
-      setError('Project reference missing.');
-      setLoading(false);
-      return;
-    }
-
     try {
-      const charge = parseFloat(formData.extra_charge_to_client || 0);
-
+      const charge = parseFloat(extraCharge);
       const payload = {
-        description: formData.description.trim(),
+        project_id: projectId,
+        description: description.trim(),
         extra_charge_to_client: isNaN(charge) ? 0 : charge,
-        status: formData.status
+        status
       };
-
-      if (!isEditMode) {
-        payload.project_id = projectId;
-      }
 
       if (isEditMode) {
         const { error: dbError } = await supabase
@@ -56,11 +45,11 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
 
         if (dbError) throw dbError;
 
-        // Log audit event for Change Order update
+        // Log audit event for Change Order edit
         await logAuditEvent({
           action: 'Editó',
           entity: 'Change Order',
-          details: `Actualizó Change Order: "${formData.description.trim()}" ($${charge}) - Estado: ${formData.status}`
+          details: `Actualizó Change Order #${changeOrderToEdit.id}: "${description.trim()}" ($${payload.extra_charge_to_client}, ${status})`
         });
       } else {
         const { error: dbError } = await supabase
@@ -73,7 +62,7 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
         await logAuditEvent({
           action: 'Creó',
           entity: 'Change Order',
-          details: `Creó Change Order: "${formData.description.trim()}" ($${charge}) - Estado: ${formData.status}`
+          details: `Creó Change Order: "${description.trim()}" ($${payload.extra_charge_to_client}, ${status}) en proyecto ID #${projectId}`
         });
       }
 
@@ -90,8 +79,8 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
     <div className="modal-overlay">
       <div className="modal-content">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ margin: 0 }}>
-            {isEditMode ? 'Edit Change Order (Extra)' : 'New Change Order (Extra)'}
+          <h3 style={{ margin: 0, fontSize: '1.35rem' }}>
+            {isEditMode ? t('changeOrderForm.modalTitleEdit') : t('changeOrderForm.modalTitleNew')}
           </h3>
           <button 
             type="button" 
@@ -106,63 +95,57 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
 
         <form onSubmit={handleSubmit} className="expense-form">
           <div className="form-group">
-            <label htmlFor="description">Description / Scope of Work</label>
+            <label htmlFor="description">{t('changeOrderForm.descriptionLabel')}</label>
             <textarea
               id="description"
               rows={3}
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="e.g. Added custom backsplash tiling in master bathroom"
-              style={{
-                padding: '0.75rem',
-                borderRadius: '8px',
-                border: '1px solid #d1d5db',
-                fontFamily: 'inherit',
-                fontSize: '0.95rem',
-                resize: 'vertical'
-              }}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('changeOrderForm.descriptionPlaceholder')}
               required
               autoFocus
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="extra_charge">Extra Charge to Client ($)</label>
+            <label htmlFor="extra_charge">{t('changeOrderForm.extraChargeLabel')}</label>
             <input
               type="number"
               step="0.01"
               min="0"
               id="extra_charge"
-              value={formData.extra_charge_to_client}
-              onChange={(e) => setFormData({ ...formData, extra_charge_to_client: e.target.value })}
-              placeholder="e.g. 850.00"
+              value={extraCharge}
+              onChange={(e) => setExtraCharge(e.target.value)}
+              placeholder="0.00"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="status">Status</label>
+            <label htmlFor="status">{t('changeOrderForm.statusLabel')}</label>
             <select
               id="status"
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
               required
             >
-              <option value="Borrador">Borrador (Draft)</option>
-              <option value="Aprobado">Aprobado (Approved)</option>
-              <option value="Rechazado">Rechazado (Rejected)</option>
+              <option value="Borrador">{t('changeOrderForm.statusBorrador')}</option>
+              <option value="Aprobado">{t('changeOrderForm.statusAprobado')}</option>
+              <option value="Rechazado">{t('changeOrderForm.statusRechazado')}</option>
             </select>
             <small style={{ color: '#6b7280', fontSize: '0.8rem' }}>
-              Only <strong>Aprobado</strong> items will increase the Final Contract Value in the header.
+              {t('changeOrderForm.statusHint')}
             </small>
           </div>
 
-          <div className="modal-actions" style={{ marginTop: '1.5rem' }}>
+          <div className="modal-actions">
             <button type="button" className="cancel-btn" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </button>
-            <button type="submit" className="submit-btn" disabled={loading} style={{ margin: 0 }}>
-              {loading ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Change Order' : 'Save Change Order')}
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading 
+                ? (isEditMode ? t('common.saving') : t('common.saving')) 
+                : (isEditMode ? t('changeOrderForm.updateBtn') : t('changeOrderForm.saveBtn'))}
             </button>
           </div>
         </form>

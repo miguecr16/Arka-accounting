@@ -1,6 +1,8 @@
+import { useLanguage } from '../context/LanguageContext.jsx';
 import './Dashboard.css';
 
 export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectProject }) {
+  const { t } = useLanguage();
   const formatCurrency = (val) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
@@ -20,35 +22,35 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
   let totalSummaryBadge = '';
 
   if (kpiType === 'profit') {
-    modalTitle = 'Total Company Profit Breakdown';
+    modalTitle = t('kpiModal.profitTitle');
     modalIcon = '💰';
-    modalSubtitle = 'All projects sorted by gross profit generated';
+    modalSubtitle = t('kpiModal.profitSub');
     displayProjects.sort((a, b) => (parseFloat(b.gross_profit) || 0) - (parseFloat(a.gross_profit) || 0));
     const total = displayProjects.reduce((sum, p) => sum + (parseFloat(p.gross_profit) || 0), 0);
-    totalSummaryBadge = `Grand Total: ${formatCurrency(total)}`;
+    totalSummaryBadge = `${t('common.grandTotal')}: ${formatCurrency(total)}`;
   } else if (kpiType === 'hours') {
-    modalTitle = 'Total Hours Worked Breakdown';
+    modalTitle = t('kpiModal.hoursTitle');
     modalIcon = '⏱️';
-    modalSubtitle = 'All projects sorted by total labor hours logged';
+    modalSubtitle = t('kpiModal.hoursSub');
     displayProjects.sort((a, b) => (parseFloat(b.total_hours) || 0) - (parseFloat(a.total_hours) || 0));
     const total = displayProjects.reduce((sum, p) => sum + (parseFloat(p.total_hours) || 0), 0);
-    totalSummaryBadge = `Grand Total: ${total} hrs`;
+    totalSummaryBadge = `${t('common.grandTotal')}: ${total} hrs`;
   } else if (kpiType === 'active') {
-    modalTitle = 'Active Projects Overview';
+    modalTitle = t('kpiModal.activeTitle');
     modalIcon = '🏗️';
-    modalSubtitle = 'Currently active jobs in planning, progress, or paused';
+    modalSubtitle = t('kpiModal.activeSub');
     displayProjects = displayProjects.filter((p) => {
       const s = (p.status || '').toLowerCase();
       return s !== 'finalizado' && s !== 'completed' && s !== 'terminado';
     });
-    totalSummaryBadge = `Active Count: ${displayProjects.length} projects`;
+    totalSummaryBadge = `${t('dashboard.activeProjects')}: ${displayProjects.length}`;
   } else if (kpiType === 'volume') {
-    modalTitle = 'Total Contract Volume Breakdown';
+    modalTitle = t('kpiModal.volumeTitle');
     modalIcon = '📈';
-    modalSubtitle = 'All projects sorted by final contract value';
+    modalSubtitle = t('kpiModal.volumeSub');
     displayProjects.sort((a, b) => (parseFloat(b.final_contract_value) || 0) - (parseFloat(a.final_contract_value) || 0));
     const total = displayProjects.reduce((sum, p) => sum + (parseFloat(p.final_contract_value) || 0), 0);
-    totalSummaryBadge = `Grand Total: ${formatCurrency(total)}`;
+    totalSummaryBadge = `${t('common.grandTotal')}: ${formatCurrency(total)}`;
   }
 
   return (
@@ -89,40 +91,40 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
           <table className="data-table">
             <thead>
               <tr>
-                <th>Project / Client</th>
+                <th>{t('kpiModal.projectClient')}</th>
                 {kpiType === 'profit' && (
                   <>
-                    <th style={{ textAlign: 'right' }}>Gross Profit</th>
-                    <th style={{ textAlign: 'right' }}>Margin %</th>
+                    <th style={{ textAlign: 'right' }}>{t('kpiModal.grossProfitCol')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('kpiModal.marginCol')}</th>
                   </>
                 )}
                 {kpiType === 'hours' && (
                   <>
-                    <th style={{ textAlign: 'right' }}>Total Hours</th>
-                    <th style={{ textAlign: 'right' }}>Direct Costs</th>
+                    <th style={{ textAlign: 'right' }}>{t('kpiModal.totalHoursCol')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('kpiModal.directCostsCol')}</th>
                   </>
                 )}
                 {kpiType === 'active' && (
                   <>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'right' }}>Contract Value</th>
+                    <th>{t('kpiModal.statusCol')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('kpiModal.contractValueCol')}</th>
                   </>
                 )}
                 {kpiType === 'volume' && (
                   <>
-                    <th style={{ textAlign: 'right' }}>Base Contract</th>
-                    <th style={{ textAlign: 'right' }}>Approved Extras</th>
-                    <th style={{ textAlign: 'right' }}>Final Contract</th>
+                    <th style={{ textAlign: 'right' }}>{t('kpiModal.baseContractCol')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('kpiModal.approvedExtrasCol')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('kpiModal.finalContractCol')}</th>
                   </>
                 )}
-                <th style={{ textAlign: 'center' }}>Action</th>
+                <th style={{ textAlign: 'center' }}>{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {displayProjects.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="no-data-cell">
-                    No matching projects found for this metric.
+                    {t('kpiModal.noProjectsFound')}
                   </td>
                 </tr>
               ) : (
@@ -199,9 +201,9 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                             onSelectProject(targetId);
                           }}
                           className="drilldown-enter-btn"
-                          title="Open Project Details"
+                          title={t('common.viewProject')}
                         >
-                          View ↗
+                          {t('common.viewProject')}
                         </button>
                       </td>
                     </tr>
@@ -215,7 +217,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
         {/* Modal Actions */}
         <div className="modal-actions" style={{ marginTop: '1.5rem' }}>
           <button type="button" className="cancel-btn" onClick={onClose}>
-            Close
+            {t('common.close')}
           </button>
         </div>
       </div>

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import ProjectCard from './ProjectCard.jsx';
 import NewProjectModal from './NewProjectModal.jsx';
 import KpiSummaryModal from './KpiSummaryModal.jsx';
 import './Dashboard.css';
 
 export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) {
+  const { t } = useLanguage();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,10 +101,10 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
         <section className="global-overview-section">
           <div className="global-overview-header">
             <div>
-              <h2 className="overview-title">Global Company Overview</h2>
-              <p className="overview-subtitle">Click any card to drill down into project-level breakdowns</p>
+              <h2 className="overview-title">{t('dashboard.globalOverviewTitle')}</h2>
+              <p className="overview-subtitle">{t('dashboard.globalOverviewSubtitle')}</p>
             </div>
-            <div className="studio-pill">Architecture & Interior Design OS</div>
+            <div className="studio-pill">{t('dashboard.studioPill')}</div>
           </div>
 
           <div className="global-kpi-grid">
@@ -110,13 +112,13 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
             <div 
               className="global-kpi-card profit-card interactive-kpi"
               onClick={() => setActiveKpiModal('profit')}
-              title="Click to view Profit drill-down"
+              title={t('dashboard.clickToBreakdown')}
             >
               <div className="kpi-icon-wrapper">💰</div>
               <div className="kpi-content">
-                <span className="kpi-label">Total Company Profit</span>
+                <span className="kpi-label">{t('dashboard.totalCompanyProfit')}</span>
                 <strong className="kpi-value profit-value">{formatCurrency(totalCompanyProfit)}</strong>
-                <small className="kpi-subtext">Click to view breakdown ↗</small>
+                <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
 
@@ -124,13 +126,13 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
             <div 
               className="global-kpi-card hours-card interactive-kpi"
               onClick={() => setActiveKpiModal('hours')}
-              title="Click to view Hours drill-down"
+              title={t('dashboard.clickToBreakdown')}
             >
               <div className="kpi-icon-wrapper">⏱️</div>
               <div className="kpi-content">
-                <span className="kpi-label">Total Hours Worked</span>
+                <span className="kpi-label">{t('dashboard.totalHoursWorked')}</span>
                 <strong className="kpi-value">{totalCompanyHours} hrs</strong>
-                <small className="kpi-subtext">Click to view breakdown ↗</small>
+                <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
 
@@ -138,13 +140,13 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
             <div 
               className="global-kpi-card active-card interactive-kpi"
               onClick={() => setActiveKpiModal('active')}
-              title="Click to view Active Projects list"
+              title={t('dashboard.clickToActiveList')}
             >
               <div className="kpi-icon-wrapper">🏗️</div>
               <div className="kpi-content">
-                <span className="kpi-label">Active Projects</span>
+                <span className="kpi-label">{t('dashboard.activeProjects')}</span>
                 <strong className="kpi-value">{activeProjectsCount}</strong>
-                <small className="kpi-subtext">Click to view active list ↗</small>
+                <small className="kpi-subtext">{t('dashboard.clickToActiveList')}</small>
               </div>
             </div>
 
@@ -152,13 +154,13 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
             <div 
               className="global-kpi-card volume-card interactive-kpi"
               onClick={() => setActiveKpiModal('volume')}
-              title="Click to view Contract Volume breakdown"
+              title={t('dashboard.clickToBreakdown')}
             >
               <div className="kpi-icon-wrapper">📈</div>
               <div className="kpi-content">
-                <span className="kpi-label">Total Contract Volume</span>
+                <span className="kpi-label">{t('dashboard.totalContractVolume')}</span>
                 <strong className="kpi-value">{formatCurrency(totalContractVolume)}</strong>
-                <small className="kpi-subtext">Click to view breakdown ↗</small>
+                <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
           </div>
@@ -168,15 +170,15 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
       {/* 2. PROJECTS SECTION */}
       <div className="dashboard-header">
         <div>
-          <h2 className="projects-heading">Client Projects</h2>
+          <h2 className="projects-heading">{t('dashboard.clientProjectsTitle')}</h2>
           <p className="projects-subheading">
             {isAdmin 
-              ? 'Manage job costing, specifications, and scope for each project' 
-              : 'Select a project to view details and log field labor or expenses'}
+              ? t('dashboard.clientProjectsSubAdmin')
+              : t('dashboard.clientProjectsSubWorker')}
           </p>
         </div>
         <button className="create-btn" onClick={handleOpenCreateModal}>
-          + Create New Project
+          {t('dashboard.createNewProjectBtn')}
         </button>
       </div>
 
@@ -184,15 +186,15 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
 
       {loading ? (
         <div className="loading-state">
-          <p>Loading projects...</p>
+          <p>{t('common.loading')}</p>
         </div>
       ) : projects.length === 0 ? (
         <div className="empty-state-card">
           <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📁</div>
-          <h3>No projects found</h3>
-          <p>Create your first project to start tracking real-time job costing and materials.</p>
+          <h3>{t('dashboard.noProjectsFoundTitle')}</h3>
+          <p>{t('dashboard.noProjectsFoundText')}</p>
           <button className="create-btn" style={{ marginTop: '1rem' }} onClick={handleOpenCreateModal}>
-            + Create New Project
+            {t('dashboard.createNewProjectBtn')}
           </button>
         </div>
       ) : (

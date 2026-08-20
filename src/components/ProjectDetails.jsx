@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import NewExpenseForm from './NewExpenseForm.jsx';
 import NewChangeOrderModal from './NewChangeOrderModal.jsx';
 import './ProjectDetails.css';
 
 export default function ProjectDetails({ projectId, onBack, userRole = 'trabajador' }) {
+  const { t } = useLanguage();
   const isAdmin = userRole === 'admin';
 
   const [projectData, setProjectData] = useState(null);
@@ -194,7 +196,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   if (loading && !projectData) {
     return (
       <div className="project-details-container">
-        <p>Loading project details...</p>
+        <p>{t('common.loading')}</p>
       </div>
     );
   }
@@ -202,7 +204,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   if (error && !projectData) {
     return (
       <div className="project-details-container">
-        <button className="back-btn" onClick={onBack}>← Back to Dashboard</button>
+        <button className="back-btn" onClick={onBack}>{t('common.backToDashboard')}</button>
         <div className="alert error" style={{ marginTop: '1rem' }}>{error}</div>
       </div>
     );
@@ -215,13 +217,13 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {/* Navigation Header with Status Selector */}
       <div className="details-header-nav">
         <button className="back-btn" onClick={onBack}>
-          ← Back to Dashboard
+          {t('common.backToDashboard')}
         </button>
         
         {/* Status Selector (Interactive for Admin, Read-Only for Trabajador) */}
         <div className="status-selector-container">
           <label htmlFor="quick-status-select" className="status-selector-label">
-            Project Status:
+            {t('projectDetails.statusLabel')}
           </label>
           <select
             id="quick-status-select"
@@ -230,15 +232,15 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             onChange={(e) => handleStatusChange(e.target.value)}
             className={`status-dropdown-select ${getProjectStatusBadgeClass(currentStatus)}`}
             style={!isAdmin ? { cursor: 'default', opacity: 0.95 } : {}}
-            title={!isAdmin ? 'Status can only be modified by administrators' : 'Click to change status'}
+            title={!isAdmin ? t('projectDetails.statusAdminOnlyTitle') : ''}
           >
-            <option value="Planeación">Planeación</option>
-            <option value="En Ejecución">En Ejecución</option>
-            <option value="Pausado">Pausado</option>
-            <option value="Finalizado">Finalizado</option>
+            <option value="Planeación">{t('projectDetails.statusPlaneacion')}</option>
+            <option value="En Ejecución">{t('projectDetails.statusEnEjecucion')}</option>
+            <option value="Pausado">{t('projectDetails.statusPausado')}</option>
+            <option value="Finalizado">{t('projectDetails.statusFinalizado')}</option>
           </select>
-          {statusUpdating && <small style={{ color: '#64748b', fontSize: '0.75rem' }}>Updating...</small>}
-          {!isAdmin && <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>(Read-Only)</small>}
+          {statusUpdating && <small style={{ color: '#64748b', fontSize: '0.75rem' }}>{t('common.updating')}</small>}
+          {!isAdmin && <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>({t('common.readOnly')})</small>}
         </div>
       </div>
 
@@ -250,34 +252,34 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {/* Financial KPI Summary Banner (STRICTLY ADMIN ONLY) */}
       {isAdmin && (
         <div className="financial-banner">
-          <h3 className="banner-title">Financial Summary & Job Costing</h3>
+          <h3 className="banner-title">{t('projectDetails.financialSummaryTitle')}</h3>
           <div className="kpi-grid">
             <div className="kpi-card">
-              <span>Base Contract</span>
+              <span>{t('projectDetails.baseContract')}</span>
               <strong>{formatCurrency(projectData?.base_contract_value)}</strong>
             </div>
             <div className="kpi-card">
-              <span>Approved Changes</span>
+              <span>{t('projectDetails.approvedChanges')}</span>
               <strong>{formatCurrency(projectData?.approved_change_orders)}</strong>
             </div>
             <div className="kpi-card highlight">
-              <span>Final Contract Value</span>
+              <span>{t('projectDetails.finalContractValue')}</span>
               <strong>{formatCurrency(projectData?.final_contract_value)}</strong>
             </div>
             <div className="kpi-card">
-              <span>Total Direct Costs</span>
+              <span>{t('projectDetails.totalDirectCosts')}</span>
               <strong>{formatCurrency(projectData?.total_direct_costs)}</strong>
             </div>
             <div className="kpi-card">
-              <span>Total Hours Logged</span>
+              <span>{t('projectDetails.totalHoursLogged')}</span>
               <strong>{projectData?.total_hours || 0} hrs</strong>
             </div>
             <div className="kpi-card highlight-profit">
-              <span>Gross Profit</span>
+              <span>{t('projectDetails.grossProfit')}</span>
               <strong>{formatCurrency(projectData?.gross_profit)}</strong>
             </div>
             <div className="kpi-card highlight-profit">
-              <span>Gross Margin</span>
+              <span>{t('projectDetails.grossMargin')}</span>
               <strong>
                 {projectData?.gross_margin_percentage
                   ? `${parseFloat(projectData.gross_margin_percentage).toFixed(2)}%`
@@ -295,13 +297,13 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`}
             onClick={() => setActiveTab('expenses')}
           >
-            Expenses & Hours <span className="tab-count">{expenses.length}</span>
+            {t('projectDetails.tabExpensesHours')} <span className="tab-count">{expenses.length}</span>
           </button>
           <button 
             className={`tab-btn ${activeTab === 'change_orders' ? 'active' : ''}`}
             onClick={() => setActiveTab('change_orders')}
           >
-            Change Orders (Extras) <span className="tab-count">{changeOrders.length}</span>
+            {t('projectDetails.tabChangeOrders')} <span className="tab-count">{changeOrders.length}</span>
           </button>
         </div>
       )}
@@ -310,7 +312,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {(activeTab === 'expenses' || !isAdmin) && (
         <div>
           <div className="section-header-actions">
-            <h3>Expense & Hours History</h3>
+            <h3>{t('projectDetails.expenseHistoryTitle')}</h3>
             <button 
               className="primary-action-btn"
               onClick={() => {
@@ -318,7 +320,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                 setIsExpenseModalOpen(true);
               }}
             >
-              + Log Expense / Hours
+              {t('projectDetails.logExpenseBtn')}
             </button>
           </div>
 
@@ -326,20 +328,20 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Category</th>
-                  <th>Specifications / Details</th>
-                  <th>Cost Amount</th>
-                  <th>Hours</th>
-                  <th>Receipt</th>
-                  {isAdmin && <th style={{ textAlign: 'right' }}>Actions</th>}
+                  <th>{t('common.date')}</th>
+                  <th>{t('expenseForm.categoryLabel')}</th>
+                  <th>{t('projectDetails.colSpecifications')}</th>
+                  <th>{t('projectDetails.colCostAmount')}</th>
+                  <th>{t('projectDetails.colHours')}</th>
+                  <th>{t('projectDetails.colReceipt')}</th>
+                  {isAdmin && <th style={{ textAlign: 'right' }}>{t('common.actions')}</th>}
                 </tr>
               </thead>
               <tbody>
                 {expenses.length === 0 ? (
                   <tr>
                     <td colSpan={isAdmin ? 7 : 6} className="no-data-cell">
-                      No expenses or hours logged yet for this project.
+                      {t('projectDetails.noExpensesLogged')}
                     </td>
                   </tr>
                 ) : (
@@ -371,7 +373,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                 fontSize: '0.85rem'
                               }}
                             >
-                              📎 View Receipt ↗
+                              📎 {t('common.viewReceipt')}
                             </a>
                           ) : (
                             <span style={{ color: '#2563eb', fontSize: '0.85rem' }}>
@@ -379,20 +381,20 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                             </span>
                           )
                         ) : (
-                          <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>None</span>
+                          <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>{t('common.none')}</span>
                         )}
                       </td>
                       {isAdmin && (
                         <td style={{ textAlign: 'right' }}>
                           <button
                             className="table-action-edit-btn"
-                            title="Edit this expense"
+                            title={t('common.edit')}
                             onClick={() => {
                               setEditingExpense(item);
                               setIsExpenseModalOpen(true);
                             }}
                           >
-                            ✏️ Edit
+                            ✏️ {t('common.edit')}
                           </button>
                         </td>
                       )}
@@ -411,12 +413,12 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
           <div className="info-callout">
             <span>ℹ️</span>
             <div>
-              <strong>Financial Impact:</strong> Only <strong>Aprobado</strong> change orders are added to the Final Contract Value and Gross Profit above.
+              <strong>{t('projectDetails.financialImpactNote')}</strong>
             </div>
           </div>
 
           <div className="section-header-actions">
-            <h3>Change Orders (Extras)</h3>
+            <h3>{t('projectDetails.changeOrdersTitle')}</h3>
             <button 
               className="primary-action-btn"
               onClick={() => {
@@ -424,7 +426,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                 setIsChangeOrderModalOpen(true);
               }}
             >
-              + New Change Order
+              {t('projectDetails.newChangeOrderBtn')}
             </button>
           </div>
 
@@ -432,17 +434,17 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Description</th>
-                  <th>Extra Charge to Client</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  <th>{t('projectDetails.colDescription')}</th>
+                  <th>{t('projectDetails.colExtraCharge')}</th>
+                  <th>{t('common.status')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {changeOrders.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="no-data-cell">
-                      No change orders created yet for this project.
+                      {t('projectDetails.noChangeOrdersLogged')}
                     </td>
                   </tr>
                 ) : (
@@ -462,13 +464,13 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                           <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
                             <button
                               className="table-action-edit-btn"
-                              title="Edit this change order"
+                              title={t('common.edit')}
                               onClick={() => {
                                 setEditingChangeOrder(co);
                                 setIsChangeOrderModalOpen(true);
                               }}
                             >
-                              ✏️ Edit
+                              ✏️ {t('common.edit')}
                             </button>
 
                             {!isApproved && (
@@ -477,12 +479,12 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                 disabled={actionLoadingId === co.id}
                                 onClick={() => handleApproveChangeOrder(co.id, co.description, co.extra_charge_to_client)}
                               >
-                                {actionLoadingId === co.id ? 'Approving...' : '✓ Approve'}
+                                {actionLoadingId === co.id ? t('projectDetails.approving') : t('projectDetails.approveBtn')}
                               </button>
                             )}
                             {isApproved && (
                               <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
-                                ✓ Active
+                                {t('projectDetails.activeStatus')}
                               </span>
                             )}
                           </div>

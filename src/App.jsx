@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { LanguageProvider, useLanguage } from './context/LanguageContext.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import ProjectDetails from './components/ProjectDetails.jsx';
 import TeamSettings from './components/TeamSettings.jsx';
 import Auth from './components/Auth.jsx';
 
-function App() {
+function AppContent() {
+  const { language, setLanguage, t } = useLanguage();
   const [session, setSession] = useState(null);
   const [userRole, setUserRole] = useState('trabajador'); // 'admin' | 'trabajador'
   const [authLoading, setAuthLoading] = useState(true);
@@ -110,7 +112,9 @@ function App() {
             marginBottom: '1.25rem'
           }}
         />
-        <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500 }}>Verifying secure session & permissions...</p>
+        <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500 }}>
+          {language === 'es' ? 'Verificando sesión segura y permisos...' : 'Verifying secure session & permissions...'}
+        </p>
       </div>
     );
   }
@@ -135,7 +139,7 @@ function App() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: 0 }}>
-      {/* Top Studio Navbar with Official Golden Arka Design Group Logo */}
+      {/* Top Studio Navbar with Arka Design Group Branding and Language Switcher */}
       <header style={{ 
         padding: '0.85rem 2rem', 
         backgroundColor: '#ffffff',
@@ -147,7 +151,7 @@ function App() {
         flexWrap: 'wrap',
         gap: '1rem'
       }}>
-        {/* Official Brand Logo */}
+        {/* Brand */}
         <div 
           onClick={handleBackToDashboard}
           style={{ 
@@ -169,7 +173,7 @@ function App() {
         </div>
 
         {/* User Session & Navigation Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           {/* Back button when inside subviews */}
           {currentView !== 'dashboard' && (
             <button 
@@ -189,7 +193,7 @@ function App() {
                 transition: 'all 0.2s'
               }}
             >
-              ← Back to Projects
+              {t('common.backToProjects')}
             </button>
           )}
 
@@ -213,9 +217,56 @@ function App() {
                 transition: 'all 0.2s'
               }}
             >
-              🏢 Organization
+              {t('nav.organization')}
             </button>
           )}
+
+          {/* Bilingual Language Switcher Toggle */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            background: '#f1f5f9',
+            borderRadius: '9999px',
+            padding: '0.2rem',
+            border: '1px solid #cbd5e1'
+          }}>
+            <button
+              type="button"
+              onClick={() => setLanguage('en')}
+              style={{
+                background: language === 'en' ? '#0f172a' : 'transparent',
+                color: language === 'en' ? '#ffffff' : '#64748b',
+                border: 'none',
+                padding: '0.25rem 0.55rem',
+                borderRadius: '9999px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.15s'
+              }}
+              title="Switch to English"
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLanguage('es')}
+              style={{
+                background: language === 'es' ? '#0f172a' : 'transparent',
+                color: language === 'es' ? '#ffffff' : '#64748b',
+                border: 'none',
+                padding: '0.25rem 0.55rem',
+                borderRadius: '9999px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.15s'
+              }}
+              title="Cambiar a Español"
+            >
+              ES
+            </button>
+          </div>
 
           {/* Role Pill */}
           <span style={{
@@ -229,7 +280,7 @@ function App() {
             letterSpacing: '0.04em',
             textTransform: 'uppercase'
           }}>
-            {isAdmin ? '🛡️ Admin' : '👤 Trabajador'}
+            {isAdmin ? t('common.adminRole') : t('common.trabajadorRole')}
           </span>
 
           {/* User Email Pill */}
@@ -252,7 +303,7 @@ function App() {
           {/* Sign Out Button */}
           <button
             onClick={handleSignOut}
-            title="Sign out of Arka Design Group"
+            title={t('nav.signOut')}
             style={{
               padding: '0.45rem 0.9rem',
               backgroundColor: '#ffffff',
@@ -273,7 +324,7 @@ function App() {
               e.currentTarget.style.borderColor = '#e2e8f0';
             }}
           >
-            Sign Out
+            {t('nav.signOut')}
           </button>
         </div>
       </header>
@@ -304,4 +355,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
+}

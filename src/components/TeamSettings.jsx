@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import './TeamSettings.css';
 import './ProjectDetails.css';
 
 export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
+  const { t, language } = useLanguage();
   const isAdmin = userRole === 'admin';
 
   const [activeTab, setActiveTab] = useState('organization'); // 'organization' | 'activity'
@@ -61,7 +63,7 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
     if (!dateStr) return 'N/A';
     try {
       const d = new Date(dateStr);
-      return d.toLocaleString('en-US', {
+      return d.toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -87,15 +89,15 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
     return (
       <div className="team-settings-container">
         <button className="back-btn" onClick={onBack}>
-          ← Back to Dashboard
+          {t('common.backToDashboard')}
         </button>
         <div className="access-denied-card">
           <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔒</div>
           <h3 style={{ margin: '0 0 0.5rem 0', color: '#991b1b', fontSize: '1.25rem' }}>
-            Access Restricted
+            {t('teamSettings.accessRestrictedTitle')}
           </h3>
           <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
-            The Organization & Activity dashboard is strictly reserved for administrators.
+            {t('teamSettings.accessRestrictedText')}
           </p>
         </div>
       </div>
@@ -107,16 +109,16 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
       {/* Navigation Header */}
       <div className="team-header-nav">
         <button className="back-btn" onClick={onBack}>
-          ← Back to Dashboard
+          {t('common.backToDashboard')}
         </button>
         <button className="refresh-btn" onClick={loadAllData} disabled={loading}>
-          🔄 Refresh Data
+          🔄 {t('common.refresh')}
         </button>
       </div>
 
       <div className="team-title-area">
-        <h2>Organization & Activity</h2>
-        <p>Manage team member permissions and inspect the real-time global audit trail.</p>
+        <h2>{t('teamSettings.title')}</h2>
+        <p>{t('teamSettings.subtitle')}</p>
       </div>
 
       {error && <div className="alert error" style={{ marginBottom: '1.5rem' }}>{error}</div>}
@@ -127,13 +129,13 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
           className={`tab-btn ${activeTab === 'organization' ? 'active' : ''}`}
           onClick={() => setActiveTab('organization')}
         >
-          🏢 Organization (Team) <span className="tab-count">{profiles.length}</span>
+          {t('teamSettings.tabOrganization')} <span className="tab-count">{profiles.length}</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'activity' ? 'active' : ''}`}
           onClick={() => setActiveTab('activity')}
         >
-          📋 Activity History (Audit Logs) <span className="tab-count">{auditLogs.length}</span>
+          {t('teamSettings.tabActivity')} <span className="tab-count">{auditLogs.length}</span>
         </button>
       </div>
 
@@ -141,9 +143,9 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
       {activeTab === 'organization' && (
         <div>
           <div className="section-header-actions">
-            <h3>Registered Team Members</h3>
+            <h3>{t('teamSettings.regMembersTitle')}</h3>
             <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-              Roles dictate editing and status permission access across the platform.
+              {t('teamSettings.regMembersSub')}
             </span>
           </div>
 
@@ -151,23 +153,23 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>User Email</th>
-                  <th>Role / Permissions</th>
-                  <th>User ID</th>
-                  <th>Join Date</th>
+                  <th>{t('teamSettings.colUserEmail')}</th>
+                  <th>{t('teamSettings.colRolePerms')}</th>
+                  <th>{t('teamSettings.colUserId')}</th>
+                  <th>{t('teamSettings.colJoinDate')}</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
                     <td colSpan="4" className="no-data-cell">
-                      Loading team profiles...
+                      {t('common.loading')}
                     </td>
                   </tr>
                 ) : profiles.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="no-data-cell">
-                      No team members found in profiles table.
+                      {t('teamSettings.noMembersFound')}
                     </td>
                   </tr>
                 ) : (
@@ -192,7 +194,7 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
                             textTransform: 'uppercase',
                             display: 'inline-block'
                           }}>
-                            {isUserAdmin ? '🛡️ Admin' : '👤 Trabajador'}
+                            {isUserAdmin ? t('common.adminRole') : t('common.trabajadorRole')}
                           </span>
                         </td>
                         <td>
@@ -217,9 +219,9 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
       {activeTab === 'activity' && (
         <div>
           <div className="section-header-actions">
-            <h3>Global Audit Trail</h3>
+            <h3>{t('teamSettings.auditTrailTitle')}</h3>
             <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-              Real-time records of all creations, updates, and status modifications.
+              {t('teamSettings.auditTrailSub')}
             </span>
           </div>
 
@@ -227,24 +229,24 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th style={{ width: '18%' }}>Timestamp</th>
-                  <th style={{ width: '22%' }}>User Email</th>
-                  <th style={{ width: '12%' }}>Action</th>
-                  <th style={{ width: '14%' }}>Entity</th>
-                  <th style={{ width: '34%' }}>Details</th>
+                  <th style={{ width: '18%' }}>{t('teamSettings.colTimestamp')}</th>
+                  <th style={{ width: '22%' }}>{t('teamSettings.colUserEmail')}</th>
+                  <th style={{ width: '12%' }}>{t('teamSettings.colAction')}</th>
+                  <th style={{ width: '14%' }}>{t('teamSettings.colEntity')}</th>
+                  <th style={{ width: '34%' }}>{t('teamSettings.colDetails')}</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
                     <td colSpan="5" className="no-data-cell">
-                      Loading audit logs...
+                      {t('common.loading')}
                     </td>
                   </tr>
                 ) : auditLogs.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="no-data-cell">
-                      No activity logs recorded yet. Changes will appear here in real-time.
+                      {t('teamSettings.noActivityFound')}
                     </td>
                   </tr>
                 ) : (

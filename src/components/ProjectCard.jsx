@@ -1,6 +1,8 @@
+import { useLanguage } from '../context/LanguageContext.jsx';
 import './Dashboard.css';
 
 export default function ProjectCard({ project, onSelectProject, onEditProject, userRole = 'trabajador' }) {
+  const { t } = useLanguage();
   const isAdmin = userRole === 'admin';
   const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
@@ -28,9 +30,9 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
                 onEditProject(project);
               }}
               className="card-edit-btn"
-              title="Edit Project Details"
+              title={t('common.edit')}
             >
-              ✏️ Edit
+              ✏️ {t('common.edit')}
             </button>
           )}
         </div>
@@ -42,11 +44,11 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
       {isAdmin && (
         <div className="project-metrics">
           <div className="metric">
-            <span>Gross Profit</span>
+            <span>{t('dashboard.grossProfit')}</span>
             <strong>{formatCurrency(project.gross_profit)}</strong>
           </div>
           <div className="metric">
-            <span>Margin</span>
+            <span>{t('dashboard.grossMargin')}</span>
             <strong>{project.gross_margin_percentage ? `${parseFloat(project.gross_margin_percentage).toFixed(2)}%` : '0%'}</strong>
           </div>
         </div>
@@ -57,7 +59,7 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
         style={!isAdmin ? { marginTop: '1.25rem' } : {}}
         onClick={() => onSelectProject(project.project_id || project.id)}
       >
-        Enter Project / Log Data
+        {t('dashboard.enterProjectBtn')}
       </button>
     </div>
   );

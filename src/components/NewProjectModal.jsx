@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import './Dashboard.css';
 
 export default function NewProjectModal({ onClose, onProjectCreated, projectToEdit }) {
+  const { t } = useLanguage();
   const isEditMode = !!projectToEdit;
 
   const [formData, setFormData] = useState({
@@ -265,7 +267,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
       <div className="modal-content wizard-modal">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h3 style={{ margin: 0, fontSize: '1.4rem' }}>
-            {isEditMode ? 'Edit Project Details' : 'New Project Intake Wizard'}
+            {isEditMode ? t('wizard.modalTitleEdit') : t('wizard.modalTitleNew')}
           </h3>
           <button 
             type="button" 
@@ -281,38 +283,38 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
         <form onSubmit={handleSubmit} className="expense-form">
           {/* SECTION 1: GENERAL & FINANCIAL INFORMATION */}
           <div className="wizard-section">
-            <div className="wizard-section-title">1. General & Financial Baseline</div>
+            <div className="wizard-section-title">{t('wizard.secGeneralTitle')}</div>
             
             <div className="wizard-grid-3">
               <div className="form-group">
-                <label htmlFor="project_name">Project Name</label>
+                <label htmlFor="project_name">{t('wizard.projectNameLabel')}</label>
                 <input
                   type="text"
                   id="project_name"
                   name="project_name"
                   value={formData.project_name}
                   onChange={handleChange}
-                  placeholder="e.g. Modern Villa Kitchen"
+                  placeholder={t('wizard.projectNamePlaceholder')}
                   required
                   autoFocus
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="client_name">Client Name</label>
+                <label htmlFor="client_name">{t('wizard.clientNameLabel')}</label>
                 <input
                   type="text"
                   id="client_name"
                   name="client_name"
                   value={formData.client_name}
                   onChange={handleChange}
-                  placeholder="e.g. John & Sarah Doe"
+                  placeholder={t('wizard.clientNamePlaceholder')}
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="status">Project Status</label>
+                <label htmlFor="status">{t('wizard.statusLabel')}</label>
                 <select
                   id="status"
                   name="status"
@@ -320,17 +322,17 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   onChange={handleChange}
                   required
                 >
-                  <option value="Planeación">Planeación</option>
-                  <option value="En Ejecución">En Ejecución</option>
-                  <option value="Pausado">Pausado</option>
-                  <option value="Finalizado">Finalizado</option>
+                  <option value="Planeación">{t('projectDetails.statusPlaneacion')}</option>
+                  <option value="En Ejecución">{t('projectDetails.statusEnEjecucion')}</option>
+                  <option value="Pausado">{t('projectDetails.statusPausado')}</option>
+                  <option value="Finalizado">{t('projectDetails.statusFinalizado')}</option>
                 </select>
               </div>
             </div>
 
             <div className="wizard-grid-3">
               <div className="form-group">
-                <label htmlFor="project_type">Project Type</label>
+                <label htmlFor="project_type">{t('wizard.projectTypeLabel')}</label>
                 <select
                   id="project_type"
                   name="project_type"
@@ -338,15 +340,15 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   onChange={handleChange}
                   required
                 >
-                  <option value="Cocina">Cocina</option>
-                  <option value="Baños">Baños</option>
-                  <option value="Cocina y Baños">Cocina y Baños</option>
-                  <option value="Remodelación Completa">Remodelación Completa</option>
+                  <option value="Cocina">{t('wizard.typeCocina')}</option>
+                  <option value="Baños">{t('wizard.typeBanos')}</option>
+                  <option value="Cocina y Baños">{t('wizard.typeCocinaBanos')}</option>
+                  <option value="Remodelación Completa">{t('wizard.typeRemodelacionCompleta')}</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label htmlFor="base_contract_value">Base Contract Value ($)</label>
+                <label htmlFor="base_contract_value">{t('wizard.baseContractLabel')}</label>
                 <input
                   type="number"
                   step="0.01"
@@ -355,13 +357,13 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   name="base_contract_value"
                   value={formData.base_contract_value}
                   onChange={handleChange}
-                  placeholder="e.g. 35000.00"
+                  placeholder={t('wizard.baseContractPlaceholder')}
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="deposit_received">Deposit / Anticipo ($)</label>
+                <label htmlFor="deposit_received">{t('wizard.depositLabel')}</label>
                 <input
                   type="number"
                   step="0.01"
@@ -370,7 +372,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   name="deposit_received"
                   value={formData.deposit_received}
                   onChange={handleChange}
-                  placeholder="e.g. 15000.00"
+                  placeholder={t('wizard.depositPlaceholder')}
                 />
               </div>
             </div>
@@ -380,41 +382,41 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
           {isKitchenProject && (
             <div className="wizard-section slide-down">
               <div className="wizard-section-title">
-                <span>🗄️ 2. Cabinets Scope Breakdown</span>
+                <span>{t('wizard.secCabinetsTitle')}</span>
                 <span className="live-cost-badge">
-                  Est. Cabinets Total: <strong>{formatCurrency(totalCabinetsCost)}</strong>
+                  {t('wizard.estCabinetsTotal')} <strong>{formatCurrency(totalCabinetsCost)}</strong>
                 </span>
               </div>
 
               <div className="wizard-grid-2">
                 <div className="form-group">
-                  <label htmlFor="tipo_construccion">Tipo de Construcción</label>
+                  <label htmlFor="tipo_construccion">{t('wizard.tipoConstruccionLabel')}</label>
                   <input
                     type="text"
                     id="tipo_construccion"
                     name="tipo_construccion"
                     value={formData.tipo_construccion}
                     onChange={handleChange}
-                    placeholder="e.g. Remodelación / New Construction"
+                    placeholder={t('wizard.tipoConstruccionPlaceholder')}
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="proveedor">Proveedor / Vendor</label>
+                  <label htmlFor="proveedor">{t('wizard.proveedorLabel')}</label>
                   <input
                     type="text"
                     id="proveedor"
                     name="proveedor"
                     value={formData.proveedor}
                     onChange={handleChange}
-                    placeholder="e.g. Woodex"
+                    placeholder={t('wizard.proveedorPlaceholder')}
                   />
                 </div>
               </div>
 
               <div className="wizard-grid-3">
                 <div className="form-group">
-                  <label htmlFor="linea_modelo">Línea / Modelo</label>
+                  <label htmlFor="linea_modelo">{t('wizard.lineaModeloLabel')}</label>
                   <select
                     id="linea_modelo"
                     name="linea_modelo"
@@ -428,19 +430,19 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="color">Color / Finish</label>
+                  <label htmlFor="color">{t('wizard.colorLabel')}</label>
                   <input
                     type="text"
                     id="color"
                     name="color"
                     value={formData.color}
                     onChange={handleChange}
-                    placeholder="e.g. Matte Gray"
+                    placeholder={t('wizard.colorPlaceholder')}
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="cantidad_cabinets">Cantidad de Cabinets</label>
+                  <label htmlFor="cantidad_cabinets">{t('wizard.cantidadCabinetsLabel')}</label>
                   <input
                     type="number"
                     min="0"
@@ -455,7 +457,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
 
               <div className="wizard-costs-grid">
                 <div className="form-group">
-                  <label htmlFor="costo_cabinets">Costo Cabinets ($)</label>
+                  <label htmlFor="costo_cabinets">{t('wizard.costoCabinetsLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -469,7 +471,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="ensamble">Ensamble ($)</label>
+                  <label htmlFor="ensamble">{t('wizard.ensambleLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -483,7 +485,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="costo_hardware">Hardware ($)</label>
+                  <label htmlFor="costo_hardware">{t('wizard.hardwareLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -497,7 +499,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="costo_accesorios">Accesorios ($)</label>
+                  <label htmlFor="costo_accesorios">{t('wizard.accesoriosLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -511,7 +513,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="costo_delivery">Delivery ($)</label>
+                  <label htmlFor="costo_delivery">{t('wizard.deliveryLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -525,7 +527,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="costo_instalacion">Instalación ($)</label>
+                  <label htmlFor="costo_instalacion">{t('wizard.instalacionLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -545,15 +547,15 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
           {hasCountertopScope && (
             <div className="wizard-section slide-down">
               <div className="wizard-section-title">
-                <span>🪨 3. Countertop Scope Breakdown</span>
+                <span>{t('wizard.secCountertopsTitle')}</span>
                 <span className="live-cost-badge countertop-badge">
-                  Est. Countertop Total: <strong>{formatCurrency(totalCountertopCost)}</strong>
+                  {t('wizard.estCountertopTotal')} <strong>{formatCurrency(totalCountertopCost)}</strong>
                 </span>
               </div>
 
               <div className="wizard-grid-3">
                 <div className="form-group">
-                  <label htmlFor="countertop_material">Material</label>
+                  <label htmlFor="countertop_material">{t('wizard.materialLabel')}</label>
                   <select
                     id="countertop_material"
                     name="countertop_material"
@@ -570,7 +572,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="countertop_color">Color / Pattern</label>
+                  <label htmlFor="countertop_color">{t('wizard.colorPatternLabel')}</label>
                   <input
                     type="text"
                     id="countertop_color"
@@ -582,7 +584,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="countertop_proveedor">Proveedor / Fabricator</label>
+                  <label htmlFor="countertop_proveedor">{t('wizard.fabricatorLabel')}</label>
                   <input
                     type="text"
                     id="countertop_proveedor"
@@ -596,7 +598,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
 
               <div className="wizard-grid-3">
                 <div className="form-group">
-                  <label htmlFor="valor_slab">Valor Slab ($)</label>
+                  <label htmlFor="valor_slab">{t('wizard.valorSlabLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -610,7 +612,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="cantidad_slabs">Cantidad de Slabs</label>
+                  <label htmlFor="cantidad_slabs">{t('wizard.cantidadSlabsLabel')}</label>
                   <input
                     type="number"
                     step="0.5"
@@ -625,7 +627,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
 
                 <div className="form-group">
                   <label htmlFor="sqft_estimados">
-                    Sq Ft Estimados {totalMedidasSqFt > 0 && <span style={{ color: '#059669', fontSize: '0.75rem' }}>(Auto-calculado)</span>}
+                    {t('wizard.sqftEstimadosLabel')} {totalMedidasSqFt > 0 && <span style={{ color: '#059669', fontSize: '0.75rem' }}>{t('wizard.autoCalculated')}</span>}
                   </label>
                   <input
                     type="number"
@@ -643,7 +645,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
 
               <div className="wizard-grid-3">
                 <div className="form-group">
-                  <label htmlFor="costo_fabricacion">Costo Fabricación ($/sqft)</label>
+                  <label htmlFor="costo_fabricacion">{t('wizard.costoFabricacionLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -657,7 +659,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="costo_instalacion">Costo Instalación ($/sqft)</label>
+                  <label htmlFor="costo_instalacion">{t('wizard.costoInstalacionLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -671,7 +673,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="costo_transporte">Costo Transporte ($)</label>
+                  <label htmlFor="costo_transporte">{t('wizard.costoTransporteLabel')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -689,11 +691,11 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
               <div className="medidas-container">
                 <div className="medidas-header">
                   <div>
-                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b' }}>📐 Tabla de Medidas</h4>
-                    <small style={{ color: '#64748b' }}>Calcula el total de Sq Ft multiplicando Largo × Profundidad</small>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b' }}>{t('wizard.medidasTitle')}</h4>
+                    <small style={{ color: '#64748b' }}>{t('wizard.medidasSubtitle')}</small>
                   </div>
                   <div className="medidas-total-badge">
-                    Total Medidas: <strong>{totalMedidasSqFt.toFixed(2)} sqft</strong>
+                    {t('wizard.totalMedidasBadge')} <strong>{totalMedidasSqFt.toFixed(2)} sqft</strong>
                   </div>
                 </div>
 
@@ -701,10 +703,10 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   <table className="medidas-table">
                     <thead>
                       <tr>
-                        <th style={{ width: '40%' }}>Área</th>
-                        <th style={{ width: '22%' }}>Largo (ft)</th>
-                        <th style={{ width: '22%' }}>Profundidad (ft)</th>
-                        <th style={{ width: '16%' }}>Sq Ft</th>
+                        <th style={{ width: '40%' }}>{t('wizard.areaHeader')}</th>
+                        <th style={{ width: '22%' }}>{t('wizard.lengthHeader')}</th>
+                        <th style={{ width: '22%' }}>{t('wizard.depthHeader')}</th>
+                        <th style={{ width: '16%' }}>{t('wizard.sqftHeader')}</th>
                         <th></th>
                       </tr>
                     </thead>
@@ -721,7 +723,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                                 type="text"
                                 value={item.area}
                                 onChange={(e) => handleMedidaChange(idx, 'area', e.target.value)}
-                                placeholder="Nombre de Área"
+                                placeholder="Area Name"
                                 className="medida-input"
                               />
                             </td>
@@ -776,7 +778,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   onClick={handleAddArea}
                   className="add-area-btn"
                 >
-                  + Add Area
+                  {t('wizard.addAreaBtn')}
                 </button>
               </div>
             </div>
@@ -784,10 +786,12 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
 
           <div className="modal-actions" style={{ marginTop: '1.75rem' }}>
             <button type="button" className="cancel-btn" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </button>
             <button type="submit" className="submit-btn" disabled={loading} style={{ margin: 0, padding: '0.85rem 1.75rem' }}>
-              {loading ? (isEditMode ? 'Saving Changes...' : 'Creating Project...') : (isEditMode ? 'Save Project Changes' : 'Complete Intake & Create Project')}
+              {loading 
+                ? (isEditMode ? t('common.saving') : t('common.saving')) 
+                : (isEditMode ? t('wizard.saveChangesBtn') : t('wizard.createProjectBtn'))}
             </button>
           </div>
         </form>

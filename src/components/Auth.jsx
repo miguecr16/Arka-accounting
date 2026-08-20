@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import './Auth.css';
 
 export default function Auth({ onAuthSuccess }) {
+  const { t, language, setLanguage } = useLanguage();
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -72,7 +74,7 @@ export default function Auth({ onAuthSuccess }) {
         if (data?.session && onAuthSuccess) {
           onAuthSuccess(data.session);
         } else {
-          setMessage('Account created! You can now sign in with your credentials.');
+          setMessage(t('auth.accountCreatedMsg'));
           handleToggleMode('login');
         }
       }
@@ -86,6 +88,54 @@ export default function Auth({ onAuthSuccess }) {
 
   return (
     <div className="auth-page-wrapper">
+      {/* Top right language switch on Auth page */}
+      <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          background: '#ffffff',
+          borderRadius: '9999px',
+          padding: '0.2rem',
+          border: '1px solid #cbd5e1',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.05)'
+        }}>
+          <button
+            type="button"
+            onClick={() => setLanguage('en')}
+            style={{
+              background: language === 'en' ? '#0f172a' : 'transparent',
+              color: language === 'en' ? '#ffffff' : '#64748b',
+              border: 'none',
+              padding: '0.25rem 0.55rem',
+              borderRadius: '9999px',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.15s'
+            }}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setLanguage('es')}
+            style={{
+              background: language === 'es' ? '#0f172a' : 'transparent',
+              color: language === 'es' ? '#ffffff' : '#64748b',
+              border: 'none',
+              padding: '0.25rem 0.55rem',
+              borderRadius: '9999px',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.15s'
+            }}
+          >
+            ES
+          </button>
+        </div>
+      </div>
+
       <div className="auth-card">
         {/* Official Brand Header with Golden Logo */}
         <div className="auth-brand-header">
@@ -100,7 +150,7 @@ export default function Auth({ onAuthSuccess }) {
             }}
           />
           <p className="auth-brand-subtitle">
-            {mode === 'login' ? 'Sign in to your architecture & job costing studio' : 'Create an account for your studio'}
+            {mode === 'login' ? t('auth.signInSubtitle') : t('auth.createAccountSubtitle')}
           </p>
         </div>
 
@@ -111,14 +161,14 @@ export default function Auth({ onAuthSuccess }) {
             className={`auth-toggle-btn ${mode === 'login' ? 'active' : ''}`}
             onClick={() => handleToggleMode('login')}
           >
-            Sign In
+            {t('auth.signInTitle')}
           </button>
           <button
             type="button"
             className={`auth-toggle-btn ${mode === 'register' ? 'active' : ''}`}
             onClick={() => handleToggleMode('register')}
           >
-            Create Account
+            {t('auth.createAccountTitle')}
           </button>
         </div>
 
@@ -128,7 +178,7 @@ export default function Auth({ onAuthSuccess }) {
         {/* Auth Form */}
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="auth-email">Email Address</label>
+            <label htmlFor="auth-email">{t('auth.emailLabel')}</label>
             <input
               type="email"
               id="auth-email"
@@ -141,7 +191,7 @@ export default function Auth({ onAuthSuccess }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="auth-password">Password</label>
+            <label htmlFor="auth-password">{t('auth.passwordLabel')}</label>
             <input
               type="password"
               id="auth-password"
@@ -159,13 +209,13 @@ export default function Auth({ onAuthSuccess }) {
             disabled={loading}
           >
             {loading 
-              ? (mode === 'login' ? 'Signing in...' : 'Creating account...') 
-              : (mode === 'login' ? 'Sign In to Studio' : 'Create Account')}
+              ? (mode === 'login' ? t('auth.signingIn') : t('auth.creatingAccount')) 
+              : (mode === 'login' ? t('auth.signInBtn') : t('auth.createAccountBtn'))}
           </button>
         </form>
 
         <div className="auth-footer-text">
-          Protected by Supabase Row-Level Security (RLS) & RBAC
+          {t('auth.protectedRls')}
         </div>
       </div>
     </div>
