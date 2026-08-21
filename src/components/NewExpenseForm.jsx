@@ -85,27 +85,35 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
     try {
       let receipt_image_url = existingReceiptUrl;
 
-      // 1. Upload receipt to Supabase Storage if new file selected
+      // 1. Upload receipt to Supabase Storage and retrieve FULL public URL
       if (receiptFile) {
         const fileExt = receiptFile.name.split('.').pop();
-        const fileName = `${projectId}_${Date.now()}.${fileExt}`;
+        const cleanExt = fileExt ? fileExt.toLowerCase() : 'jpg';
+        const fileName = `${projectId}_${Date.now()}.${cleanExt}`;
         const filePath = `${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('imagenes_arka')
-          .upload(filePath, receiptFile);
+          .upload(filePath, receiptFile, {
+            cacheControl: '3600',
+            upsert: true
+          });
 
         if (uploadError) {
-          console.warn('Storage upload error:', uploadError.message);
-          // Fallback: save filename or keep existing
-          receipt_image_url = receiptFile.name;
-        } else {
-          const { data: publicUrlData } = supabase.storage
-            .from('imagenes_arka')
-            .getPublicUrl(filePath);
-
-          receipt_image_url = publicUrlData.publicUrl;
+          console.error('Storage upload error:', uploadError);
+          throw new Error(`Receipt upload failed: ${uploadError.message}`);
         }
+
+        // Get FULL public URL
+        const { data: publicUrlData } = supabase.storage
+          .from('imagenes_arka')
+          .getPublicUrl(filePath);
+
+        if (!publicUrlData?.publicUrl) {
+          throw new Error('Could not retrieve public URL for uploaded receipt.');
+        }
+
+        receipt_image_url = publicUrlData.publicUrl;
       }
 
       // 2. Build structured details JSONB
@@ -133,7 +141,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
         descripcion: descripcion.trim() || null,
         cost_amount: isNaN(cost) ? 0 : cost,
         hours_worked: isNaN(hours) ? 0 : Math.max(0, hours),
-        receipt_image_url,
+        receipt_image_url: receipt_image_url || null,
         details: Object.keys(details).length > 0 ? details : null
       };
 

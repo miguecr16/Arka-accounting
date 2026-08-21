@@ -31,6 +31,16 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   const formatCurrency = (val) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
+  const resolveReceiptUrl = (rawUrl) => {
+    if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) return null;
+    const clean = rawUrl.trim();
+    if (clean.startsWith('http://') || clean.startsWith('https://')) {
+      return clean;
+    }
+    // Handle legacy raw filename stored previously
+    return `https://ddenuevupwywvatplfnt.supabase.co/storage/v1/object/public/imagenes_arka/${clean}`;
+  };
+
   const fetchAllData = async () => {
     try {
       setLoading(true);
@@ -440,7 +450,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                   <th>{t('projectDetails.colSpecifications')}</th>
                   <th>{t('projectDetails.colCostAmount')}</th>
                   <th>{t('projectDetails.colHours')}</th>
-                  <th>{t('projectDetails.colReceipt')}</th>
+                  <th style={{ textAlign: 'center' }}>{t('projectDetails.colReceipt')}</th>
                   {isAdmin && <th style={{ textAlign: 'right' }}>{t('common.actions')}</th>}
                 </tr>
               </thead>
@@ -452,61 +462,85 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                     </td>
                   </tr>
                 ) : (
-                  expenses.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.date}</td>
-                      <td>
-                        <span className={`category-tag ${item.category === 'Mano de Obra' ? 'labor' : ''}`}>
-                          {item.category}
-                        </span>
-                      </td>
-                      <td>{renderExpenseDetails(item)}</td>
-                      <td>{item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-'}</td>
-                      <td>{item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-'}</td>
-                      <td>
-                        {item.receipt_image_url ? (
-                          item.receipt_image_url.startsWith('http') ? (
-                            <a 
-                              href={item.receipt_image_url} 
-                              target="_blank" 
+                  expenses.map((item) => {
+                    const receiptUrl = resolveReceiptUrl(item.receipt_image_url);
+
+                    return (
+                      <tr key={item.id}>
+                        <td>{item.date}</td>
+                        <td>
+                          <span className={`category-tag ${item.category === 'Mano de Obra' ? 'labor' : ''}`}>
+                            {item.category}
+                          </span>
+                        </td>
+                        <td>{renderExpenseDetails(item)}</td>
+                        <td>{item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-'}</td>
+                        <td>{item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-'}</td>
+                        
+                        {/* 40x40px Clickable Image Thumbnail for Receipt */}
+                        <td style={{ textAlign: 'center' }}>
+                          {receiptUrl ? (
+                            <a
+                              href={receiptUrl}
+                              target="_blank"
                               rel="noopener noreferrer"
-                              style={{ 
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.25rem',
-                                color: '#2563eb', 
-                                textDecoration: 'none',
-                                fontWeight: 500,
-                                fontSize: '0.85rem'
-                              }}
+                              style={{ display: 'inline-block', lineHeight: 0 }}
+                              title="Click to view full-size receipt"
                             >
-                              📎 {t('common.viewReceipt')}
+                              <img
+                                src={receiptUrl}
+                                alt="Receipt"
+                                style={{
+                                  width: '40px',
+                                  height: '40px',
+                                  objectFit: 'cover',
+                                  borderRadius: '8px',
+                                  border: '1px solid #cbd5e1',
+                                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+                                  cursor: 'pointer',
+                                  transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
+                                  display: 'block'
+                                }}
+                                onMouseOver={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1.12)';
+                                  e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.18)';
+                                  e.currentTarget.style.borderColor = '#3b82f6';
+                                }}
+                                onMouseOut={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.08)';
+                                  e.currentTarget.style.borderColor = '#cbd5e1';
+                                }}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  if (e.currentTarget.parentElement) {
+                                    e.currentTarget.parentElement.innerHTML = '<span style="font-size: 0.8rem; color: #2563eb; font-weight: 500;">📎 Receipt ↗</span>';
+                                  }
+                                }}
+                              />
                             </a>
                           ) : (
-                            <span style={{ color: '#2563eb', fontSize: '0.85rem' }}>
-                              📎 {item.receipt_image_url}
-                            </span>
-                          )
-                        ) : (
-                          <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>{t('common.none')}</span>
-                        )}
-                      </td>
-                      {isAdmin && (
-                        <td style={{ textAlign: 'right' }}>
-                          <button
-                            className="table-action-edit-btn"
-                            title={t('common.edit')}
-                            onClick={() => {
-                              setEditingExpense(item);
-                              setIsExpenseModalOpen(true);
-                            }}
-                          >
-                            ✏️ {t('common.edit')}
-                          </button>
+                            <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>-</span>
+                          )}
                         </td>
-                      )}
-                    </tr>
-                  ))
+
+                        {isAdmin && (
+                          <td style={{ textAlign: 'right' }}>
+                            <button
+                              className="table-action-edit-btn"
+                              title={t('common.edit')}
+                              onClick={() => {
+                                setEditingExpense(item);
+                                setIsExpenseModalOpen(true);
+                              }}
+                            >
+                              ✏️ {t('common.edit')}
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
