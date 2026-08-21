@@ -5,6 +5,7 @@ import { formatToUSD } from '../utils/currencyFormatter.js';
 import ProjectCard from './ProjectCard.jsx';
 import NewProjectModal from './NewProjectModal.jsx';
 import KpiSummaryModal from './KpiSummaryModal.jsx';
+import { DollarSign, Clock, HardHat, TrendingUp, PlusCircle, FolderOpen } from 'lucide-react';
 import './Dashboard.css';
 
 export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) {
@@ -112,7 +113,9 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               onClick={() => setActiveKpiModal('profit')}
               title={t('dashboard.clickToBreakdown')}
             >
-              <div className="kpi-icon-wrapper">💰</div>
+              <div className="kpi-icon-wrapper">
+                <DollarSign size={20} strokeWidth={1.5} />
+              </div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.totalCompanyProfit')}</span>
                 <strong className="kpi-value profit-value">{formatToUSD(totalCompanyProfit)}</strong>
@@ -126,7 +129,9 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               onClick={() => setActiveKpiModal('hours')}
               title={t('dashboard.clickToBreakdown')}
             >
-              <div className="kpi-icon-wrapper">⏱️</div>
+              <div className="kpi-icon-wrapper">
+                <Clock size={20} strokeWidth={1.5} />
+              </div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.totalHoursWorked')}</span>
                 <strong className="kpi-value">{totalCompanyHours} hrs</strong>
@@ -140,7 +145,9 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               onClick={() => setActiveKpiModal('active')}
               title={t('dashboard.clickToActiveList')}
             >
-              <div className="kpi-icon-wrapper">🏗️</div>
+              <div className="kpi-icon-wrapper">
+                <HardHat size={20} strokeWidth={1.5} />
+              </div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.activeProjects')}</span>
                 <strong className="kpi-value">{activeProjectsCount}</strong>
@@ -154,7 +161,9 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               onClick={() => setActiveKpiModal('volume')}
               title={t('dashboard.clickToBreakdown')}
             >
-              <div className="kpi-icon-wrapper">📈</div>
+              <div className="kpi-icon-wrapper">
+                <TrendingUp size={20} strokeWidth={1.5} />
+              </div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.totalContractVolume')}</span>
                 <strong className="kpi-value">{formatToUSD(totalContractVolume)}</strong>
@@ -176,7 +185,8 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
           </p>
         </div>
         <button className="create-btn" onClick={handleOpenCreateModal}>
-          {t('dashboard.createNewProjectBtn')}
+          <PlusCircle size={18} strokeWidth={1.5} />
+          <span>{t('dashboard.createNewProjectBtn')}</span>
         </button>
       </div>
 
@@ -188,11 +198,14 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
         </div>
       ) : projects.length === 0 ? (
         <div className="empty-state-card">
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📁</div>
+          <div style={{ color: '#94a3b8', marginBottom: '0.75rem', display: 'flex', justifyContent: 'center' }}>
+            <FolderOpen size={44} strokeWidth={1.25} />
+          </div>
           <h3>{t('dashboard.noProjectsFoundTitle')}</h3>
           <p>{t('dashboard.noProjectsFoundText')}</p>
-          <button className="create-btn" style={{ marginTop: '1rem' }} onClick={handleOpenCreateModal}>
-            {t('dashboard.createNewProjectBtn')}
+          <button className="create-btn" style={{ marginTop: '1.25rem' }} onClick={handleOpenCreateModal}>
+            <PlusCircle size={18} strokeWidth={1.5} />
+            <span>{t('dashboard.createNewProjectBtn')}</span>
           </button>
         </div>
       ) : (

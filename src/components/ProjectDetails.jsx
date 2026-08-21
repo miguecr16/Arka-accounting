@@ -5,6 +5,19 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
 import NewExpenseForm from './NewExpenseForm.jsx';
 import NewChangeOrderModal from './NewChangeOrderModal.jsx';
+import { 
+  ArrowLeft, 
+  Trash2, 
+  Receipt, 
+  FileText, 
+  Pencil, 
+  Check, 
+  PlusCircle, 
+  Info, 
+  AlertTriangle, 
+  X, 
+  User 
+} from 'lucide-react';
 import './ProjectDetails.css';
 
 export default function ProjectDetails({ projectId, onBack, userRole = 'trabajador' }) {
@@ -163,46 +176,49 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     }
   };
 
-  // Handle Admin Expense Record Deletion
-  const handleDeleteExpense = async (item) => {
+  // Handle Delete Single Expense/Record
+  const handleDeleteExpense = async (expense) => {
     if (!isAdmin) return;
 
     const confirmMsg = language === 'es'
       ? '¿Estás seguro de que deseas eliminar este registro?'
-      : 'Are you sure you want to delete this record?';
+      : 'Are you sure you want to delete this expense record?';
 
     if (!window.confirm(confirmMsg)) return;
 
     try {
-      setActionLoadingId(item.id);
-      const { error: dbError } = await supabase
+      setActionLoadingId(expense.id);
+
+      const { error: delError } = await supabase
         .from('expenses_and_hours')
         .delete()
-        .eq('id', item.id);
+        .eq('id', expense.id);
 
-      if (dbError) throw dbError;
+      if (delError) throw delError;
 
-      // Log audit event for Expense Deletion
+      // Log audit event
       await logAuditEvent({
         action: 'Eliminó',
-        entity: 'Gasto',
-        details: `Eliminó registro de ${item.category} ($${item.cost_amount || 0}, ${item.hours_worked || 0} hrs) en proyecto ID #${projectId}`
+        entity: 'Gasto/Horas',
+        details: `Eliminó registro categoría "${expense.category}" (${expense.date}) en proyecto "${projectData?.project_name || projectId}"`
       });
 
       await fetchAllData();
     } catch (err) {
-      console.error('Error deleting expense record:', err);
-      alert('Failed to delete record: ' + (err.message || 'Unknown error'));
+      console.error('Error deleting expense:', err);
+      alert('Error deleting expense: ' + (err.message || 'Unknown error'));
     } finally {
       setActionLoadingId(null);
     }
   };
 
-  const handleApproveChangeOrder = async (changeOrderId, description, charge) => {
+  // Handle Change Order Approval (Admin only)
+  const handleApproveChangeOrder = async (changeOrderId, description, extraCharge) => {
     if (!isAdmin) return;
 
     try {
       setActionLoadingId(changeOrderId);
+
       const { error: updateError } = await supabase
         .from('change_orders')
         .update({ status: 'Aprobado' })
@@ -210,11 +226,11 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
 
       if (updateError) throw updateError;
 
-      // Log audit event for Change Order approval
+      // Log audit event for Change Order Approval
       await logAuditEvent({
         action: 'Aprobó',
-        entity: 'Change Order',
-        details: `Aprobó Change Order "${description || '#' + changeOrderId}" ($${charge || 0}) en proyecto "${projectData?.project_name}"`
+        entity: 'Orden de Cambio',
+        details: `Aprobó orden de cambio "${description}" (+${formatToUSD(extraCharge)}) en proyecto "${projectData?.project_name || projectId}"`
       });
 
       await fetchAllData();
@@ -249,9 +265,12 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     if (item.category === 'Mano de Obra') {
       const workerName = hasDescripcion || d?.worker_name || hasProveedor;
       return (
-        <div style={{ fontSize: '0.85rem', color: '#1e293b' }}>
+        <div style={{ fontSize: '0.85rem', color: '#1e293b', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
           {workerName ? (
-            <strong>👤 {workerName}</strong>
+            <>
+              <User size={13} strokeWidth={1.5} style={{ color: '#64748b' }} />
+              <strong>{workerName}</strong>
+            </>
           ) : (
             <span style={{ color: '#64748b' }}>-</span>
           )}
@@ -332,7 +351,10 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   if (error && !projectData) {
     return (
       <div className="project-details-container">
-        <button className="back-btn" onClick={onBack}>{t('common.backToDashboard')}</button>
+        <button className="back-btn" onClick={onBack}>
+          <ArrowLeft size={16} strokeWidth={1.5} />
+          <span>{t('common.backToDashboard')}</span>
+        </button>
         <div className="alert error" style={{ marginTop: '1rem' }}>{error}</div>
       </div>
     );
@@ -345,7 +367,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {/* Navigation Header with Status Selector and Admin Delete */}
       <div className="details-header-nav">
         <button className="back-btn" onClick={onBack}>
-          {t('common.backToDashboard')}
+          <ArrowLeft size={16} strokeWidth={1.5} />
+          <span>{t('common.backToDashboard')}</span>
         </button>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
@@ -387,7 +410,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.35rem',
+                gap: '0.4rem',
                 transition: 'all 0.2s',
                 boxShadow: '0 1px 2px rgba(220, 38, 38, 0.05)'
               }}
@@ -401,7 +424,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
               }}
               title="Permanently delete this project"
             >
-              {t('projectDetails.deleteProjectBtn')}
+              <Trash2 size={15} strokeWidth={1.5} />
+              <span>{t('projectDetails.deleteProjectBtn')}</span>
             </button>
           )}
         </div>
@@ -460,13 +484,17 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`}
             onClick={() => setActiveTab('expenses')}
           >
-            {t('projectDetails.tabExpensesHours')} <span className="tab-count">{expenses.length}</span>
+            <Receipt size={16} strokeWidth={1.5} />
+            <span>{t('projectDetails.tabExpensesHours')}</span>
+            <span className="tab-count">{expenses.length}</span>
           </button>
           <button 
             className={`tab-btn ${activeTab === 'change_orders' ? 'active' : ''}`}
             onClick={() => setActiveTab('change_orders')}
           >
-            {t('projectDetails.tabChangeOrders')} <span className="tab-count">{changeOrders.length}</span>
+            <FileText size={16} strokeWidth={1.5} />
+            <span>{t('projectDetails.tabChangeOrders')}</span>
+            <span className="tab-count">{changeOrders.length}</span>
           </button>
         </div>
       )}
@@ -483,7 +511,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                 setIsExpenseModalOpen(true);
               }}
             >
-              {t('projectDetails.logExpenseBtn')}
+              <PlusCircle size={17} strokeWidth={1.5} />
+              <span>{t('projectDetails.logExpenseBtn')}</span>
             </button>
           </div>
 
@@ -559,7 +588,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                               onMouseOver={(e) => {
                                 e.currentTarget.style.transform = 'scale(1.12)';
                                 e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.18)';
-                                e.currentTarget.style.borderColor = '#3b82f6';
+                                e.currentTarget.style.borderColor = 'var(--arka-gold)';
                               }}
                               onMouseOut={(e) => {
                                 e.currentTarget.style.transform = 'scale(1)';
@@ -586,8 +615,10 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                   setEditingExpense(item);
                                   setIsExpenseModalOpen(true);
                                 }}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                               >
-                                ✏️ {t('common.edit')}
+                                <Pencil size={13} strokeWidth={1.5} />
+                                <span>{t('common.edit')}</span>
                               </button>
 
                               <button
@@ -598,7 +629,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                   background: '#ffffff',
                                   border: '1px solid #fecaca',
                                   color: '#dc2626',
-                                  padding: '0.3rem 0.55rem',
+                                  padding: '0.35rem 0.65rem',
                                   borderRadius: '6px',
                                   fontSize: '0.8rem',
                                   fontWeight: 600,
@@ -606,7 +637,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                   transition: 'all 0.2s',
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  justifyContent: 'center'
+                                  justifyContent: 'center',
+                                  minHeight: '36px'
                                 }}
                                 onMouseOver={(e) => {
                                   e.currentTarget.style.backgroundColor = '#fef2f2';
@@ -617,7 +649,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                   e.currentTarget.style.borderColor = '#fecaca';
                                 }}
                               >
-                                {actionLoadingId === item.id ? '...' : '🗑️'}
+                                {actionLoadingId === item.id ? '...' : <Trash2 size={14} strokeWidth={1.5} />}
                               </button>
                             </div>
                           </td>
@@ -636,7 +668,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {isAdmin && activeTab === 'change_orders' && (
         <div>
           <div className="info-callout">
-            <span>ℹ️</span>
+            <Info size={18} strokeWidth={1.5} />
             <div>
               <strong>{t('projectDetails.financialImpactNote')}</strong>
             </div>
@@ -651,7 +683,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                 setIsChangeOrderModalOpen(true);
               }}
             >
-              {t('projectDetails.newChangeOrderBtn')}
+              <PlusCircle size={17} strokeWidth={1.5} />
+              <span>{t('projectDetails.newChangeOrderBtn')}</span>
             </button>
           </div>
 
@@ -696,8 +729,10 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                 setEditingChangeOrder(co);
                                 setIsChangeOrderModalOpen(true);
                               }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                             >
-                              ✏️ {t('common.edit')}
+                              <Pencil size={13} strokeWidth={1.5} />
+                              <span>{t('common.edit')}</span>
                             </button>
 
                             {!isApproved && (
@@ -706,12 +741,20 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                 disabled={actionLoadingId === co.id}
                                 onClick={() => handleApproveChangeOrder(co.id, co.description, co.extra_charge_to_client)}
                               >
-                                {actionLoadingId === co.id ? t('projectDetails.approving') : t('projectDetails.approveBtn')}
+                                {actionLoadingId === co.id ? (
+                                  t('projectDetails.approving')
+                                ) : (
+                                  <>
+                                    <Check size={14} strokeWidth={1.5} />
+                                    <span>{t('projectDetails.approveBtn')}</span>
+                                  </>
+                                )}
                               </button>
                             )}
                             {isApproved && (
-                              <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
-                                {t('projectDetails.activeStatus')}
+                              <span style={{ color: '#059669', fontSize: '0.85rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <Check size={14} strokeWidth={1.5} />
+                                <span>{t('projectDetails.activeStatus')}</span>
                               </span>
                             )}
                           </div>
@@ -767,7 +810,9 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             style={{ maxWidth: '440px', textAlign: 'center' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+            <div style={{ color: '#ef4444', marginBottom: '0.75rem', display: 'flex', justifyContent: 'center' }}>
+              <AlertTriangle size={40} strokeWidth={1.25} />
+            </div>
             <h3 style={{ margin: '0 0 0.75rem 0', color: '#991b1b', fontSize: '1.25rem' }}>
               {t('projectDetails.deleteConfirmTitle')}
             </h3>
@@ -795,12 +840,16 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                   fontSize: '0.9rem',
                   cursor: isDeleting ? 'not-allowed' : 'pointer',
                   transition: 'background-color 0.2s',
-                  boxShadow: '0 4px 12px rgba(220, 38, 38, 0.25)'
+                  boxShadow: '0 4px 12px rgba(220, 38, 38, 0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
                 }}
                 disabled={isDeleting}
                 onClick={handleDeleteProject}
               >
-                {isDeleting ? t('common.deleting') : t('projectDetails.deleteProceedBtn')}
+                <Trash2 size={15} strokeWidth={1.5} />
+                <span>{isDeleting ? t('common.deleting') : t('projectDetails.deleteProceedBtn')}</span>
               </button>
             </div>
           </div>
@@ -857,7 +906,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             }}
             title="Close Receipt (Esc)"
           >
-            &times;
+            <X size={22} strokeWidth={1.5} />
           </button>
 
           {/* Centered High-Res Image Container */}

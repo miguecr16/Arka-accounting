@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { X } from 'lucide-react';
 import './Dashboard.css';
 
 export default function NewChangeOrderModal({ projectId, onClose, onCreated, changeOrderToEdit }) {
@@ -85,9 +86,9 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
           <button 
             type="button" 
             onClick={onClose}
-            style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6b7280' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
           >
-            &times;
+            <X size={20} strokeWidth={1.5} />
           </button>
         </div>
 

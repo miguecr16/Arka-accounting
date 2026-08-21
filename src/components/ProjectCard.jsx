@@ -1,5 +1,6 @@
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
+import { SlidersHorizontal, ArrowUpRight } from 'lucide-react';
 import './Dashboard.css';
 
 export default function ProjectCard({ project, onSelectProject, onEditProject, userRole = 'trabajador' }) {
@@ -31,8 +32,10 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
               }}
               className="card-edit-btn"
               title={t('common.edit')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
             >
-              ✏️ {t('common.edit')}
+              <SlidersHorizontal size={13} strokeWidth={1.5} />
+              <span>{t('common.edit')}</span>
             </button>
           )}
         </div>
@@ -56,10 +59,17 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
 
       <button 
         className="enter-btn"
-        style={!isAdmin ? { marginTop: '1.25rem' } : {}}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.4rem',
+          ...((!isAdmin) ? { marginTop: '1.25rem' } : {})
+        }}
         onClick={() => onSelectProject(project.project_id || project.id)}
       >
-        {t('dashboard.enterProjectBtn')}
+        <span>{t('dashboard.enterProjectBtn')}</span>
+        <ArrowUpRight size={15} strokeWidth={1.5} />
       </button>
     </div>
   );

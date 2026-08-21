@@ -1,5 +1,6 @@
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
+import { DollarSign, Clock, HardHat, TrendingUp, X, ArrowUpRight } from 'lucide-react';
 import './Dashboard.css';
 
 export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectProject }) {
@@ -15,28 +16,28 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
 
   // Configure modal content according to selected KPI
   let modalTitle = '';
-  let modalIcon = '';
+  let ModalIcon = DollarSign;
   let modalSubtitle = '';
   let displayProjects = [...projects];
   let totalSummaryBadge = '';
 
   if (kpiType === 'profit') {
     modalTitle = t('kpiModal.profitTitle');
-    modalIcon = '💰';
+    ModalIcon = DollarSign;
     modalSubtitle = t('kpiModal.profitSub');
     displayProjects.sort((a, b) => (parseFloat(b.gross_profit) || 0) - (parseFloat(a.gross_profit) || 0));
     const total = displayProjects.reduce((sum, p) => sum + (parseFloat(p.gross_profit) || 0), 0);
     totalSummaryBadge = `${t('common.grandTotal')}: ${formatToUSD(total)}`;
   } else if (kpiType === 'hours') {
     modalTitle = t('kpiModal.hoursTitle');
-    modalIcon = '⏱️';
+    ModalIcon = Clock;
     modalSubtitle = t('kpiModal.hoursSub');
     displayProjects.sort((a, b) => (parseFloat(b.total_hours) || 0) - (parseFloat(a.total_hours) || 0));
     const total = displayProjects.reduce((sum, p) => sum + (parseFloat(p.total_hours) || 0), 0);
     totalSummaryBadge = `${t('common.grandTotal')}: ${total} hrs`;
   } else if (kpiType === 'active') {
     modalTitle = t('kpiModal.activeTitle');
-    modalIcon = '🏗️';
+    ModalIcon = HardHat;
     modalSubtitle = t('kpiModal.activeSub');
     displayProjects = displayProjects.filter((p) => {
       const s = (p.status || '').toLowerCase();
@@ -45,7 +46,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
     totalSummaryBadge = `${t('dashboard.activeProjects')}: ${displayProjects.length}`;
   } else if (kpiType === 'volume') {
     modalTitle = t('kpiModal.volumeTitle');
-    modalIcon = '📈';
+    ModalIcon = TrendingUp;
     modalSubtitle = t('kpiModal.volumeSub');
     displayProjects.sort((a, b) => (parseFloat(b.final_contract_value) || 0) - (parseFloat(a.final_contract_value) || 0));
     const total = displayProjects.reduce((sum, p) => sum + (parseFloat(p.final_contract_value) || 0), 0);
@@ -60,10 +61,12 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
       >
         {/* Modal Header */}
         <div className="kpi-modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontSize: '1.75rem' }}>{modalIcon}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div className="kpi-icon-wrapper" style={{ width: '42px', height: '42px', borderRadius: '12px' }}>
+              <ModalIcon size={22} strokeWidth={1.5} />
+            </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#0f172a', fontWeight: 700 }}>
+              <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#0f172a', fontWeight: 800, letterSpacing: '-0.02em' }}>
                 {modalTitle}
               </h3>
               <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>
@@ -75,8 +78,9 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
             type="button" 
             onClick={onClose}
             className="kpi-modal-close-btn"
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            &times;
+            <X size={20} strokeWidth={1.5} />
           </button>
         </div>
 
@@ -201,8 +205,10 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                           }}
                           className="drilldown-enter-btn"
                           title={t('common.viewProject')}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                         >
-                          {t('common.viewProject')}
+                          <span>{t('common.viewProject')}</span>
+                          <ArrowUpRight size={14} strokeWidth={1.5} />
                         </button>
                       </td>
                     </tr>

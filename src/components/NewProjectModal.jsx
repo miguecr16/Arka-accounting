@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
+import { X, Plus } from 'lucide-react';
 import './Dashboard.css';
 
 export default function NewProjectModal({ onClose, onProjectCreated, projectToEdit }) {
@@ -251,9 +252,9 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
           <button 
             type="button" 
             onClick={onClose}
-            style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6b7280' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
           >
-            &times;
+            <X size={20} strokeWidth={1.5} />
           </button>
         </div>
 
@@ -748,8 +749,9 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                                   className="remove-row-btn"
                                   onClick={() => handleRemoveArea(idx)}
                                   title="Remove Area"
+                                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
-                                  &times;
+                                  <X size={14} strokeWidth={1.5} />
                                 </button>
                               )}
                             </td>
@@ -764,8 +766,10 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   type="button"
                   className="add-row-btn"
                   onClick={handleAddArea}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                 >
-                  {t('wizard.addAreaBtn')}
+                  <Plus size={15} strokeWidth={1.5} />
+                  <span>{t('wizard.addAreaBtn')}</span>
                 </button>
               </div>
             </div>

@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard.jsx';
 import ProjectDetails from './components/ProjectDetails.jsx';
 import TeamSettings from './components/TeamSettings.jsx';
 import Auth from './components/Auth.jsx';
+import { ArrowLeft, ShieldCheck, Building2, Menu, X, LogOut } from 'lucide-react';
 
 function AppContent() {
   const { language, setLanguage, t } = useLanguage();
@@ -115,7 +116,7 @@ function AppContent() {
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#f8fafc',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+        fontFamily: 'var(--font-sans)',
         color: '#64748b'
       }}>
         <img 
@@ -180,7 +181,8 @@ function AppContent() {
               onClick={handleBackToDashboard}
               className="nav-action-btn back-nav-btn"
             >
-              {t('common.backToProjects')}
+              <ArrowLeft size={16} strokeWidth={1.5} />
+              <span>{t('common.backToProjects')}</span>
             </button>
           )}
 
@@ -191,7 +193,8 @@ function AppContent() {
               title="View Organization & Activity History"
               className="nav-action-btn org-nav-btn"
             >
-              {t('nav.organization')}
+              <ShieldCheck size={16} strokeWidth={1.5} />
+              <span>{t('nav.organization')}</span>
             </button>
           )}
 
@@ -232,7 +235,8 @@ function AppContent() {
             title={t('nav.signOut')}
             className="header-signout-btn"
           >
-            {t('nav.signOut')}
+            <LogOut size={15} strokeWidth={1.5} />
+            <span>{t('nav.signOut')}</span>
           </button>
         </div>
 
@@ -262,7 +266,7 @@ function AppContent() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle navigation menu"
           >
-            {isMobileMenuOpen ? '✕' : '☰'}
+            {isMobileMenuOpen ? <X size={22} strokeWidth={1.5} /> : <Menu size={22} strokeWidth={1.5} />}
           </button>
         </div>
       </header>
@@ -291,7 +295,7 @@ function AppContent() {
                 className="mobile-drawer-close"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                ✕
+                <X size={20} strokeWidth={1.5} />
               </button>
             </div>
 
@@ -313,7 +317,8 @@ function AppContent() {
                 className={`mobile-nav-link ${currentView === 'dashboard' ? 'active' : ''}`}
                 onClick={handleBackToDashboard}
               >
-                📁 {t('dashboard.clientProjectsTitle')}
+                <Building2 size={18} strokeWidth={1.5} />
+                <span>{t('dashboard.clientProjectsTitle')}</span>
               </button>
 
               {isAdmin && (
@@ -322,7 +327,8 @@ function AppContent() {
                   className={`mobile-nav-link ${currentView === 'team-settings' ? 'active' : ''}`}
                   onClick={handleOpenTeamSettings}
                 >
-                  🏢 {t('nav.organization')}
+                  <ShieldCheck size={18} strokeWidth={1.5} />
+                  <span>{t('nav.organization')}</span>
                 </button>
               )}
             </nav>
@@ -333,8 +339,10 @@ function AppContent() {
                 type="button"
                 onClick={handleSignOut}
                 className="mobile-drawer-signout-btn"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
               >
-                {t('nav.signOut')}
+                <LogOut size={16} strokeWidth={1.5} />
+                <span>{t('nav.signOut')}</span>
               </button>
             </div>
           </div>

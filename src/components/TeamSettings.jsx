@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { ArrowLeft, RotateCw, Users, History, Lock, CheckCircle2 } from 'lucide-react';
 import './TeamSettings.css';
 import './ProjectDetails.css';
 
@@ -129,10 +130,13 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
     return (
       <div className="team-settings-container">
         <button className="back-btn" onClick={onBack}>
-          {t('common.backToDashboard')}
+          <ArrowLeft size={16} strokeWidth={1.5} />
+          <span>{t('common.backToDashboard')}</span>
         </button>
         <div className="access-denied-card">
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔒</div>
+          <div style={{ color: '#ef4444', marginBottom: '0.75rem', display: 'flex', justifyContent: 'center' }}>
+            <Lock size={44} strokeWidth={1.25} />
+          </div>
           <h3 style={{ margin: '0 0 0.5rem 0', color: '#991b1b', fontSize: '1.25rem' }}>
             {t('teamSettings.accessRestrictedTitle')}
           </h3>
@@ -149,10 +153,12 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
       {/* Navigation Header */}
       <div className="team-header-nav">
         <button className="back-btn" onClick={onBack}>
-          {t('common.backToDashboard')}
+          <ArrowLeft size={16} strokeWidth={1.5} />
+          <span>{t('common.backToDashboard')}</span>
         </button>
         <button className="refresh-btn" onClick={loadAllData} disabled={loading}>
-          🔄 {t('common.refresh')}
+          <RotateCw size={15} strokeWidth={1.5} className={loading ? 'animate-spin' : ''} />
+          <span>{t('common.refresh')}</span>
         </button>
       </div>
 
@@ -162,7 +168,12 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
       </div>
 
       {error && <div className="alert error" style={{ marginBottom: '1.5rem' }}>{error}</div>}
-      {successToast && <div className="alert success" style={{ marginBottom: '1.5rem' }}>✓ {successToast}</div>}
+      {successToast && (
+        <div className="alert success" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <CheckCircle2 size={16} strokeWidth={1.5} />
+          <span>{successToast}</span>
+        </div>
+      )}
 
       {/* Tabs Navigation */}
       <div className="tabs-navigation">
@@ -170,13 +181,17 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
           className={`tab-btn ${activeTab === 'organization' ? 'active' : ''}`}
           onClick={() => setActiveTab('organization')}
         >
-          {t('teamSettings.tabOrganization')} <span className="tab-count">{profiles.length}</span>
+          <Users size={16} strokeWidth={1.5} />
+          <span>{t('teamSettings.tabOrganization')}</span>
+          <span className="tab-count">{profiles.length}</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'activity' ? 'active' : ''}`}
           onClick={() => setActiveTab('activity')}
         >
-          {t('teamSettings.tabActivity')} <span className="tab-count">{auditLogs.length}</span>
+          <History size={16} strokeWidth={1.5} />
+          <span>{t('teamSettings.tabActivity')}</span>
+          <span className="tab-count">{auditLogs.length}</span>
         </button>
       </div>
 
@@ -235,8 +250,8 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
                             className={`role-select-input ${currentRole === 'admin' ? 'admin' : 'trabajador'}`}
                             title="Click to modify member permissions"
                           >
-                            <option value="trabajador">{t('teamSettings.roleWorker') || '👤 Worker'}</option>
-                            <option value="admin">{t('teamSettings.roleAdmin') || '🛡️ Admin'}</option>
+                            <option value="trabajador">{t('teamSettings.roleWorker') || 'Worker'}</option>
+                            <option value="admin">{t('teamSettings.roleAdmin') || 'Admin'}</option>
                           </select>
                         </td>
                         <td style={{ color: '#64748b', fontSize: '0.9rem' }}>
