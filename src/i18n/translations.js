@@ -73,7 +73,7 @@ export const translations = {
       noProjectsFoundText: 'Create your first project to start tracking real-time job costing and materials.',
       grossProfit: 'Gross Profit',
       grossMargin: 'Margin',
-      enterProjectBtn: 'Enter Project / Log Data'
+      enterProjectBtn: 'Add / View'
     },
     kpiModal: {
       profitTitle: 'Total Company Profit Breakdown',
@@ -333,7 +333,7 @@ export const translations = {
       noProjectsFoundText: 'Crea tu primer proyecto para comenzar a registrar costos y materiales en tiempo real.',
       grossProfit: 'Ganancia Bruta',
       grossMargin: 'Margen',
-      enterProjectBtn: 'Entrar al Proyecto / Registrar Datos'
+      enterProjectBtn: 'Agregar / Ver'
     },
     kpiModal: {
       profitTitle: 'Desglose de Ganancia Total de la Empresa',
