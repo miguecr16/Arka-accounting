@@ -14,7 +14,7 @@
 .global-overview-section {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 2rem;
   margin-bottom: 3rem;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
@@ -63,7 +63,7 @@
 .global-kpi-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: flex-start;
@@ -92,7 +92,7 @@
   font-size: 1.5rem;
   background: #f8fafc;
   border: 1px solid #f1f5f9;
-  border-radius: 10px;
+  border-radius: 12px;
   width: 44px;
   height: 44px;
   display: flex;
@@ -159,8 +159,8 @@
   background: #0f172a;
   color: #ffffff;
   border: none;
-  padding: 0.8rem 1.4rem;
-  border-radius: 10px;
+  padding: 0.75rem 1.4rem;
+  border-radius: 9999px;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
@@ -186,7 +186,7 @@
 /* 3. Project Card */
 .project-card {
   background: #ffffff;
-  border-radius: 14px;
+  border-radius: 18px;
   padding: 1.5rem;
   border: 1px solid #e2e8f0;
   display: flex;
@@ -260,8 +260,8 @@
   background: #ffffff;
   border: 1px solid #cbd5e1;
   color: #475569;
-  padding: 0.25rem 0.65rem;
-  border-radius: 6px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -278,7 +278,7 @@
   display: flex;
   justify-content: space-between;
   background: #f8fafc;
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 0.85rem 1.1rem;
   margin-bottom: 1.25rem;
   border: 1px solid #f1f5f9;
@@ -310,7 +310,7 @@
   background-color: #f1f5f9;
   color: #1e293b;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 9999px;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
@@ -318,17 +318,17 @@
 }
 
 .enter-btn:hover {
-  background-color: #2563eb;
+  background-color: #0f172a;
   color: #ffffff;
-  border-color: #2563eb;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  border-color: #0f172a;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
 /* Empty & Loading states */
 .empty-state-card {
   background: #ffffff;
   border: 2px dashed #cbd5e1;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 3.5rem 2rem;
   text-align: center;
   color: #64748b;
@@ -374,7 +374,7 @@
 .modal-content {
   background: #ffffff;
   padding: 2.25rem;
-  border-radius: 16px;
+  border-radius: 20px;
   width: 90%;
   max-width: 520px;
   max-height: 90vh;
@@ -387,6 +387,11 @@
 .modal-content.wizard-modal {
   max-width: 840px;
   width: 95%;
+}
+
+.modal-content.wizard-modal.simplified {
+  max-width: 600px;
+  width: 92%;
 }
 
 /* KPI Drilldown Modal */
@@ -423,7 +428,7 @@
   color: #0f172a;
   border: 1px solid #cbd5e1;
   padding: 0.35rem 0.85rem;
-  border-radius: 8px;
+  border-radius: 9999px;
   font-size: 0.85rem;
   font-weight: 700;
 }
@@ -436,8 +441,8 @@
   background-color: #ffffff;
   color: #2563eb;
   border: 1px solid #bfdbfe;
-  padding: 0.3rem 0.75rem;
-  border-radius: 6px;
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -453,7 +458,7 @@
 .wizard-section {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.35rem;
   display: flex;
   flex-direction: column;
@@ -477,7 +482,7 @@
   color: #065f46;
   border: 1px solid #a7f3d0;
   padding: 0.3rem 0.85rem;
-  border-radius: 8px;
+  border-radius: 9999px;
   font-size: 0.85rem;
   font-weight: 500;
 }
@@ -510,7 +515,7 @@
 .medidas-container {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 1.15rem;
   margin-top: 0.5rem;
   display: flex;
@@ -531,7 +536,7 @@
   color: #166534;
   border: 1px solid #bbf7d0;
   padding: 0.3rem 0.85rem;
-  border-radius: 8px;
+  border-radius: 9999px;
   font-size: 0.85rem;
 }
 
@@ -563,9 +568,9 @@
 
 .medida-input {
   width: 100%;
-  padding: 0.5rem 0.7rem !important;
+  padding: 0.5rem 0.85rem !important;
   font-size: 0.9rem !important;
-  border-radius: 6px !important;
+  border-radius: 9999px !important;
 }
 
 .row-sqft-badge {
@@ -574,7 +579,7 @@
   border: 1px solid #cbd5e1;
   color: #0f172a;
   padding: 0.4rem 0.65rem;
-  border-radius: 6px;
+  border-radius: 9999px;
   font-weight: 600;
   font-size: 0.85rem;
   min-width: 50px;
@@ -588,7 +593,7 @@
   font-size: 1.25rem;
   cursor: pointer;
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: 50%;
   transition: all 0.15s;
 }
 
@@ -601,8 +606,8 @@
   background-color: #f1f5f9;
   color: #334155;
   border: 1px solid #cbd5e1;
-  padding: 0.45rem 0.9rem;
-  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -612,6 +617,16 @@
 .add-area-btn:hover {
   background-color: #e2e8f0;
   color: #0f172a;
+}
+
+.details-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
 .modal-actions {
@@ -626,7 +641,7 @@
   border: 1px solid #cbd5e1;
   color: #475569;
   padding: 0.65rem 1.35rem;
-  border-radius: 8px;
+  border-radius: 9999px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.9rem;
@@ -636,6 +651,32 @@
 .cancel-btn:hover {
   background: #f8fafc;
   color: #0f172a;
+}
+
+.submit-btn {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  transition: all 0.2s;
+}
+
+.submit-btn:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+}
+
+.submit-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Animations */

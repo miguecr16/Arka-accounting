@@ -224,7 +224,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                   type="text"
                   value={cabProvider}
                   onChange={(e) => setCabProvider(e.target.value)}
-                  placeholder="e.g. Woodex"
                 />
               </div>
               <div className="form-group">
@@ -233,7 +232,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                   type="text"
                   value={cabModel}
                   onChange={(e) => setCabModel(e.target.value)}
-                  placeholder="e.g. Shaker White"
                 />
               </div>
               <div className="form-group">
@@ -242,7 +240,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                   type="text"
                   value={cabColor}
                   onChange={(e) => setCabColor(e.target.value)}
-                  placeholder="e.g. Matte Gray"
                 />
               </div>
               <div className="form-group">
@@ -252,7 +249,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                   min="0"
                   value={cabQuantity}
                   onChange={(e) => setCabQuantity(e.target.value)}
-                  placeholder="e.g. 12"
                 />
               </div>
             </div>
@@ -268,7 +264,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                   type="text"
                   value={ctMaterial}
                   onChange={(e) => setCtMaterial(e.target.value)}
-                  placeholder="e.g. Quartz Calacatta Gold"
                 />
               </div>
               <div className="form-group">
@@ -277,7 +272,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                   type="text"
                   value={ctProvider}
                   onChange={(e) => setCtProvider(e.target.value)}
-                  placeholder="e.g. STSTONES"
                 />
               </div>
               <div className="form-group">
@@ -287,7 +281,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                   min="0"
                   value={ctSlabs}
                   onChange={(e) => setCtSlabs(e.target.value)}
-                  placeholder="e.g. 2"
                 />
               </div>
               <div className="form-group">
@@ -298,7 +291,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                   min="0"
                   value={ctSqft}
                   onChange={(e) => setCtSqft(e.target.value)}
-                  placeholder="e.g. 55.4"
                 />
               </div>
             </div>
@@ -317,7 +309,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
               value={hoursWorked}
               onChange={handleHoursChange}
               onKeyDown={handleHoursKeyDown}
-              placeholder="e.g. 8"
             />
             <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
               {t('expenseForm.hoursConstraintMsg')}
@@ -333,7 +324,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
               id="cost_amount"
               value={costAmount}
               onChange={(e) => setCostAmount(e.target.value)}
-              placeholder="0.00"
               required
             />
           </div>

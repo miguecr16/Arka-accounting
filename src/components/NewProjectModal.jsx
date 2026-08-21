@@ -15,7 +15,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
     base_contract_value: '',
     deposit_received: '',
     project_type: 'Cocina',
-    // 1. Cabinet Scope fields
+    // 1. Cabinet Scope fields (Edit Mode Only)
     tipo_construccion: '',
     proveedor: '',
     linea_modelo: 'Shaker',
@@ -27,7 +27,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
     costo_accesorios: '',
     costo_delivery: '',
     costo_instalacion: '',
-    // 2. Countertop Scope fields
+    // 2. Countertop Scope fields (Edit Mode Only)
     countertop_material: 'Quartz',
     countertop_color: '',
     countertop_proveedor: '',
@@ -39,7 +39,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
     costo_transporte: ''
   });
 
-  // 3. Dynamic Measurements Table (Tabla de Medidas)
+  // 3. Dynamic Measurements Table (Edit Mode Only)
   const [medidas, setMedidas] = useState([
     { area: 'Island', largo: '', profundidad: '' },
     { area: 'Perimeter', largo: '', profundidad: '' },
@@ -106,7 +106,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                              (formData.project_type || '').includes('Baños') || 
                              (formData.project_type || '').includes('Remodelación Completa');
 
-  // Real-time calculation of Measurements Table Total SQ FT
+  // Real-time calculation of Measurements Table Total SQ FT (Edit mode)
   const totalMedidasSqFt = medidas.reduce((sum, item) => {
     const l = parseFloat(item.largo || 0);
     const p = parseFloat(item.profundidad || 0);
@@ -164,53 +164,63 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
       const baseContract = parseFloat(formData.base_contract_value || 0);
       const deposit = parseFloat(formData.deposit_received || 0);
 
-      // Build structured scope_details JSONB
-      const scopeDetails = {};
+      // In Edit Mode, build structured scope_details JSONB
+      let scopeDetails = null;
 
-      if (isKitchenProject) {
-        scopeDetails.cabinets = {
-          tipo_construccion: formData.tipo_construccion.trim(),
-          proveedor: formData.proveedor.trim(),
-          linea_modelo: formData.linea_modelo,
-          color: formData.color.trim(),
-          cantidad_cabinets: formData.cantidad_cabinets ? Number(formData.cantidad_cabinets) : 0,
-          costo_cabinets: parseFloat(formData.costo_cabinets || 0),
-          ensamble: parseFloat(formData.ensamble || 0),
-          costo_hardware: parseFloat(formData.costo_hardware || 0),
-          costo_accesorios: parseFloat(formData.costo_accesorios || 0),
-          costo_delivery: parseFloat(formData.costo_delivery || 0),
-          costo_instalacion: parseFloat(formData.costo_instalacion || 0),
-          total_cabinets_cost: totalCabinetsCost
-        };
-      }
+      if (isEditMode) {
+        const detailsObj = {};
 
-      if (hasCountertopScope) {
-        const cleanedMedidas = medidas
-          .filter((m) => m.area.trim() || m.largo || m.profundidad)
-          .map((m) => {
-            const l = parseFloat(m.largo || 0);
-            const p = parseFloat(m.profundidad || 0);
-            return {
-              area: m.area.trim() || 'Custom Area',
-              largo: l,
-              profundidad: p,
-              sq_ft: parseFloat((l * p).toFixed(2))
-            };
-          });
+        if (isKitchenProject) {
+          detailsObj.cabinets = {
+            tipo_construccion: (formData.tipo_construccion || '').trim(),
+            proveedor: (formData.proveedor || '').trim(),
+            linea_modelo: formData.linea_modelo,
+            color: (formData.color || '').trim(),
+            cantidad_cabinets: formData.cantidad_cabinets ? Number(formData.cantidad_cabinets) : 0,
+            costo_cabinets: parseFloat(formData.costo_cabinets || 0),
+            ensamble: parseFloat(formData.ensamble || 0),
+            costo_hardware: parseFloat(formData.costo_hardware || 0),
+            costo_accesorios: parseFloat(formData.costo_accesorios || 0),
+            costo_delivery: parseFloat(formData.costo_delivery || 0),
+            costo_instalacion: parseFloat(formData.costo_instalacion || 0),
+            total_cabinets_cost: totalCabinetsCost
+          };
+        }
 
-        scopeDetails.countertops = {
-          material: formData.countertop_material,
-          color: formData.countertop_color.trim(),
-          proveedor: formData.countertop_proveedor.trim(),
-          valor_slab: parseFloat(formData.valor_slab || 0),
-          cantidad_slabs: parseFloat(formData.cantidad_slabs || 0),
-          sqft_estimados: parseFloat(effectiveSqFt.toFixed(2)),
-          costo_fabricacion: parseFloat(formData.costo_fabricacion || 0),
-          costo_instalacion: parseFloat(formData.costo_instalacion || 0),
-          costo_transporte: parseFloat(formData.costo_transporte || 0),
-          total_countertop_cost: totalCountertopCost,
-          medidas: cleanedMedidas
-        };
+        if (hasCountertopScope) {
+          const cleanedMedidas = medidas
+            .filter((m) => m.area.trim() || m.largo || m.profundidad)
+            .map((m) => {
+              const l = parseFloat(m.largo || 0);
+              const p = parseFloat(m.profundidad || 0);
+              return {
+                area: m.area.trim() || 'Custom Area',
+                largo: l,
+                profundidad: p,
+                sq_ft: parseFloat((l * p).toFixed(2))
+              };
+            });
+
+          detailsObj.countertops = {
+            material: formData.countertop_material,
+            color: (formData.countertop_color || '').trim(),
+            proveedor: (formData.countertop_proveedor || '').trim(),
+            valor_slab: parseFloat(formData.valor_slab || 0),
+            cantidad_slabs: parseFloat(formData.cantidad_slabs || 0),
+            sqft_estimados: parseFloat(effectiveSqFt.toFixed(2)),
+            costo_fabricacion: parseFloat(formData.costo_fabricacion || 0),
+            costo_instalacion: parseFloat(formData.costo_instalacion || 0),
+            costo_transporte: parseFloat(formData.costo_transporte || 0),
+            total_countertop_cost: totalCountertopCost,
+            medidas: cleanedMedidas
+          };
+        }
+
+        if (Object.keys(detailsObj).length > 0) {
+          scopeDetails = detailsObj;
+        } else if (projectToEdit?.scope_details) {
+          scopeDetails = projectToEdit.scope_details;
+        }
       }
 
       const payload = {
@@ -220,7 +230,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
         base_contract_value: isNaN(baseContract) ? 0 : baseContract,
         deposit_received: isNaN(deposit) ? 0 : deposit,
         project_type: formData.project_type,
-        scope_details: Object.keys(scopeDetails).length > 0 ? scopeDetails : null
+        scope_details: scopeDetails
       };
 
       if (isEditMode) {
@@ -264,7 +274,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content wizard-modal">
+      <div className={`modal-content wizard-modal ${!isEditMode ? 'simplified' : ''}`}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h3 style={{ margin: 0, fontSize: '1.4rem' }}>
             {isEditMode ? t('wizard.modalTitleEdit') : t('wizard.modalTitleNew')}
@@ -281,11 +291,11 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
         {error && <div className="alert error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="expense-form">
-          {/* SECTION 1: GENERAL & FINANCIAL INFORMATION */}
+          {/* SECTION 1: CORE GENERAL & FINANCIAL INFORMATION (Always Visible) */}
           <div className="wizard-section">
             <div className="wizard-section-title">{t('wizard.secGeneralTitle')}</div>
             
-            <div className="wizard-grid-3">
+            <div className="wizard-grid-2">
               <div className="form-group">
                 <label htmlFor="project_name">{t('wizard.projectNameLabel')}</label>
                 <input
@@ -294,7 +304,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   name="project_name"
                   value={formData.project_name}
                   onChange={handleChange}
-                  placeholder={t('wizard.projectNamePlaceholder')}
                   required
                   autoFocus
                 />
@@ -308,9 +317,26 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   name="client_name"
                   value={formData.client_name}
                   onChange={handleChange}
-                  placeholder={t('wizard.clientNamePlaceholder')}
                   required
                 />
+              </div>
+            </div>
+
+            <div className="wizard-grid-2">
+              <div className="form-group">
+                <label htmlFor="project_type">{t('wizard.projectTypeLabel')}</label>
+                <select
+                  id="project_type"
+                  name="project_type"
+                  value={formData.project_type}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="Cocina">{t('wizard.typeCocina')}</option>
+                  <option value="Baños">{t('wizard.typeBanos')}</option>
+                  <option value="Cocina y Baños">{t('wizard.typeCocinaBanos')}</option>
+                  <option value="Remodelación Completa">{t('wizard.typeRemodelacionCompleta')}</option>
+                </select>
               </div>
 
               <div className="form-group">
@@ -330,23 +356,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
               </div>
             </div>
 
-            <div className="wizard-grid-3">
-              <div className="form-group">
-                <label htmlFor="project_type">{t('wizard.projectTypeLabel')}</label>
-                <select
-                  id="project_type"
-                  name="project_type"
-                  value={formData.project_type}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="Cocina">{t('wizard.typeCocina')}</option>
-                  <option value="Baños">{t('wizard.typeBanos')}</option>
-                  <option value="Cocina y Baños">{t('wizard.typeCocinaBanos')}</option>
-                  <option value="Remodelación Completa">{t('wizard.typeRemodelacionCompleta')}</option>
-                </select>
-              </div>
-
+            <div className="wizard-grid-2">
               <div className="form-group">
                 <label htmlFor="base_contract_value">{t('wizard.baseContractLabel')}</label>
                 <input
@@ -357,7 +367,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   name="base_contract_value"
                   value={formData.base_contract_value}
                   onChange={handleChange}
-                  placeholder={t('wizard.baseContractPlaceholder')}
                   required
                 />
               </div>
@@ -372,14 +381,13 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                   name="deposit_received"
                   value={formData.deposit_received}
                   onChange={handleChange}
-                  placeholder={t('wizard.depositPlaceholder')}
                 />
               </div>
             </div>
           </div>
 
-          {/* SECTION 2: CONDITIONAL CABINETS SCOPE (JSONB) */}
-          {isKitchenProject && (
+          {/* SECTION 2: CONDITIONAL CABINETS SCOPE (JSONB) - EDIT MODE ONLY */}
+          {isEditMode && isKitchenProject && (
             <div className="wizard-section slide-down">
               <div className="wizard-section-title">
                 <span>{t('wizard.secCabinetsTitle')}</span>
@@ -397,7 +405,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="tipo_construccion"
                     value={formData.tipo_construccion}
                     onChange={handleChange}
-                    placeholder={t('wizard.tipoConstruccionPlaceholder')}
                   />
                 </div>
 
@@ -409,7 +416,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="proveedor"
                     value={formData.proveedor}
                     onChange={handleChange}
-                    placeholder={t('wizard.proveedorPlaceholder')}
                   />
                 </div>
               </div>
@@ -437,7 +443,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="color"
                     value={formData.color}
                     onChange={handleChange}
-                    placeholder={t('wizard.colorPlaceholder')}
                   />
                 </div>
 
@@ -450,7 +455,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="cantidad_cabinets"
                     value={formData.cantidad_cabinets}
                     onChange={handleChange}
-                    placeholder="e.g. 18"
                   />
                 </div>
               </div>
@@ -466,7 +470,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="costo_cabinets"
                     value={formData.costo_cabinets}
                     onChange={handleChange}
-                    placeholder="0.00"
                   />
                 </div>
 
@@ -480,7 +483,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="ensamble"
                     value={formData.ensamble}
                     onChange={handleChange}
-                    placeholder="0.00"
                   />
                 </div>
 
@@ -494,7 +496,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="costo_hardware"
                     value={formData.costo_hardware}
                     onChange={handleChange}
-                    placeholder="0.00"
                   />
                 </div>
 
@@ -508,7 +509,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="costo_accesorios"
                     value={formData.costo_accesorios}
                     onChange={handleChange}
-                    placeholder="0.00"
                   />
                 </div>
 
@@ -522,7 +522,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="costo_delivery"
                     value={formData.costo_delivery}
                     onChange={handleChange}
-                    placeholder="0.00"
                   />
                 </div>
 
@@ -536,15 +535,14 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="costo_instalacion"
                     value={formData.costo_instalacion}
                     onChange={handleChange}
-                    placeholder="0.00"
                   />
                 </div>
               </div>
             </div>
           )}
 
-          {/* SECTION 3: CONDITIONAL COUNTERTOP SCOPE (JSONB) */}
-          {hasCountertopScope && (
+          {/* SECTION 3: CONDITIONAL COUNTERTOP SCOPE (JSONB) - EDIT MODE ONLY */}
+          {isEditMode && hasCountertopScope && (
             <div className="wizard-section slide-down">
               <div className="wizard-section-title">
                 <span>{t('wizard.secCountertopsTitle')}</span>
@@ -579,7 +577,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="countertop_color"
                     value={formData.countertop_color}
                     onChange={handleChange}
-                    placeholder="e.g. Calacatta Gold"
                   />
                 </div>
 
@@ -591,7 +588,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="countertop_proveedor"
                     value={formData.countertop_proveedor}
                     onChange={handleChange}
-                    placeholder="e.g. STSTONES"
                   />
                 </div>
               </div>
@@ -607,7 +603,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="valor_slab"
                     value={formData.valor_slab}
                     onChange={handleChange}
-                    placeholder="e.g. 750.00"
                   />
                 </div>
 
@@ -621,7 +616,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="cantidad_slabs"
                     value={formData.cantidad_slabs}
                     onChange={handleChange}
-                    placeholder="e.g. 2"
                   />
                 </div>
 
@@ -637,7 +631,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="sqft_estimados"
                     value={totalMedidasSqFt > 0 ? totalMedidasSqFt.toFixed(2) : formData.sqft_estimados}
                     onChange={handleChange}
-                    placeholder="e.g. 60.5"
                     style={totalMedidasSqFt > 0 ? { backgroundColor: '#f0fdf4', fontWeight: 600, borderColor: '#86efac' } : {}}
                   />
                 </div>
@@ -654,7 +647,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="costo_fabricacion"
                     value={formData.costo_fabricacion}
                     onChange={handleChange}
-                    placeholder="e.g. 25.00"
                   />
                 </div>
 
@@ -668,7 +660,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="costo_instalacion"
                     value={formData.costo_instalacion}
                     onChange={handleChange}
-                    placeholder="e.g. 15.00"
                   />
                 </div>
 
@@ -682,7 +673,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     name="costo_transporte"
                     value={formData.costo_transporte}
                     onChange={handleChange}
-                    placeholder="e.g. 150.00"
                   />
                 </div>
               </div>
@@ -723,7 +713,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                                 type="text"
                                 value={item.area}
                                 onChange={(e) => handleMedidaChange(idx, 'area', e.target.value)}
-                                placeholder="Area Name"
                                 className="medida-input"
                               />
                             </td>
@@ -734,7 +723,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                                 min="0"
                                 value={item.largo}
                                 onChange={(e) => handleMedidaChange(idx, 'largo', e.target.value)}
-                                placeholder="0.0"
                                 className="medida-input"
                               />
                             </td>
@@ -745,7 +733,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                                 min="0"
                                 value={item.profundidad}
                                 onChange={(e) => handleMedidaChange(idx, 'profundidad', e.target.value)}
-                                placeholder="0.0"
                                 className="medida-input"
                               />
                             </td>
@@ -788,9 +775,9 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
             <button type="button" className="cancel-btn" onClick={onClose}>
               {t('common.cancel')}
             </button>
-            <button type="submit" className="submit-btn" disabled={loading} style={{ margin: 0, padding: '0.85rem 1.75rem' }}>
+            <button type="submit" className="submit-btn" disabled={loading} style={{ margin: 0, padding: '0.75rem 1.85rem' }}>
               {loading 
-                ? (isEditMode ? t('common.saving') : t('common.saving')) 
+                ? t('common.saving') 
                 : (isEditMode ? t('wizard.saveChangesBtn') : t('wizard.createProjectBtn'))}
             </button>
           </div>

@@ -184,7 +184,6 @@ export default function Auth({ onAuthSuccess }) {
               id="auth-email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="architect@arkadesigngroup.com"
               required
               autoFocus
             />
@@ -197,7 +196,6 @@ export default function Auth({ onAuthSuccess }) {
               id="auth-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
               minLength={6}
               required
             />

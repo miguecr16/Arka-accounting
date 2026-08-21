@@ -101,7 +101,6 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('changeOrderForm.descriptionPlaceholder')}
               required
               autoFocus
             />
@@ -116,7 +115,6 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
               id="extra_charge"
               value={extraCharge}
               onChange={(e) => setExtraCharge(e.target.value)}
-              placeholder="0.00"
               required
             />
           </div>
@@ -144,7 +142,7 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
             </button>
             <button type="submit" className="submit-btn" disabled={loading}>
               {loading 
-                ? (isEditMode ? t('common.saving') : t('common.saving')) 
+                ? t('common.saving') 
                 : (isEditMode ? t('changeOrderForm.updateBtn') : t('changeOrderForm.saveBtn'))}
             </button>
           </div>
