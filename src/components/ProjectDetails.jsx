@@ -18,6 +18,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedReceiptImage, setSelectedReceiptImage] = useState(null); // Lightbox image state
   const [error, setError] = useState('');
   
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -40,6 +41,17 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     // Handle legacy raw filename stored previously
     return `https://ddenuevupwywvatplfnt.supabase.co/storage/v1/object/public/imagenes_arka/${clean}`;
   };
+
+  // Close lightbox on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && selectedReceiptImage) {
+        setSelectedReceiptImage(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedReceiptImage]);
 
   const fetchAllData = async () => {
     try {
@@ -477,48 +489,39 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                         <td>{item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-'}</td>
                         <td>{item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-'}</td>
                         
-                        {/* 40x40px Clickable Image Thumbnail for Receipt */}
+                        {/* 40x40px In-App Lightbox Trigger Thumbnail */}
                         <td style={{ textAlign: 'center' }}>
                           {receiptUrl ? (
-                            <a
-                              href={receiptUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{ display: 'inline-block', lineHeight: 0 }}
-                              title="Click to view full-size receipt"
-                            >
-                              <img
-                                src={receiptUrl}
-                                alt="Receipt"
-                                style={{
-                                  width: '40px',
-                                  height: '40px',
-                                  objectFit: 'cover',
-                                  borderRadius: '8px',
-                                  border: '1px solid #cbd5e1',
-                                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-                                  cursor: 'pointer',
-                                  transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
-                                  display: 'block'
-                                }}
-                                onMouseOver={(e) => {
-                                  e.currentTarget.style.transform = 'scale(1.12)';
-                                  e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.18)';
-                                  e.currentTarget.style.borderColor = '#3b82f6';
-                                }}
-                                onMouseOut={(e) => {
-                                  e.currentTarget.style.transform = 'scale(1)';
-                                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.08)';
-                                  e.currentTarget.style.borderColor = '#cbd5e1';
-                                }}
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  if (e.currentTarget.parentElement) {
-                                    e.currentTarget.parentElement.innerHTML = '<span style="font-size: 0.8rem; color: #2563eb; font-weight: 500;">📎 Receipt ↗</span>';
-                                  }
-                                }}
-                              />
-                            </a>
+                            <img
+                              src={receiptUrl}
+                              alt="Receipt"
+                              onClick={() => setSelectedReceiptImage(receiptUrl)}
+                              title="Click to view full receipt in-app"
+                              style={{
+                                width: '40px',
+                                height: '40px',
+                                objectFit: 'cover',
+                                borderRadius: '8px',
+                                border: '1px solid #cbd5e1',
+                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+                                cursor: 'pointer',
+                                transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
+                                display: 'inline-block'
+                              }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.12)';
+                                e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.18)';
+                                e.currentTarget.style.borderColor = '#3b82f6';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.08)';
+                                e.currentTarget.style.borderColor = '#cbd5e1';
+                              }}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
                           ) : (
                             <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>-</span>
                           )}
@@ -717,6 +720,87 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                 {isDeleting ? t('common.deleting') : t('projectDetails.deleteProceedBtn')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* In-App Lightbox Popup Modal for Receipts */}
+      {selectedReceiptImage && (
+        <div 
+          className="modal-overlay"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+            cursor: 'zoom-out'
+          }}
+          onClick={() => setSelectedReceiptImage(null)}
+        >
+          {/* Close Button in Top-Right Corner */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedReceiptImage(null);
+            }}
+            style={{
+              position: 'fixed',
+              top: '1.5rem',
+              right: '1.75rem',
+              background: 'rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              color: '#ffffff',
+              fontSize: '1.75rem',
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              zIndex: 10000
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+            title="Close Receipt (Esc)"
+          >
+            &times;
+          </button>
+
+          {/* Centered High-Res Image Container */}
+          <div 
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '85vh',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'default'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedReceiptImage}
+              alt="Receipt Full View"
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '85vh',
+                objectFit: 'contain',
+                borderRadius: '12px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}
+            />
           </div>
         </div>
       )}
