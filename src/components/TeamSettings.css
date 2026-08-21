@@ -64,6 +64,47 @@
   margin: 0;
 }
 
+/* Interactive Role Dropdown Select */
+.role-select-input {
+  padding: 0.4rem 0.85rem !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  border-radius: 9999px !important;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  min-height: 38px !important;
+  width: auto !important;
+  display: inline-flex;
+  letter-spacing: 0.03em;
+}
+
+.role-select-input.admin {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid #0f172a !important;
+}
+
+.role-select-input.admin:hover {
+  background-color: #1e293b !important;
+}
+
+.role-select-input.trabajador {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.role-select-input.trabajador:hover {
+  background-color: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+}
+
+.role-select-input:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 /* Action Badges in Audit Table */
 .audit-action-badge {
   display: inline-block;

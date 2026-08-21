@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import './TeamSettings.css';
 import './ProjectDetails.css';
@@ -12,6 +13,8 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
   const [profiles, setProfiles] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingUserId, setUpdatingUserId] = useState(null);
+  const [successToast, setSuccessToast] = useState('');
   const [error, setError] = useState('');
 
   const fetchProfiles = async () => {
@@ -59,6 +62,42 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
     }
   }, [isAdmin]);
 
+  const handleRoleChange = async (userId, newRole, userEmail, userFullName) => {
+    setUpdatingUserId(userId);
+    setSuccessToast('');
+    setError('');
+
+    try {
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+
+      // Log audit event
+      const displayName = userFullName || userEmail?.split('@')[0] || userEmail;
+      await logAuditEvent({
+        action: 'Actualizó Rol',
+        entity: 'Usuario',
+        details: `Cambió rol de ${displayName} (${userEmail}) a "${newRole.toUpperCase()}"`
+      });
+
+      // Update local state immediately
+      setProfiles((prev) =>
+        prev.map((p) => (p.id === userId ? { ...p, role: newRole } : p))
+      );
+
+      setSuccessToast(t('teamSettings.roleUpdatedToast') || 'Role updated successfully!');
+      setTimeout(() => setSuccessToast(''), 4000);
+    } catch (err) {
+      console.error('Error updating role:', err);
+      setError(err.message || 'Failed to update user role.');
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return 'N/A';
     try {
@@ -79,6 +118,7 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
     const a = (action || '').toLowerCase();
     if (a.includes('creó') || a.includes('crear') || a.includes('create')) return 'crear';
     if (a.includes('editó') || a.includes('editar') || a.includes('update')) return 'editar';
+    if (a.includes('rol') || a.includes('role')) return 'crear';
     if (a.includes('estado') || a.includes('status')) return 'estado';
     if (a.includes('aprobó') || a.includes('aprobar') || a.includes('approve')) return 'aprobar';
     return 'general';
@@ -122,6 +162,7 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
       </div>
 
       {error && <div className="alert error" style={{ marginBottom: '1.5rem' }}>{error}</div>}
+      {successToast && <div className="alert success" style={{ marginBottom: '1.5rem' }}>✓ {successToast}</div>}
 
       {/* Tabs Navigation */}
       <div className="tabs-navigation">
@@ -153,9 +194,9 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
             <table className="data-table">
               <thead>
                 <tr>
+                  <th>{t('teamSettings.colFullName')}</th>
                   <th>{t('teamSettings.colUserEmail')}</th>
                   <th>{t('teamSettings.colRolePerms')}</th>
-                  <th>{t('teamSettings.colUserId')}</th>
                   <th>{t('teamSettings.colJoinDate')}</th>
                 </tr>
               </thead>
@@ -174,33 +215,29 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
                   </tr>
                 ) : (
                   profiles.map((user) => {
-                    const isUserAdmin = (user.role || '').toLowerCase() === 'admin';
+                    const currentRole = (user.role || 'trabajador').toLowerCase();
+                    const isUpdatingThisUser = updatingUserId === user.id;
 
                     return (
                       <tr key={user.id}>
                         <td>
-                          <strong>{user.email}</strong>
+                          <strong>{user.full_name || user.email?.split('@')[0] || 'N/A'}</strong>
                         </td>
                         <td>
-                          <span style={{
-                            backgroundColor: isUserAdmin ? '#0f172a' : '#f1f5f9',
-                            color: isUserAdmin ? '#ffffff' : '#475569',
-                            border: isUserAdmin ? '1px solid #0f172a' : '1px solid #cbd5e1',
-                            padding: '0.25rem 0.65rem',
-                            borderRadius: '9999px',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                            display: 'inline-block'
-                          }}>
-                            {isUserAdmin ? t('common.adminRole') : t('common.trabajadorRole')}
-                          </span>
+                          <span style={{ color: '#475569' }}>{user.email}</span>
                         </td>
                         <td>
-                          <code style={{ fontSize: '0.8rem', color: '#64748b', background: '#f8fafc', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>
-                            {user.id}
-                          </code>
+                          {/* In-App Interactive Role Management Dropdown */}
+                          <select
+                            value={currentRole}
+                            onChange={(e) => handleRoleChange(user.id, e.target.value, user.email, user.full_name)}
+                            disabled={isUpdatingThisUser}
+                            className={`role-select-input ${currentRole === 'admin' ? 'admin' : 'trabajador'}`}
+                            title="Click to modify member permissions"
+                          >
+                            <option value="trabajador">{t('teamSettings.roleWorker') || '👤 Worker'}</option>
+                            <option value="admin">{t('teamSettings.roleAdmin') || '🛡️ Admin'}</option>
+                          </select>
                         </td>
                         <td style={{ color: '#64748b', fontSize: '0.9rem' }}>
                           {formatDate(user.created_at)}

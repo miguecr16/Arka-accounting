@@ -6,6 +6,7 @@ import './Auth.css';
 export default function Auth({ onAuthSuccess }) {
   const { t, language, setLanguage } = useLanguage();
   const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,7 +15,8 @@ export default function Auth({ onAuthSuccess }) {
 
   const handleToggleMode = (newMode) => {
     setMode(newMode);
-    // Explicitly reset email and password state variables on toggle for security
+    // Explicitly reset form state variables on toggle for security
+    setFullName('');
     setEmail('');
     setPassword('');
     setError('');
@@ -46,24 +48,33 @@ export default function Auth({ onAuthSuccess }) {
           onAuthSuccess(data.session);
         }
       } else {
-        // Sign Up
+        // Sign Up with Full Name
         const cleanEmail = email.trim();
+        const cleanFullName = fullName.trim();
+
         const { data, error: authError } = await supabase.auth.signUp({
           email: cleanEmail,
-          password
+          password,
+          options: {
+            data: {
+              full_name: cleanFullName
+            }
+          }
         });
 
         if (authError) throw authError;
 
-        // Insert new user profile into the `profiles` table
+        // Insert / update new user profile in the `profiles` table
         if (data?.user) {
           try {
             await supabase
               .from('profiles')
-              .insert([
+              .upsert([
                 {
                   id: data.user.id,
-                  email: cleanEmail
+                  email: cleanEmail,
+                  full_name: cleanFullName,
+                  role: 'trabajador'
                 }
               ]);
           } catch (profileErr) {
@@ -177,6 +188,21 @@ export default function Auth({ onAuthSuccess }) {
 
         {/* Auth Form */}
         <form onSubmit={handleSubmit} className="auth-form">
+          {/* Full Name field (Register Mode Only) */}
+          {mode === 'register' && (
+            <div className="form-group">
+              <label htmlFor="auth-fullname">{t('auth.fullNameLabel')}</label>
+              <input
+                type="text"
+                id="auth-fullname"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="auth-email">{t('auth.emailLabel')}</label>
             <input
@@ -185,7 +211,7 @@ export default function Auth({ onAuthSuccess }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              autoFocus
+              autoFocus={mode === 'login'}
             />
           </div>
 
