@@ -7,7 +7,7 @@ import NewChangeOrderModal from './NewChangeOrderModal.jsx';
 import './ProjectDetails.css';
 
 export default function ProjectDetails({ projectId, onBack, userRole = 'trabajador' }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isAdmin = userRole === 'admin';
 
   const [projectData, setProjectData] = useState(null);
@@ -165,6 +165,41 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     }
   };
 
+  // Handle Admin Expense Record Deletion
+  const handleDeleteExpense = async (item) => {
+    if (!isAdmin) return;
+
+    const confirmMsg = language === 'es'
+      ? '¿Estás seguro de que deseas eliminar este registro?'
+      : 'Are you sure you want to delete this record?';
+
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      setActionLoadingId(item.id);
+      const { error: dbError } = await supabase
+        .from('expenses_and_hours')
+        .delete()
+        .eq('id', item.id);
+
+      if (dbError) throw dbError;
+
+      // Log audit event for Expense Deletion
+      await logAuditEvent({
+        action: 'Eliminó',
+        entity: 'Gasto',
+        details: `Eliminó registro de ${item.category} ($${item.cost_amount || 0}, ${item.hours_worked || 0} hrs) en proyecto ID #${projectId}`
+      });
+
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error deleting expense record:', err);
+      alert('Failed to delete record: ' + (err.message || 'Unknown error'));
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   const handleApproveChangeOrder = async (changeOrderId, description, charge) => {
     if (!isAdmin) return;
 
@@ -214,12 +249,13 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     const hasDescripcion = item.descripcion && item.descripcion.trim();
 
     if (item.category === 'Mano de Obra') {
+      const workerName = hasDescripcion || d?.worker_name || hasProveedor;
       return (
         <div style={{ fontSize: '0.85rem', color: '#1e293b' }}>
-          {hasDescripcion ? (
-            <strong>👤 {item.descripcion}</strong>
+          {workerName ? (
+            <strong>👤 {workerName}</strong>
           ) : (
-            <span style={{ color: '#64748b' }}>Labor</span>
+            <span style={{ color: '#64748b' }}>-</span>
           )}
         </div>
       );
@@ -475,21 +511,35 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                   </tr>
                 ) : (
                   expenses.map((item) => {
+                    const isLabor = item.category === 'Mano de Obra';
+                    const isMaterial = item.category === 'Materiales';
                     const receiptUrl = resolveReceiptUrl(item.receipt_image_url);
 
                     return (
                       <tr key={item.id}>
                         <td>{item.date}</td>
                         <td>
-                          <span className={`category-tag ${item.category === 'Mano de Obra' ? 'labor' : ''}`}>
+                          <span className={`category-tag ${isLabor ? 'labor' : ''}`}>
                             {item.category}
                           </span>
                         </td>
                         <td>{renderExpenseDetails(item)}</td>
-                        <td>{item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-'}</td>
-                        <td>{item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-'}</td>
+
+                        {/* Cost Amount (Contextual: strictly '-' for Labor if 0) */}
+                        <td>
+                          {isLabor 
+                            ? (item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-') 
+                            : (item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-')}
+                        </td>
+
+                        {/* Hours (Contextual: strictly '-' for Materiales) */}
+                        <td>
+                          {isMaterial 
+                            ? '-' 
+                            : (item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-')}
+                        </td>
                         
-                        {/* 40x40px In-App Lightbox Trigger Thumbnail */}
+                        {/* Receipt Thumbnail (Contextual: strictly '-' for Labor unless receipt present) */}
                         <td style={{ textAlign: 'center' }}>
                           {receiptUrl ? (
                             <img
@@ -527,18 +577,51 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                           )}
                         </td>
 
+                        {/* Actions (Admin Only: Edit & Delete) */}
                         {isAdmin && (
                           <td style={{ textAlign: 'right' }}>
-                            <button
-                              className="table-action-edit-btn"
-                              title={t('common.edit')}
-                              onClick={() => {
-                                setEditingExpense(item);
-                                setIsExpenseModalOpen(true);
-                              }}
-                            >
-                              ✏️ {t('common.edit')}
-                            </button>
+                            <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center', justifyContent: 'flex-end' }}>
+                              <button
+                                className="table-action-edit-btn"
+                                title={t('common.edit')}
+                                onClick={() => {
+                                  setEditingExpense(item);
+                                  setIsExpenseModalOpen(true);
+                                }}
+                              >
+                                ✏️ {t('common.edit')}
+                              </button>
+
+                              <button
+                                onClick={() => handleDeleteExpense(item)}
+                                disabled={actionLoadingId === item.id}
+                                title={t('common.delete')}
+                                style={{
+                                  background: '#ffffff',
+                                  border: '1px solid #fecaca',
+                                  color: '#dc2626',
+                                  padding: '0.3rem 0.55rem',
+                                  borderRadius: '6px',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 600,
+                                  cursor: actionLoadingId === item.id ? 'not-allowed' : 'pointer',
+                                  transition: 'all 0.2s',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                                onMouseOver={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#fef2f2';
+                                  e.currentTarget.style.borderColor = '#ef4444';
+                                }}
+                                onMouseOut={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#ffffff';
+                                  e.currentTarget.style.borderColor = '#fecaca';
+                                }}
+                              >
+                                {actionLoadingId === item.id ? '...' : '🗑️'}
+                              </button>
+                            </div>
                           </td>
                         )}
                       </tr>
