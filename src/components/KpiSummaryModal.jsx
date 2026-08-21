@@ -1,10 +1,9 @@
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { formatToUSD } from '../utils/currencyFormatter.js';
 import './Dashboard.css';
 
 export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectProject }) {
   const { t } = useLanguage();
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
   const getStatusBadgeClass = (status) => {
     const s = (status || '').toLowerCase().trim();
@@ -27,7 +26,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
     modalSubtitle = t('kpiModal.profitSub');
     displayProjects.sort((a, b) => (parseFloat(b.gross_profit) || 0) - (parseFloat(a.gross_profit) || 0));
     const total = displayProjects.reduce((sum, p) => sum + (parseFloat(p.gross_profit) || 0), 0);
-    totalSummaryBadge = `${t('common.grandTotal')}: ${formatCurrency(total)}`;
+    totalSummaryBadge = `${t('common.grandTotal')}: ${formatToUSD(total)}`;
   } else if (kpiType === 'hours') {
     modalTitle = t('kpiModal.hoursTitle');
     modalIcon = '⏱️';
@@ -50,7 +49,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
     modalSubtitle = t('kpiModal.volumeSub');
     displayProjects.sort((a, b) => (parseFloat(b.final_contract_value) || 0) - (parseFloat(a.final_contract_value) || 0));
     const total = displayProjects.reduce((sum, p) => sum + (parseFloat(p.final_contract_value) || 0), 0);
-    totalSummaryBadge = `${t('common.grandTotal')}: ${formatCurrency(total)}`;
+    totalSummaryBadge = `${t('common.grandTotal')}: ${formatToUSD(total)}`;
   }
 
   return (
@@ -143,7 +142,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                       {kpiType === 'profit' && (
                         <>
                           <td style={{ textAlign: 'right', fontWeight: 700, color: (parseFloat(p.gross_profit) || 0) >= 0 ? '#047857' : '#b91c1c' }}>
-                            {formatCurrency(p.gross_profit)}
+                            {formatToUSD(p.gross_profit)}
                           </td>
                           <td style={{ textAlign: 'right', fontWeight: 600, color: '#334155' }}>
                             {p.gross_margin_percentage ? `${parseFloat(p.gross_margin_percentage).toFixed(2)}%` : '0%'}
@@ -158,7 +157,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                             {p.total_hours || 0} hrs
                           </td>
                           <td style={{ textAlign: 'right', color: '#64748b' }}>
-                            {formatCurrency(p.total_direct_costs)}
+                            {formatToUSD(p.total_direct_costs)}
                           </td>
                         </>
                       )}
@@ -172,7 +171,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                             </span>
                           </td>
                           <td style={{ textAlign: 'right', fontWeight: 600 }}>
-                            {formatCurrency(p.final_contract_value)}
+                            {formatToUSD(p.final_contract_value)}
                           </td>
                         </>
                       )}
@@ -181,13 +180,13 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                       {kpiType === 'volume' && (
                         <>
                           <td style={{ textAlign: 'right', color: '#64748b' }}>
-                            {formatCurrency(p.base_contract_value)}
+                            {formatToUSD(p.base_contract_value)}
                           </td>
                           <td style={{ textAlign: 'right', color: '#64748b' }}>
-                            {formatCurrency(p.approved_change_orders)}
+                            {formatToUSD(p.approved_change_orders)}
                           </td>
                           <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
-                            {formatCurrency(p.final_contract_value)}
+                            {formatToUSD(p.final_contract_value)}
                           </td>
                         </>
                       )}

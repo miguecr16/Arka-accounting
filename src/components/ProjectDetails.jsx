@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { formatToUSD } from '../utils/currencyFormatter.js';
 import NewExpenseForm from './NewExpenseForm.jsx';
 import NewChangeOrderModal from './NewChangeOrderModal.jsx';
 import './ProjectDetails.css';
@@ -28,9 +29,6 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   const [editingChangeOrder, setEditingChangeOrder] = useState(null);
 
   const [actionLoadingId, setActionLoadingId] = useState(null);
-
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
   const resolveReceiptUrl = (rawUrl) => {
     if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) return null;
@@ -421,19 +419,19 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
           <div className="kpi-grid">
             <div className="kpi-card">
               <span>{t('projectDetails.baseContract')}</span>
-              <strong>{formatCurrency(projectData?.base_contract_value)}</strong>
+              <strong>{formatToUSD(projectData?.base_contract_value)}</strong>
             </div>
             <div className="kpi-card">
               <span>{t('projectDetails.approvedChanges')}</span>
-              <strong>{formatCurrency(projectData?.approved_change_orders)}</strong>
+              <strong>{formatToUSD(projectData?.approved_change_orders)}</strong>
             </div>
             <div className="kpi-card highlight">
               <span>{t('projectDetails.finalContractValue')}</span>
-              <strong>{formatCurrency(projectData?.final_contract_value)}</strong>
+              <strong>{formatToUSD(projectData?.final_contract_value)}</strong>
             </div>
             <div className="kpi-card">
               <span>{t('projectDetails.totalDirectCosts')}</span>
-              <strong>{formatCurrency(projectData?.total_direct_costs)}</strong>
+              <strong>{formatToUSD(projectData?.total_direct_costs)}</strong>
             </div>
             <div className="kpi-card">
               <span>{t('projectDetails.totalHoursLogged')}</span>
@@ -441,7 +439,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             </div>
             <div className="kpi-card highlight-profit">
               <span>{t('projectDetails.grossProfit')}</span>
-              <strong>{formatCurrency(projectData?.gross_profit)}</strong>
+              <strong>{formatToUSD(projectData?.gross_profit)}</strong>
             </div>
             <div className="kpi-card highlight-profit">
               <span>{t('projectDetails.grossMargin')}</span>
@@ -528,8 +526,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                         {/* Cost Amount (Contextual: strictly '-' for Labor if 0) */}
                         <td>
                           {isLabor 
-                            ? (item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-') 
-                            : (item.cost_amount > 0 ? formatCurrency(item.cost_amount) : '-')}
+                            ? (item.cost_amount > 0 ? formatToUSD(item.cost_amount) : '-') 
+                            : (item.cost_amount > 0 ? formatToUSD(item.cost_amount) : '-')}
                         </td>
 
                         {/* Hours (Contextual: strictly '-' for Materiales) */}
@@ -681,7 +679,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                     return (
                       <tr key={co.id}>
                         <td><strong>{co.description}</strong></td>
-                        <td>{formatCurrency(co.extra_charge_to_client)}</td>
+                        <td>{formatToUSD(co.extra_charge_to_client)}</td>
                         <td>
                           <span className={`status-pill ${getStatusClass(co.status)}`}>
                             {co.status || 'Borrador'}

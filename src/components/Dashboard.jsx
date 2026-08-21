@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { formatToUSD } from '../utils/currencyFormatter.js';
 import ProjectCard from './ProjectCard.jsx';
 import NewProjectModal from './NewProjectModal.jsx';
 import KpiSummaryModal from './KpiSummaryModal.jsx';
@@ -16,9 +17,6 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
   const [error, setError] = useState('');
 
   const isAdmin = userRole === 'admin';
-
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
   const fetchProjects = async () => {
     try {
@@ -117,7 +115,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               <div className="kpi-icon-wrapper">💰</div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.totalCompanyProfit')}</span>
-                <strong className="kpi-value profit-value">{formatCurrency(totalCompanyProfit)}</strong>
+                <strong className="kpi-value profit-value">{formatToUSD(totalCompanyProfit)}</strong>
                 <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
@@ -159,7 +157,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               <div className="kpi-icon-wrapper">📈</div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.totalContractVolume')}</span>
-                <strong className="kpi-value">{formatCurrency(totalContractVolume)}</strong>
+                <strong className="kpi-value">{formatToUSD(totalContractVolume)}</strong>
                 <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>

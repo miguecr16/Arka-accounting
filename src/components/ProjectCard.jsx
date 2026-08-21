@@ -1,10 +1,10 @@
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { formatToUSD } from '../utils/currencyFormatter.js';
 import './Dashboard.css';
 
 export default function ProjectCard({ project, onSelectProject, onEditProject, userRole = 'trabajador' }) {
   const { t } = useLanguage();
   const isAdmin = userRole === 'admin';
-  const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
   const getStatusBadgeClass = (status) => {
     const s = (status || '').toLowerCase().trim();
@@ -45,7 +45,7 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
         <div className="project-metrics">
           <div className="metric">
             <span>{t('dashboard.grossProfit')}</span>
-            <strong>{formatCurrency(project.gross_profit)}</strong>
+            <strong>{formatToUSD(project.gross_profit)}</strong>
           </div>
           <div className="metric">
             <span>{t('dashboard.grossMargin')}</span>

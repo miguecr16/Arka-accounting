@@ -101,6 +101,32 @@ input[type="file"]:hover {
   background-color: #f1f5f9;
 }
 
+/* =========================================================
+   CURRENCY INPUT VISUAL CUE WRAPPER ($ PREFIX)
+   ========================================================= */
+.currency-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.currency-input-wrapper .currency-symbol {
+  position: absolute;
+  left: 1.15rem;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 1rem;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+.currency-input-wrapper input {
+  padding-left: 2.15rem !important;
+  width: 100%;
+}
+
 /* Form Group Layout & Labels */
 .form-group {
   display: flex;

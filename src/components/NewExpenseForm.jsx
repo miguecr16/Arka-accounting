@@ -309,15 +309,18 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
 
               <div className="form-group">
                 <label htmlFor="cost_amount">{t('expenseForm.totalCostLabel')}</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  id="cost_amount"
-                  value={costAmount}
-                  onChange={(e) => setCostAmount(e.target.value)}
-                  required
-                />
+                <div className="currency-input-wrapper">
+                  <span className="currency-symbol">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="cost_amount"
+                    value={costAmount}
+                    onChange={(e) => setCostAmount(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-group">
@@ -406,15 +409,18 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
 
               <div className="form-group">
                 <label htmlFor="cost_amount">{t('expenseForm.totalCostLabel')}</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  id="cost_amount"
-                  value={costAmount}
-                  onChange={(e) => setCostAmount(e.target.value)}
-                  required
-                />
+                <div className="currency-input-wrapper">
+                  <span className="currency-symbol">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="cost_amount"
+                    value={costAmount}
+                    onChange={(e) => setCostAmount(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-group">
@@ -506,15 +512,18 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
 
               <div className="form-group">
                 <label htmlFor="cost_amount">{t('expenseForm.totalCostLabel')}</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  id="cost_amount"
-                  value={costAmount}
-                  onChange={(e) => setCostAmount(e.target.value)}
-                  required
-                />
+                <div className="currency-input-wrapper">
+                  <span className="currency-symbol">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="cost_amount"
+                    value={costAmount}
+                    onChange={(e) => setCostAmount(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-group">
@@ -570,15 +579,18 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
 
               <div className="form-group">
                 <label htmlFor="cost_amount">{t('expenseForm.totalCostLabel')}</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  id="cost_amount"
-                  value={costAmount}
-                  onChange={(e) => setCostAmount(e.target.value)}
-                  required
-                />
+                <div className="currency-input-wrapper">
+                  <span className="currency-symbol">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="cost_amount"
+                    value={costAmount}
+                    onChange={(e) => setCostAmount(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-group">

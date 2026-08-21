@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { formatToUSD } from '../utils/currencyFormatter.js';
 import './Dashboard.css';
 
 export default function NewProjectModal({ onClose, onProjectCreated, projectToEdit }) {
@@ -12,11 +13,11 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
     project_name: '',
     client_name: '',
     status: 'Planeación',
+    project_type: 'Cocina',
     base_contract_value: '',
     deposit_received: '',
-    project_type: 'Cocina',
-    // 1. Cabinet Scope fields (Edit Mode Only)
-    tipo_construccion: '',
+    // Cabinets detailed scope
+    tipo_construccion: 'Framed',
     proveedor: '',
     linea_modelo: 'Shaker',
     color: '',
@@ -27,7 +28,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
     costo_accesorios: '',
     costo_delivery: '',
     costo_instalacion: '',
-    // 2. Countertop Scope fields (Edit Mode Only)
+    // Countertop detailed scope
     countertop_material: 'Quartz',
     countertop_color: '',
     countertop_proveedor: '',
@@ -39,64 +40,55 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
     costo_transporte: ''
   });
 
-  // 3. Dynamic Measurements Table (Edit Mode Only)
+  // Dynamic Measurements Table state for Countertop Area SQ FT
   const [medidas, setMedidas] = useState([
-    { area: 'Island', largo: '', profundidad: '' },
-    { area: 'Perimeter', largo: '', profundidad: '' },
-    { area: 'Back Splash', largo: '', profundidad: '' },
-    { area: 'Laundry', largo: '', profundidad: '' },
-    { area: 'Bathroom Master', largo: '', profundidad: '' },
-    { area: 'Bathroom Guest 1', largo: '', profundidad: '' }
+    { area: 'Isla Principal', largo: '8', profundidad: '4' },
+    { area: 'L-Shape Counter', largo: '10', profundidad: '2.5' }
   ]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Pre-fill fields if editing existing project
+  // Populate data when editing
   useEffect(() => {
     if (projectToEdit) {
       const scope = projectToEdit.scope_details || {};
-      const cabs = scope.cabinets || {};
-      const counts = scope.countertops || {};
-      const medList = counts.medidas;
+      const cab = scope.cabinets || {};
+      const ct = scope.countertops || {};
 
       setFormData({
         project_name: projectToEdit.project_name || '',
         client_name: projectToEdit.client_name || '',
         status: projectToEdit.status || 'Planeación',
+        project_type: projectToEdit.project_type || 'Cocina',
         base_contract_value: projectToEdit.base_contract_value !== undefined ? String(projectToEdit.base_contract_value) : '',
         deposit_received: projectToEdit.deposit_received !== undefined ? String(projectToEdit.deposit_received) : '',
-        project_type: projectToEdit.project_type || 'Cocina',
         // Cabinets
-        tipo_construccion: cabs.tipo_construccion || '',
-        proveedor: cabs.proveedor || '',
-        linea_modelo: cabs.linea_modelo || 'Shaker',
-        color: cabs.color || '',
-        cantidad_cabinets: cabs.cantidad_cabinets !== undefined ? String(cabs.cantidad_cabinets) : '',
-        costo_cabinets: cabs.costo_cabinets !== undefined ? String(cabs.costo_cabinets) : '',
-        ensamble: cabs.ensamble !== undefined ? String(cabs.ensamble) : '',
-        costo_hardware: cabs.costo_hardware !== undefined ? String(cabs.costo_hardware) : '',
-        costo_accesorios: cabs.costo_accesorios !== undefined ? String(cabs.costo_accesorios) : '',
-        costo_delivery: cabs.costo_delivery !== undefined ? String(cabs.costo_delivery) : '',
-        costo_instalacion: cabs.costo_instalacion !== undefined ? String(cabs.costo_instalacion) : '',
-        // Countertops
-        countertop_material: counts.material || 'Quartz',
-        countertop_color: counts.color || '',
-        countertop_proveedor: counts.proveedor || '',
-        valor_slab: counts.valor_slab !== undefined ? String(counts.valor_slab) : '',
-        cantidad_slabs: counts.cantidad_slabs !== undefined ? String(counts.cantidad_slabs) : '',
-        sqft_estimados: counts.sqft_estimados !== undefined ? String(counts.sqft_estimados) : '',
-        costo_fabricacion: counts.costo_fabricacion !== undefined ? String(counts.costo_fabricacion) : '',
-        costo_instalacion: counts.costo_instalacion !== undefined ? String(counts.costo_instalacion) : '',
-        costo_transporte: counts.costo_transporte !== undefined ? String(counts.costo_transporte) : ''
+        tipo_construccion: cab.tipo_construccion || 'Framed',
+        proveedor: cab.proveedor || '',
+        linea_modelo: cab.linea_modelo || 'Shaker',
+        color: cab.color || '',
+        cantidad_cabinets: cab.cantidad_cabinets !== undefined ? String(cab.cantidad_cabinets) : '',
+        costo_cabinets: cab.costo_cabinets !== undefined ? String(cab.costo_cabinets) : '',
+        ensamble: cab.ensamble !== undefined ? String(cab.ensamble) : '',
+        costo_hardware: cab.costo_hardware !== undefined ? String(cab.costo_hardware) : '',
+        costo_accesorios: cab.costo_accesorios !== undefined ? String(cab.costo_accesorios) : '',
+        costo_delivery: cab.costo_delivery !== undefined ? String(cab.costo_delivery) : '',
+        costo_instalacion: cab.costo_instalacion !== undefined ? String(cab.costo_instalacion) : '',
+        // Countertop
+        countertop_material: ct.material || 'Quartz',
+        countertop_color: ct.color || '',
+        countertop_proveedor: ct.proveedor || '',
+        valor_slab: ct.valor_slab !== undefined ? String(ct.valor_slab) : '',
+        cantidad_slabs: ct.cantidad_slabs !== undefined ? String(ct.cantidad_slabs) : '',
+        sqft_estimados: ct.sqft_estimados !== undefined ? String(ct.sqft_estimados) : '',
+        costo_fabricacion: ct.costo_fabricacion !== undefined ? String(ct.costo_fabricacion) : '',
+        costo_instalacion: ct.costo_instalacion !== undefined ? String(ct.costo_instalacion) : '',
+        costo_transporte: ct.costo_transporte !== undefined ? String(ct.costo_transporte) : ''
       });
 
-      if (Array.isArray(medList) && medList.length > 0) {
-        setMedidas(medList.map((m) => ({
-          area: m.area || '',
-          largo: m.largo !== undefined ? String(m.largo) : '',
-          profundidad: m.profundidad !== undefined ? String(m.profundidad) : ''
-        })));
+      if (Array.isArray(scope.medidas) && scope.medidas.length > 0) {
+        setMedidas(scope.medidas);
       }
     }
   }, [projectToEdit]);
@@ -131,9 +123,6 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
   const transportCost = parseFloat(formData.costo_transporte || 0);
   const totalCountertopCost = slabCost + fabAndInstall + transportCost;
 
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -161,80 +150,60 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
     setError('');
 
     try {
-      const baseContract = parseFloat(formData.base_contract_value || 0);
-      const deposit = parseFloat(formData.deposit_received || 0);
+      const baseContract = parseFloat(formData.base_contract_value);
+      const deposit = parseFloat(formData.deposit_received);
 
-      // In Edit Mode, build structured scope_details JSONB
+      if (isNaN(baseContract)) {
+        throw new Error('Base Contract Value is required and must be a valid number.');
+      }
+
+      // Build structured scope details only if in Edit Mode or if user entered them
       let scopeDetails = null;
 
       if (isEditMode) {
-        const detailsObj = {};
-
-        if (isKitchenProject) {
-          detailsObj.cabinets = {
-            tipo_construccion: (formData.tipo_construccion || '').trim(),
-            proveedor: (formData.proveedor || '').trim(),
+        scopeDetails = {
+          cabinets: isKitchenProject ? {
+            tipo_construccion: formData.tipo_construccion,
+            proveedor: formData.proveedor.trim(),
             linea_modelo: formData.linea_modelo,
-            color: (formData.color || '').trim(),
-            cantidad_cabinets: formData.cantidad_cabinets ? Number(formData.cantidad_cabinets) : 0,
-            costo_cabinets: parseFloat(formData.costo_cabinets || 0),
-            ensamble: parseFloat(formData.ensamble || 0),
-            costo_hardware: parseFloat(formData.costo_hardware || 0),
-            costo_accesorios: parseFloat(formData.costo_accesorios || 0),
-            costo_delivery: parseFloat(formData.costo_delivery || 0),
-            costo_instalacion: parseFloat(formData.costo_instalacion || 0),
-            total_cabinets_cost: totalCabinetsCost
-          };
-        }
-
-        if (hasCountertopScope) {
-          const cleanedMedidas = medidas
-            .filter((m) => m.area.trim() || m.largo || m.profundidad)
-            .map((m) => {
-              const l = parseFloat(m.largo || 0);
-              const p = parseFloat(m.profundidad || 0);
-              return {
-                area: m.area.trim() || 'Custom Area',
-                largo: l,
-                profundidad: p,
-                sq_ft: parseFloat((l * p).toFixed(2))
-              };
-            });
-
-          detailsObj.countertops = {
+            color: formData.color.trim(),
+            cantidad_cabinets: Number(formData.cantidad_cabinets) || 0,
+            costo_cabinets: Number(formData.costo_cabinets) || 0,
+            ensamble: Number(formData.ensamble) || 0,
+            costo_hardware: Number(formData.costo_hardware) || 0,
+            costo_accesorios: Number(formData.costo_accesorios) || 0,
+            costo_delivery: Number(formData.costo_delivery) || 0,
+            costo_instalacion: Number(formData.costo_instalacion) || 0,
+            total_cabinets_estimado: totalCabinetsCost
+          } : null,
+          countertops: hasCountertopScope ? {
             material: formData.countertop_material,
-            color: (formData.countertop_color || '').trim(),
-            proveedor: (formData.countertop_proveedor || '').trim(),
-            valor_slab: parseFloat(formData.valor_slab || 0),
-            cantidad_slabs: parseFloat(formData.cantidad_slabs || 0),
-            sqft_estimados: parseFloat(effectiveSqFt.toFixed(2)),
-            costo_fabricacion: parseFloat(formData.costo_fabricacion || 0),
-            costo_instalacion: parseFloat(formData.costo_instalacion || 0),
-            costo_transporte: parseFloat(formData.costo_transporte || 0),
-            total_countertop_cost: totalCountertopCost,
-            medidas: cleanedMedidas
-          };
-        }
-
-        if (Object.keys(detailsObj).length > 0) {
-          scopeDetails = detailsObj;
-        } else if (projectToEdit?.scope_details) {
-          scopeDetails = projectToEdit.scope_details;
-        }
+            color: formData.countertop_color.trim(),
+            proveedor: formData.countertop_proveedor.trim(),
+            valor_slab: Number(formData.valor_slab) || 0,
+            cantidad_slabs: Number(formData.cantidad_slabs) || 0,
+            sqft_estimados: effectiveSqFt,
+            costo_fabricacion: Number(formData.costo_fabricacion) || 0,
+            costo_instalacion: Number(formData.costo_instalacion) || 0,
+            costo_transporte: Number(formData.costo_transporte) || 0,
+            total_countertop_estimado: totalCountertopCost
+          } : null,
+          medidas: hasCountertopScope ? medidas.filter(m => m.area || m.largo || m.profundidad) : []
+        };
       }
 
       const payload = {
         project_name: formData.project_name.trim(),
         client_name: formData.client_name.trim(),
         status: formData.status,
-        base_contract_value: isNaN(baseContract) ? 0 : baseContract,
-        deposit_received: isNaN(deposit) ? 0 : deposit,
         project_type: formData.project_type,
+        base_contract_value: baseContract,
+        deposit_received: isNaN(deposit) ? 0 : deposit,
         scope_details: scopeDetails
       };
 
       if (isEditMode) {
-        const targetId = projectToEdit.id || projectToEdit.project_id;
+        const targetId = projectToEdit.project_id || projectToEdit.id;
         const { error: dbError } = await supabase
           .from('projects')
           .update(payload)
@@ -359,29 +328,35 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
             <div className="wizard-grid-2">
               <div className="form-group">
                 <label htmlFor="base_contract_value">{t('wizard.baseContractLabel')}</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  id="base_contract_value"
-                  name="base_contract_value"
-                  value={formData.base_contract_value}
-                  onChange={handleChange}
-                  required
-                />
+                <div className="currency-input-wrapper">
+                  <span className="currency-symbol">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="base_contract_value"
+                    name="base_contract_value"
+                    value={formData.base_contract_value}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-group">
                 <label htmlFor="deposit_received">{t('wizard.depositLabel')}</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  id="deposit_received"
-                  name="deposit_received"
-                  value={formData.deposit_received}
-                  onChange={handleChange}
-                />
+                <div className="currency-input-wrapper">
+                  <span className="currency-symbol">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="deposit_received"
+                    name="deposit_received"
+                    value={formData.deposit_received}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -392,7 +367,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
               <div className="wizard-section-title">
                 <span>{t('wizard.secCabinetsTitle')}</span>
                 <span className="live-cost-badge">
-                  {t('wizard.estCabinetsTotal')} <strong>{formatCurrency(totalCabinetsCost)}</strong>
+                  {t('wizard.estCabinetsTotal')} <strong>{formatToUSD(totalCabinetsCost)}</strong>
                 </span>
               </div>
 
@@ -462,80 +437,98 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
               <div className="wizard-costs-grid">
                 <div className="form-group">
                   <label htmlFor="costo_cabinets">{t('wizard.costoCabinetsLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="costo_cabinets"
-                    name="costo_cabinets"
-                    value={formData.costo_cabinets}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="costo_cabinets"
+                      name="costo_cabinets"
+                      value={formData.costo_cabinets}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="ensamble">{t('wizard.ensambleLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="ensamble"
-                    name="ensamble"
-                    value={formData.ensamble}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="ensamble"
+                      name="ensamble"
+                      value={formData.ensamble}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="costo_hardware">{t('wizard.hardwareLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="costo_hardware"
-                    name="costo_hardware"
-                    value={formData.costo_hardware}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="costo_hardware"
+                      name="costo_hardware"
+                      value={formData.costo_hardware}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="costo_accesorios">{t('wizard.accesoriosLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="costo_accesorios"
-                    name="costo_accesorios"
-                    value={formData.costo_accesorios}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="costo_accesorios"
+                      name="costo_accesorios"
+                      value={formData.costo_accesorios}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="costo_delivery">{t('wizard.deliveryLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="costo_delivery"
-                    name="costo_delivery"
-                    value={formData.costo_delivery}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="costo_delivery"
+                      name="costo_delivery"
+                      value={formData.costo_delivery}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="costo_instalacion">{t('wizard.instalacionLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="costo_instalacion"
-                    name="costo_instalacion"
-                    value={formData.costo_instalacion}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="costo_instalacion"
+                      name="costo_instalacion"
+                      value={formData.costo_instalacion}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -547,7 +540,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
               <div className="wizard-section-title">
                 <span>{t('wizard.secCountertopsTitle')}</span>
                 <span className="live-cost-badge countertop-badge">
-                  {t('wizard.estCountertopTotal')} <strong>{formatCurrency(totalCountertopCost)}</strong>
+                  {t('wizard.estCountertopTotal')} <strong>{formatToUSD(totalCountertopCost)}</strong>
                 </span>
               </div>
 
@@ -595,15 +588,18 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
               <div className="wizard-grid-3">
                 <div className="form-group">
                   <label htmlFor="valor_slab">{t('wizard.valorSlabLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="valor_slab"
-                    name="valor_slab"
-                    value={formData.valor_slab}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="valor_slab"
+                      name="valor_slab"
+                      value={formData.valor_slab}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
@@ -639,41 +635,50 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
               <div className="wizard-grid-3">
                 <div className="form-group">
                   <label htmlFor="costo_fabricacion">{t('wizard.costoFabricacionLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="costo_fabricacion"
-                    name="costo_fabricacion"
-                    value={formData.costo_fabricacion}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="costo_fabricacion"
+                      name="costo_fabricacion"
+                      value={formData.costo_fabricacion}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="costo_instalacion">{t('wizard.costoInstalacionLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="costo_instalacion"
-                    name="costo_instalacion"
-                    value={formData.costo_instalacion}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="costo_instalacion"
+                      name="costo_instalacion"
+                      value={formData.costo_instalacion}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="costo_transporte">{t('wizard.costoTransporteLabel')}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    id="costo_transporte"
-                    name="costo_transporte"
-                    value={formData.costo_transporte}
-                    onChange={handleChange}
-                  />
+                  <div className="currency-input-wrapper">
+                    <span className="currency-symbol">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="costo_transporte"
+                      name="costo_transporte"
+                      value={formData.costo_transporte}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -702,18 +707,15 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                     </thead>
                     <tbody>
                       {medidas.map((item, idx) => {
-                        const l = parseFloat(item.largo || 0);
-                        const p = parseFloat(item.profundidad || 0);
-                        const rowSqFt = (l * p).toFixed(2);
-
+                        const sqft = (parseFloat(item.largo || 0) * parseFloat(item.profundidad || 0)).toFixed(2);
                         return (
                           <tr key={idx}>
                             <td>
                               <input
                                 type="text"
+                                className="medida-input"
                                 value={item.area}
                                 onChange={(e) => handleMedidaChange(idx, 'area', e.target.value)}
-                                className="medida-input"
                               />
                             </td>
                             <td>
@@ -721,9 +723,9 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                                 type="number"
                                 step="0.1"
                                 min="0"
+                                className="medida-input"
                                 value={item.largo}
                                 onChange={(e) => handleMedidaChange(idx, 'largo', e.target.value)}
-                                className="medida-input"
                               />
                             </td>
                             <td>
@@ -731,23 +733,21 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
                                 type="number"
                                 step="0.1"
                                 min="0"
+                                className="medida-input"
                                 value={item.profundidad}
                                 onChange={(e) => handleMedidaChange(idx, 'profundidad', e.target.value)}
-                                className="medida-input"
                               />
                             </td>
                             <td>
-                              <span className="row-sqft-badge">
-                                {l > 0 && p > 0 ? rowSqFt : '0.00'}
-                              </span>
+                              <span className="row-sqft-badge">{sqft}</span>
                             </td>
                             <td style={{ textAlign: 'center' }}>
                               {medidas.length > 1 && (
                                 <button
                                   type="button"
+                                  className="remove-row-btn"
                                   onClick={() => handleRemoveArea(idx)}
-                                  className="remove-area-btn"
-                                  title="Remove area"
+                                  title="Remove Area"
                                 >
                                   &times;
                                 </button>
@@ -762,8 +762,8 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
 
                 <button
                   type="button"
+                  className="add-row-btn"
                   onClick={handleAddArea}
-                  className="add-area-btn"
                 >
                   {t('wizard.addAreaBtn')}
                 </button>
@@ -775,7 +775,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
             <button type="button" className="cancel-btn" onClick={onClose}>
               {t('common.cancel')}
             </button>
-            <button type="submit" className="submit-btn" disabled={loading} style={{ margin: 0, padding: '0.75rem 1.85rem' }}>
+            <button type="submit" className="submit-btn" disabled={loading}>
               {loading 
                 ? t('common.saving') 
                 : (isEditMode ? t('wizard.saveChangesBtn') : t('wizard.createProjectBtn'))}

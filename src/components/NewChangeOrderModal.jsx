@@ -108,15 +108,18 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
 
           <div className="form-group">
             <label htmlFor="extra_charge">{t('changeOrderForm.extraChargeLabel')}</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              id="extra_charge"
-              value={extraCharge}
-              onChange={(e) => setExtraCharge(e.target.value)}
-              required
-            />
+            <div className="currency-input-wrapper">
+              <span className="currency-symbol">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                id="extra_charge"
+                value={extraCharge}
+                onChange={(e) => setExtraCharge(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
