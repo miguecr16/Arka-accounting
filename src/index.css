@@ -17,14 +17,342 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
   min-height: 100vh;
   background-color: #f8fafc;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* =========================================================
-   GLOBAL FORM INPUT STYLING - FULLY ROUNDED PILL EDGES
+   GLOBAL RESPONSIVE NAVBAR & HEADER
+   ========================================================= */
+.app-main-header {
+  padding: 0.85rem 1.5rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+}
+
+.header-brand-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.header-brand-logo {
+  height: 48px;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+@media (min-width: 768px) {
+  .app-main-header {
+    padding: 0.85rem 2rem;
+  }
+  .header-brand-logo {
+    height: 54px;
+    max-width: 180px;
+  }
+}
+
+/* Desktop navigation links & user info */
+.header-desktop-actions {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .header-desktop-actions {
+    display: flex;
+  }
+}
+
+/* Mobile Controls (Language toggle & Hamburger button) */
+.header-mobile-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+@media (min-width: 768px) {
+  .header-mobile-controls {
+    display: none;
+  }
+}
+
+.mobile-hamburger-btn {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-hamburger-btn:hover,
+.mobile-hamburger-btn:active {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* Common Header Buttons & Badges */
+.nav-action-btn {
+  padding: 0.5rem 0.95rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+  min-height: 40px;
+}
+
+.back-nav-btn {
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.org-nav-btn {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+
+.header-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 9999px;
+  padding: 0.2rem;
+  border: 1px solid #cbd5e1;
+}
+
+.header-lang-toggle .lang-btn {
+  background: transparent;
+  color: #64748b;
+  border: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-lang-toggle .lang-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.header-role-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+}
+
+.header-role-badge.admin {
+  background-color: #0f172a;
+  color: #ffffff;
+  border: 1px solid #0f172a;
+}
+
+.header-role-badge.trabajador {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.header-user-badge {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  max-width: 200px;
+}
+
+.user-email-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  flex-shrink: 0;
+}
+
+.header-signout-btn {
+  padding: 0.5rem 0.95rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #ef4444;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  min-height: 40px;
+}
+
+.header-signout-btn:hover {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+}
+
+/* =========================================================
+   MOBILE SLIDE-OUT DRAWER NAVIGATION
+   ========================================================= */
+.mobile-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.mobile-drawer-content {
+  background: #ffffff;
+  width: 82vw;
+  max-width: 320px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 25px rgba(0, 0, 0, 0.15);
+  animation: slideLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 1.5rem 1.25rem;
+  overflow-y: auto;
+}
+
+.mobile-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mobile-drawer-close {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.mobile-drawer-user-info {
+  padding: 1rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mobile-drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem 0;
+  flex: 1;
+}
+
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 48px;
+}
+
+.mobile-nav-link.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.mobile-drawer-footer {
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.mobile-drawer-signout-btn {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* =========================================================
+   GLOBAL FORM INPUT STYLING - FULLY ROUNDED PILL EDGES & TOUCH TARGETS
    ========================================================= */
 
 /* Text, number, date, email, password inputs and selects */
@@ -41,11 +369,12 @@ select {
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
   color: #0f172a;
-  padding: 0.65rem 1.25rem;
-  font-size: 0.95rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
   font-family: inherit;
   outline: none;
   width: 100%;
+  min-height: 44px; /* Apple HIG & Google Material Touch Target */
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
@@ -57,10 +386,11 @@ textarea {
   background-color: #ffffff;
   color: #0f172a;
   padding: 0.85rem 1.25rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-family: inherit;
   outline: none;
   width: 100%;
+  min-height: 88px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   resize: vertical;
@@ -87,10 +417,11 @@ input[type="file"] {
   border-radius: 9999px !important;
   border: 1px dashed #cbd5e1;
   background-color: #f8fafc;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1rem;
   font-size: 0.85rem;
   color: #475569;
   width: 100%;
+  min-height: 44px;
   cursor: pointer;
   outline: none;
   transition: all 0.2s;
@@ -132,7 +463,7 @@ input[type="file"]:hover {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .form-group label {
@@ -144,7 +475,7 @@ input[type="file"]:hover {
 
 /* Alerts */
 .alert {
-  padding: 0.75rem 1.25rem;
+  padding: 0.85rem 1.25rem;
   border-radius: 12px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -173,4 +504,21 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* =========================================================
+   TABLE RESPONSIVENESS (SMOOTH HORIZONTAL TOUCH SCROLL)
+   ========================================================= */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .table-responsive {
+    box-shadow: inset -6px 0 8px -4px rgba(0, 0, 0, 0.08);
+  }
 }

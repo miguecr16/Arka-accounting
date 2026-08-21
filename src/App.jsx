@@ -13,6 +13,7 @@ function AppContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'project-details' | 'team-settings'
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const fetchUserRole = async (userId) => {
     try {
@@ -62,8 +63,20 @@ function AppContent() {
     };
   }, []);
 
+  // Close mobile drawer on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileMenuOpen]);
+
   const handleSignOut = async () => {
     try {
+      setIsMobileMenuOpen(false);
       await supabase.auth.signOut();
       setSession(null);
       setUserRole('trabajador');
@@ -75,16 +88,19 @@ function AppContent() {
   };
 
   const handleSelectProject = (projectId) => {
+    setIsMobileMenuOpen(false);
     setSelectedProjectId(projectId);
     setCurrentView('project-details');
   };
 
   const handleBackToDashboard = () => {
+    setIsMobileMenuOpen(false);
     setSelectedProjectId(null);
     setCurrentView('dashboard');
   };
 
   const handleOpenTeamSettings = () => {
+    setIsMobileMenuOpen(false);
     setSelectedProjectId(null);
     setCurrentView('team-settings');
   };
@@ -139,59 +155,30 @@ function AppContent() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: 0 }}>
-      {/* Top Studio Navbar with Arka Design Group Branding and Language Switcher */}
-      <header style={{ 
-        padding: '0.85rem 2rem', 
-        backgroundColor: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.02)',
-        flexWrap: 'wrap',
-        gap: '1rem'
-      }}>
-        {/* Brand */}
+      {/* =========================================================
+          TOP RESPONSIVE STUDIO NAVBAR
+          ========================================================= */}
+      <header className="app-main-header">
+        {/* Brand Logo */}
         <div 
           onClick={handleBackToDashboard}
-          style={{ 
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer'
-          }}
+          className="header-brand-wrapper"
           title="Arka Design Group - Home"
         >
           <img 
             src="/arka-logo.png" 
             alt="Arka Design Group" 
-            style={{
-              height: '54px',
-              maxWidth: '180px',
-              objectFit: 'contain'
-            }}
+            className="header-brand-logo"
           />
         </div>
 
-        {/* User Session & Navigation Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+        {/* Desktop Navigation Links & Actions (hidden on mobile via CSS) */}
+        <div className="header-desktop-actions">
           {/* Back button when inside subviews */}
           {currentView !== 'dashboard' && (
             <button 
               onClick={handleBackToDashboard}
-              style={{
-                padding: '0.45rem 0.9rem',
-                backgroundColor: '#f1f5f9',
-                border: '1px solid #cbd5e1',
-                color: '#334155',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s'
-              }}
+              className="nav-action-btn back-nav-btn"
             >
               {t('common.backToProjects')}
             </button>
@@ -202,48 +189,18 @@ function AppContent() {
             <button
               onClick={handleOpenTeamSettings}
               title="View Organization & Activity History"
-              style={{
-                padding: '0.45rem 0.9rem',
-                backgroundColor: '#f8fafc',
-                border: '1px solid #cbd5e1',
-                color: '#0f172a',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s'
-              }}
+              className="nav-action-btn org-nav-btn"
             >
               {t('nav.organization')}
             </button>
           )}
 
           {/* Bilingual Language Switcher Toggle */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            background: '#f1f5f9',
-            borderRadius: '9999px',
-            padding: '0.2rem',
-            border: '1px solid #cbd5e1'
-          }}>
+          <div className="header-lang-toggle">
             <button
               type="button"
               onClick={() => setLanguage('en')}
-              style={{
-                background: language === 'en' ? '#0f172a' : 'transparent',
-                color: language === 'en' ? '#ffffff' : '#64748b',
-                border: 'none',
-                padding: '0.25rem 0.55rem',
-                borderRadius: '9999px',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.15s'
-              }}
+              className={`lang-btn ${language === 'en' ? 'active' : ''}`}
               title="Switch to English"
             >
               EN
@@ -251,17 +208,7 @@ function AppContent() {
             <button
               type="button"
               onClick={() => setLanguage('es')}
-              style={{
-                background: language === 'es' ? '#0f172a' : 'transparent',
-                color: language === 'es' ? '#ffffff' : '#64748b',
-                border: 'none',
-                padding: '0.25rem 0.55rem',
-                borderRadius: '9999px',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.15s'
-              }}
+              className={`lang-btn ${language === 'es' ? 'active' : ''}`}
               title="Cambiar a Español"
             >
               ES
@@ -269,68 +216,133 @@ function AppContent() {
           </div>
 
           {/* Role Pill */}
-          <span style={{
-            backgroundColor: isAdmin ? '#0f172a' : '#f1f5f9',
-            color: isAdmin ? '#ffffff' : '#475569',
-            border: isAdmin ? '1px solid #0f172a' : '1px solid #cbd5e1',
-            padding: '0.3rem 0.7rem',
-            borderRadius: '9999px',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase'
-          }}>
+          <span className={`header-role-badge ${isAdmin ? 'admin' : 'trabajador'}`}>
             {isAdmin ? t('common.adminRole') : t('common.trabajadorRole')}
           </span>
 
           {/* User Email Pill */}
-          <div style={{
-            background: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            padding: '0.4rem 0.85rem',
-            borderRadius: '9999px',
-            fontSize: '0.8rem',
-            color: '#475569',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            fontWeight: 500
-          }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
-            {userEmail}
+          <div className="header-user-badge">
+            <span className="user-status-dot"></span>
+            <span className="user-email-text">{userEmail}</span>
           </div>
 
           {/* Sign Out Button */}
           <button
             onClick={handleSignOut}
             title={t('nav.signOut')}
-            style={{
-              padding: '0.45rem 0.9rem',
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2e8f0',
-              color: '#ef4444',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              transition: 'all 0.2s'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#fef2f2';
-              e.currentTarget.style.borderColor = '#fecaca';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#ffffff';
-              e.currentTarget.style.borderColor = '#e2e8f0';
-            }}
+            className="header-signout-btn"
           >
             {t('nav.signOut')}
           </button>
         </div>
+
+        {/* Mobile Header Right Items (Language Switcher & Hamburger Toggle) */}
+        <div className="header-mobile-controls">
+          <div className="header-lang-toggle">
+            <button
+              type="button"
+              onClick={() => setLanguage('en')}
+              className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLanguage('es')}
+              className={`lang-btn ${language === 'es' ? 'active' : ''}`}
+            >
+              ES
+            </button>
+          </div>
+
+          {/* Hamburger Menu Button */}
+          <button
+            type="button"
+            className="mobile-hamburger-btn"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            {isMobileMenuOpen ? '✕' : '☰'}
+          </button>
+        </div>
       </header>
 
+      {/* =========================================================
+          MOBILE SLIDE-OUT NAVIGATION DRAWER & OVERLAY
+          ========================================================= */}
+      {isMobileMenuOpen && (
+        <div 
+          className="mobile-drawer-overlay"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <div 
+            className="mobile-drawer-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="mobile-drawer-header">
+              <img 
+                src="/arka-logo.png" 
+                alt="Arka Design Group" 
+                style={{ height: '48px', objectFit: 'contain' }}
+              />
+              <button 
+                type="button"
+                className="mobile-drawer-close"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* User Session Info */}
+            <div className="mobile-drawer-user-info">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                <span className="user-status-dot"></span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>{userEmail}</span>
+              </div>
+              <span className={`header-role-badge ${isAdmin ? 'admin' : 'trabajador'}`}>
+                {isAdmin ? t('common.adminRole') : t('common.trabajadorRole')}
+              </span>
+            </div>
+
+            {/* Navigation Links */}
+            <nav className="mobile-drawer-nav">
+              <button
+                type="button"
+                className={`mobile-nav-link ${currentView === 'dashboard' ? 'active' : ''}`}
+                onClick={handleBackToDashboard}
+              >
+                📁 {t('dashboard.clientProjectsTitle')}
+              </button>
+
+              {isAdmin && (
+                <button
+                  type="button"
+                  className={`mobile-nav-link ${currentView === 'team-settings' ? 'active' : ''}`}
+                  onClick={handleOpenTeamSettings}
+                >
+                  🏢 {t('nav.organization')}
+                </button>
+              )}
+            </nav>
+
+            {/* Drawer Footer Actions */}
+            <div className="mobile-drawer-footer">
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="mobile-drawer-signout-btn"
+              >
+                {t('nav.signOut')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
-      <main>
+      <main className="app-main-content">
         {currentView === 'dashboard' && (
           <Dashboard 
             onSelectProject={handleSelectProject} 

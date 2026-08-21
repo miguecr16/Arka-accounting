@@ -5,34 +5,61 @@
 .team-settings-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem;
+  padding: 1.25rem 1rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: #0f172a;
 }
 
+@media (min-width: 768px) {
+  .team-settings-container {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .team-settings-container {
+    padding: 2.5rem 1.5rem;
+  }
+}
+
 .team-header-nav {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
   gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .team-header-nav {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
 }
 
 .team-title-area {
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
 }
 
 .team-title-area h2 {
-  font-size: 2.25rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 0.35rem 0;
   letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .team-title-area h2 {
+    font-size: 2.25rem;
+  }
 }
 
 .team-title-area p {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #64748b;
   margin: 0;
 }
@@ -46,6 +73,7 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .audit-action-badge.crear {
@@ -88,6 +116,7 @@
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* Refresh Button */
@@ -95,15 +124,17 @@
   background-color: #ffffff;
   border: 1px solid #cbd5e1;
   color: #475569;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  padding: 0.6rem 1.15rem;
+  border-radius: 9999px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   transition: all 0.2s;
+  min-height: 44px;
 }
 
 .refresh-btn:hover {
@@ -117,9 +148,9 @@
   background: #ffffff;
   border: 1px solid #fee2e2;
   border-radius: 16px;
-  padding: 3rem 2rem;
+  padding: 2.5rem 1.5rem;
   text-align: center;
   max-width: 500px;
-  margin: 3rem auto;
+  margin: 2rem auto;
   box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.08);
 }
