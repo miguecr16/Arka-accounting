@@ -494,8 +494,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                   <th>{t('common.date')}</th>
                   <th>{t('expenseForm.categoryLabel')}</th>
                   <th>{t('projectDetails.colSpecifications')}</th>
-                  <th>{t('projectDetails.colCostAmount')}</th>
-                  <th>{t('projectDetails.colHours')}</th>
+                  <th className="currency-col">{t('projectDetails.colCostAmount')}</th>
+                  <th className="numeric-col">{t('projectDetails.colHours')}</th>
                   <th style={{ textAlign: 'center' }}>{t('projectDetails.colReceipt')}</th>
                   {isAdmin && <th style={{ textAlign: 'right' }}>{t('common.actions')}</th>}
                 </tr>
@@ -524,14 +524,14 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                         <td>{renderExpenseDetails(item)}</td>
 
                         {/* Cost Amount (Contextual: strictly '-' for Labor if 0) */}
-                        <td>
+                        <td className="currency-col" style={{ fontWeight: item.cost_amount > 0 ? 700 : 400 }}>
                           {isLabor 
                             ? (item.cost_amount > 0 ? formatToUSD(item.cost_amount) : '-') 
                             : (item.cost_amount > 0 ? formatToUSD(item.cost_amount) : '-')}
                         </td>
 
                         {/* Hours (Contextual: strictly '-' for Materiales) */}
-                        <td>
+                        <td className="numeric-col" style={{ fontWeight: item.hours_worked > 0 ? 700 : 400 }}>
                           {isMaterial 
                             ? '-' 
                             : (item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-')}
@@ -660,7 +660,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
               <thead>
                 <tr>
                   <th>{t('projectDetails.colDescription')}</th>
-                  <th>{t('projectDetails.colExtraCharge')}</th>
+                  <th className="currency-col">{t('projectDetails.colExtraCharge')}</th>
                   <th>{t('common.status')}</th>
                   <th style={{ textAlign: 'right' }}>{t('common.actions')}</th>
                 </tr>
@@ -679,7 +679,9 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                     return (
                       <tr key={co.id}>
                         <td><strong>{co.description}</strong></td>
-                        <td>{formatToUSD(co.extra_charge_to_client)}</td>
+                        <td className="currency-col" style={{ fontWeight: 700 }}>
+                          {formatToUSD(co.extra_charge_to_client)}
+                        </td>
                         <td>
                           <span className={`status-pill ${getStatusClass(co.status)}`}>
                             {co.status || 'Borrador'}

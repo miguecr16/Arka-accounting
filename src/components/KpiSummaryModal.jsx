@@ -93,27 +93,27 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                 <th>{t('kpiModal.projectClient')}</th>
                 {kpiType === 'profit' && (
                   <>
-                    <th style={{ textAlign: 'right' }}>{t('kpiModal.grossProfitCol')}</th>
-                    <th style={{ textAlign: 'right' }}>{t('kpiModal.marginCol')}</th>
+                    <th className="currency-col">{t('kpiModal.grossProfitCol')}</th>
+                    <th className="numeric-col">{t('kpiModal.marginCol')}</th>
                   </>
                 )}
                 {kpiType === 'hours' && (
                   <>
-                    <th style={{ textAlign: 'right' }}>{t('kpiModal.totalHoursCol')}</th>
-                    <th style={{ textAlign: 'right' }}>{t('kpiModal.directCostsCol')}</th>
+                    <th className="numeric-col">{t('kpiModal.totalHoursCol')}</th>
+                    <th className="currency-col">{t('kpiModal.directCostsCol')}</th>
                   </>
                 )}
                 {kpiType === 'active' && (
                   <>
                     <th>{t('kpiModal.statusCol')}</th>
-                    <th style={{ textAlign: 'right' }}>{t('kpiModal.contractValueCol')}</th>
+                    <th className="currency-col">{t('kpiModal.contractValueCol')}</th>
                   </>
                 )}
                 {kpiType === 'volume' && (
                   <>
-                    <th style={{ textAlign: 'right' }}>{t('kpiModal.baseContractCol')}</th>
-                    <th style={{ textAlign: 'right' }}>{t('kpiModal.approvedExtrasCol')}</th>
-                    <th style={{ textAlign: 'right' }}>{t('kpiModal.finalContractCol')}</th>
+                    <th className="currency-col">{t('kpiModal.baseContractCol')}</th>
+                    <th className="currency-col">{t('kpiModal.approvedExtrasCol')}</th>
+                    <th className="currency-col">{t('kpiModal.finalContractCol')}</th>
                   </>
                 )}
                 <th style={{ textAlign: 'center' }}>{t('common.actions')}</th>
@@ -141,10 +141,10 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                       {/* Profit columns */}
                       {kpiType === 'profit' && (
                         <>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: (parseFloat(p.gross_profit) || 0) >= 0 ? '#047857' : '#b91c1c' }}>
+                          <td className="currency-col" style={{ fontWeight: 700, color: (parseFloat(p.gross_profit) || 0) >= 0 ? '#047857' : '#b91c1c' }}>
                             {formatToUSD(p.gross_profit)}
                           </td>
-                          <td style={{ textAlign: 'right', fontWeight: 600, color: '#334155' }}>
+                          <td className="numeric-col" style={{ fontWeight: 600, color: '#334155' }}>
                             {p.gross_margin_percentage ? `${parseFloat(p.gross_margin_percentage).toFixed(2)}%` : '0%'}
                           </td>
                         </>
@@ -153,10 +153,10 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                       {/* Hours columns */}
                       {kpiType === 'hours' && (
                         <>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
+                          <td className="numeric-col" style={{ fontWeight: 700, color: '#0f172a' }}>
                             {p.total_hours || 0} hrs
                           </td>
-                          <td style={{ textAlign: 'right', color: '#64748b' }}>
+                          <td className="currency-col" style={{ color: '#64748b' }}>
                             {formatToUSD(p.total_direct_costs)}
                           </td>
                         </>
@@ -170,7 +170,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                               {statusText}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'right', fontWeight: 600 }}>
+                          <td className="currency-col" style={{ fontWeight: 600 }}>
                             {formatToUSD(p.final_contract_value)}
                           </td>
                         </>
@@ -179,13 +179,13 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                       {/* Volume columns */}
                       {kpiType === 'volume' && (
                         <>
-                          <td style={{ textAlign: 'right', color: '#64748b' }}>
+                          <td className="currency-col" style={{ color: '#64748b' }}>
                             {formatToUSD(p.base_contract_value)}
                           </td>
-                          <td style={{ textAlign: 'right', color: '#64748b' }}>
+                          <td className="currency-col" style={{ color: '#64748b' }}>
                             {formatToUSD(p.approved_change_orders)}
                           </td>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
+                          <td className="currency-col" style={{ fontWeight: 700, color: '#0f172a' }}>
                             {formatToUSD(p.final_contract_value)}
                           </td>
                         </>

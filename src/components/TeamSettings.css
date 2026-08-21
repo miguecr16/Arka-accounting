@@ -6,19 +6,19 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 1.25rem 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #0f172a;
+  font-family: var(--font-sans);
+  color: var(--arka-charcoal);
 }
 
 @media (min-width: 768px) {
   .team-settings-container {
-    padding: 2rem 1.5rem;
+    padding: 2.25rem 1.75rem;
   }
 }
 
 @media (min-width: 1024px) {
   .team-settings-container {
-    padding: 2.5rem 1.5rem;
+    padding: 2.75rem 2rem;
   }
 }
 
@@ -27,7 +27,7 @@
   flex-direction: column;
   align-items: stretch;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 @media (min-width: 640px) {
@@ -35,26 +35,26 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.25rem;
   }
 }
 
 .team-title-area {
-  margin-bottom: 1.75rem;
+  margin-bottom: 2rem;
 }
 
 .team-title-area h2 {
-  font-size: 1.65rem;
+  font-size: 1.75rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--arka-charcoal);
   margin: 0 0 0.35rem 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.2;
 }
 
 @media (min-width: 768px) {
   .team-title-area h2 {
-    font-size: 2.25rem;
+    font-size: 2.35rem;
   }
 }
 
@@ -66,13 +66,13 @@
 
 /* Interactive Role Dropdown Select */
 .role-select-input {
-  padding: 0.4rem 0.85rem !important;
+  padding: 0.45rem 1rem !important;
   font-size: 0.8rem !important;
   font-weight: 700 !important;
   border-radius: 9999px !important;
   cursor: pointer;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 38px !important;
   width: auto !important;
   display: inline-flex;
@@ -80,24 +80,26 @@
 }
 
 .role-select-input.admin {
-  background-color: #0f172a !important;
-  color: #ffffff !important;
-  border: 1px solid #0f172a !important;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  color: var(--arka-gold-light) !important;
+  border: 1px solid rgba(200, 157, 86, 0.4) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .role-select-input.admin:hover {
-  background-color: #1e293b !important;
+  border-color: var(--arka-gold) !important;
+  box-shadow: 0 4px 12px rgba(200, 157, 86, 0.25);
 }
 
 .role-select-input.trabajador {
-  background-color: #f1f5f9 !important;
+  background-color: var(--arka-surface-subtle) !important;
   color: #334155 !important;
-  border: 1px solid #cbd5e1 !important;
+  border: 1px solid var(--arka-border) !important;
 }
 
 .role-select-input.trabajador:hover {
-  background-color: #e2e8f0 !important;
-  border-color: #94a3b8 !important;
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
 }
 
 .role-select-input:disabled {
@@ -110,9 +112,9 @@
   display: inline-block;
   padding: 0.25rem 0.65rem;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.725rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -142,20 +144,20 @@
 }
 
 .audit-action-badge.general {
-  background-color: #f1f5f9;
+  background-color: var(--arka-surface-subtle);
   color: #475569;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--arka-border);
 }
 
 /* Entity Tag */
 .entity-tag {
   display: inline-block;
   padding: 0.2rem 0.55rem;
-  background-color: #f8fafc;
+  background-color: var(--arka-surface-subtle);
   color: #334155;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--arka-border);
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.775rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -163,9 +165,9 @@
 /* Refresh Button */
 .refresh-btn {
   background-color: #ffffff;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--arka-border);
   color: #475569;
-  padding: 0.6rem 1.15rem;
+  padding: 0.6rem 1.25rem;
   border-radius: 9999px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -179,19 +181,19 @@
 }
 
 .refresh-btn:hover {
-  background-color: #f8fafc;
-  color: #0f172a;
-  border-color: #94a3b8;
+  background-color: var(--arka-surface-subtle);
+  color: var(--arka-charcoal);
+  border-color: #cbd5e1;
 }
 
 /* Access Denied Card */
 .access-denied-card {
   background: #ffffff;
   border: 1px solid #fee2e2;
-  border-radius: 16px;
-  padding: 2.5rem 1.5rem;
+  border-radius: 20px;
+  padding: 3rem 1.75rem;
   text-align: center;
   max-width: 500px;
-  margin: 2rem auto;
-  box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.08);
+  margin: 2.5rem auto;
+  box-shadow: 0 10px 30px -5px rgba(239, 68, 68, 0.08);
 }
