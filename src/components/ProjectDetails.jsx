@@ -16,6 +16,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   const [activeTab, setActiveTab] = useState('expenses'); // 'expenses' | 'change_orders'
   const [loading, setLoading] = useState(true);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
   
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -110,6 +112,37 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     }
   };
 
+  // Handle Admin Project Deletion
+  const handleDeleteProject = async () => {
+    if (!isAdmin) return;
+
+    try {
+      setIsDeleting(true);
+      const projName = projectData?.project_name || `#${projectId}`;
+
+      const { error: deleteError } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+
+      if (deleteError) throw deleteError;
+
+      // Log audit event for Project Deletion
+      await logAuditEvent({
+        action: 'Eliminó',
+        entity: 'Proyecto',
+        details: `Eliminó el proyecto "${projName}" (ID: ${projectId}) y sus registros asociados.`
+      });
+
+      setIsDeleteModalOpen(false);
+      onBack();
+    } catch (err) {
+      console.error('Error deleting project:', err);
+      alert('Failed to delete project: ' + (err.message || 'Unknown error'));
+      setIsDeleting(false);
+    }
+  };
+
   const handleApproveChangeOrder = async (changeOrderId, description, charge) => {
     if (!isAdmin) return;
 
@@ -155,17 +188,40 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
 
   const renderExpenseDetails = (item) => {
     const d = item.details;
-    if (!d || typeof d !== 'object' || Object.keys(d).length === 0) {
-      return <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>-</span>;
+    const hasProveedor = item.proveedor && item.proveedor.trim();
+    const hasDescripcion = item.descripcion && item.descripcion.trim();
+
+    if (item.category === 'Mano de Obra') {
+      return (
+        <div style={{ fontSize: '0.85rem', color: '#1e293b' }}>
+          {hasDescripcion ? (
+            <strong>👤 {item.descripcion}</strong>
+          ) : (
+            <span style={{ color: '#64748b' }}>Labor</span>
+          )}
+        </div>
+      );
+    }
+
+    if (item.category === 'Materiales') {
+      return (
+        <div style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
+          {hasProveedor && <strong>{item.proveedor} </strong>}
+          {hasProveedor && hasDescripcion && <span>• </span>}
+          {hasDescripcion && <span style={{ color: '#475569' }}>{item.descripcion}</span>}
+          {!hasProveedor && !hasDescripcion && <span style={{ color: '#9ca3af' }}>-</span>}
+        </div>
+      );
     }
 
     if (item.category === 'Cabinets') {
       return (
         <div style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
-          {d.provider && <strong>{d.provider} </strong>}
-          {d.model && <span>• {d.model} </span>}
-          {d.color && <span style={{ color: '#4b5563' }}>({d.color}) </span>}
-          {d.quantity && <span className="detail-pill">{d.quantity} units</span>}
+          {hasProveedor ? <strong>{item.proveedor} </strong> : (d?.provider && <strong>{d.provider} </strong>)}
+          {hasDescripcion && <span style={{ color: '#475569' }}>• {item.descripcion} </span>}
+          {d?.model && <span>• {d.model} </span>}
+          {d?.color && <span style={{ color: '#4b5563' }}>({d.color}) </span>}
+          {d?.quantity && <span className="detail-pill">{d.quantity} units</span>}
         </div>
       );
     }
@@ -173,9 +229,10 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     if (item.category === 'Countertops') {
       return (
         <div style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
-          {d.material && <strong>{d.material} </strong>}
-          {d.provider && <span style={{ color: '#4b5563' }}>({d.provider}) </span>}
-          {(d.slabs || d.sqft) && (
+          {d?.material && <strong>{d.material} </strong>}
+          {hasProveedor ? <span style={{ color: '#4b5563' }}>({item.proveedor}) </span> : (d?.provider && <span style={{ color: '#4b5563' }}>({d.provider}) </span>)}
+          {hasDescripcion && <span style={{ color: '#475569' }}>• {item.descripcion} </span>}
+          {(d?.slabs || d?.sqft) && (
             <span className="detail-pill">
               {d.slabs ? `${d.slabs} slabs` : ''}
               {d.slabs && d.sqft ? ' • ' : ''}
@@ -186,11 +243,26 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       );
     }
 
-    return (
-      <div style={{ fontSize: '0.8rem', color: '#4b5563' }}>
-        {Object.entries(d).map(([k, v]) => `${k}: ${v}`).join(' • ')}
-      </div>
-    );
+    // Generic fallback (Subcontratista, etc.)
+    if (hasProveedor || hasDescripcion) {
+      return (
+        <div style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
+          {hasProveedor && <strong>{item.proveedor} </strong>}
+          {hasProveedor && hasDescripcion && <span>• </span>}
+          {hasDescripcion && <span style={{ color: '#475569' }}>{item.descripcion}</span>}
+        </div>
+      );
+    }
+
+    if (d && typeof d === 'object' && Object.keys(d).length > 0) {
+      return (
+        <div style={{ fontSize: '0.8rem', color: '#4b5563' }}>
+          {Object.entries(d).map(([k, v]) => `${k}: ${v}`).join(' • ')}
+        </div>
+      );
+    }
+
+    return <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>-</span>;
   };
 
   if (loading && !projectData) {
@@ -214,33 +286,68 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
 
   return (
     <div className="project-details-container">
-      {/* Navigation Header with Status Selector */}
+      {/* Navigation Header with Status Selector and Admin Delete */}
       <div className="details-header-nav">
         <button className="back-btn" onClick={onBack}>
           {t('common.backToDashboard')}
         </button>
         
-        {/* Status Selector (Interactive for Admin, Read-Only for Trabajador) */}
-        <div className="status-selector-container">
-          <label htmlFor="quick-status-select" className="status-selector-label">
-            {t('projectDetails.statusLabel')}
-          </label>
-          <select
-            id="quick-status-select"
-            value={currentStatus}
-            disabled={!isAdmin || statusUpdating}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className={`status-dropdown-select ${getProjectStatusBadgeClass(currentStatus)}`}
-            style={!isAdmin ? { cursor: 'default', opacity: 0.95 } : {}}
-            title={!isAdmin ? t('projectDetails.statusAdminOnlyTitle') : ''}
-          >
-            <option value="Planeación">{t('projectDetails.statusPlaneacion')}</option>
-            <option value="En Ejecución">{t('projectDetails.statusEnEjecucion')}</option>
-            <option value="Pausado">{t('projectDetails.statusPausado')}</option>
-            <option value="Finalizado">{t('projectDetails.statusFinalizado')}</option>
-          </select>
-          {statusUpdating && <small style={{ color: '#64748b', fontSize: '0.75rem' }}>{t('common.updating')}</small>}
-          {!isAdmin && <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>({t('common.readOnly')})</small>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+          {/* Status Selector (Interactive for Admin, Read-Only for Trabajador) */}
+          <div className="status-selector-container">
+            <label htmlFor="quick-status-select" className="status-selector-label">
+              {t('projectDetails.statusLabel')}
+            </label>
+            <select
+              id="quick-status-select"
+              value={currentStatus}
+              disabled={!isAdmin || statusUpdating}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className={`status-dropdown-select ${getProjectStatusBadgeClass(currentStatus)}`}
+              style={!isAdmin ? { cursor: 'default', opacity: 0.95 } : {}}
+              title={!isAdmin ? t('projectDetails.statusAdminOnlyTitle') : ''}
+            >
+              <option value="Planeación">{t('projectDetails.statusPlaneacion')}</option>
+              <option value="En Ejecución">{t('projectDetails.statusEnEjecucion')}</option>
+              <option value="Pausado">{t('projectDetails.statusPausado')}</option>
+              <option value="Finalizado">{t('projectDetails.statusFinalizado')}</option>
+            </select>
+            {statusUpdating && <small style={{ color: '#64748b', fontSize: '0.75rem' }}>{t('common.updating')}</small>}
+            {!isAdmin && <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>({t('common.readOnly')})</small>}
+          </div>
+
+          {/* Admin-Only Delete Project Button */}
+          {isAdmin && (
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #fca5a5',
+                color: '#dc2626',
+                padding: '0.45rem 0.95rem',
+                borderRadius: '9999px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                transition: 'all 0.2s',
+                boxShadow: '0 1px 2px rgba(220, 38, 38, 0.05)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#fef2f2';
+                e.currentTarget.style.borderColor = '#ef4444';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.borderColor = '#fca5a5';
+              }}
+              title="Permanently delete this project"
+            >
+              {t('projectDetails.deleteProjectBtn')}
+            </button>
+          )}
         </div>
       </div>
 
@@ -530,6 +637,54 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             fetchAllData();
           }}
         />
+      )}
+
+      {/* Delete Project Confirmation Modal (Admin Only) */}
+      {isDeleteModalOpen && (
+        <div className="modal-overlay" onClick={() => !isDeleting && setIsDeleteModalOpen(false)}>
+          <div 
+            className="modal-content"
+            style={{ maxWidth: '440px', textAlign: 'center' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+            <h3 style={{ margin: '0 0 0.75rem 0', color: '#991b1b', fontSize: '1.25rem' }}>
+              {t('projectDetails.deleteConfirmTitle')}
+            </h3>
+            <p style={{ margin: '0 0 1.75rem 0', color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>
+              {t('projectDetails.deleteConfirmMsg')}
+            </p>
+            <div className="modal-actions" style={{ justifyContent: 'center', marginTop: 0 }}>
+              <button
+                type="button"
+                className="cancel-btn"
+                disabled={isDeleting}
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                {t('projectDetails.deleteCancelBtn')}
+              </button>
+              <button
+                type="button"
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '0.65rem 1.5rem',
+                  borderRadius: '9999px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  cursor: isDeleting ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s',
+                  boxShadow: '0 4px 12px rgba(220, 38, 38, 0.25)'
+                }}
+                disabled={isDeleting}
+                onClick={handleDeleteProject}
+              >
+                {isDeleting ? t('common.deleting') : t('projectDetails.deleteProceedBtn')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
