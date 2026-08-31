@@ -53,8 +53,8 @@ export const translations = {
       accountCreatedMsg: 'Account created! You can now sign in with your credentials.'
     },
     dashboard: {
-      globalOverviewTitle: 'Global Company Overview',
-      globalOverviewSubtitle: 'Click any card to drill down into project-level breakdowns',
+      globalOverviewTitle: 'Executive Summary',
+      globalOverviewSubtitle: 'Performance overview of your studio',
       studioPill: 'Architecture & Interior Design OS',
       totalCompanyProfit: 'Total Company Profit',
       totalCompanyProfitSub: 'Net Gross Profit across all jobs',
@@ -66,8 +66,8 @@ export const translations = {
       totalContractVolumeSub: 'Cumulative signed value + extras',
       clickToBreakdown: 'Click to view breakdown',
       clickToActiveList: 'Click to view active list',
-      clientProjectsTitle: 'Client Projects',
-      clientProjectsSubAdmin: 'Manage job costing, specifications, and scope for each project',
+      projectsHeading: 'Projects',
+      projectsSubheading: 'Active portfolio and project performance',
       clientProjectsSubWorker: 'Select a project to view details and log field labor or expenses',
       createNewProjectBtn: 'Create New Project',
       noProjectsFoundTitle: 'No projects found',
@@ -327,8 +327,8 @@ export const translations = {
       accountCreatedMsg: '¡Cuenta creada! Ya puedes iniciar sesión con tus credenciales.'
     },
     dashboard: {
-      globalOverviewTitle: 'Resumen Global de la Empresa',
-      globalOverviewSubtitle: 'Haz clic en cualquier tarjeta para ver el desglose por proyecto',
+      globalOverviewTitle: 'Resumen ejecutivo',
+      globalOverviewSubtitle: 'Visión general del rendimiento de tu estudio',
       studioPill: 'OS de Arquitectura y Diseño Interior',
       totalCompanyProfit: 'Ganancia Total de la Empresa',
       totalCompanyProfitSub: 'Ganancia Bruta Neta en todos los proyectos',
@@ -340,8 +340,8 @@ export const translations = {
       totalContractVolumeSub: 'Valor acumulado firmado + extras',
       clickToBreakdown: 'Clic para ver desglose',
       clickToActiveList: 'Clic para ver lista activa',
-      clientProjectsTitle: 'Proyectos de Clientes',
-      clientProjectsSubAdmin: 'Gestiona costeo de obra, especificaciones y alcance para cada proyecto',
+      projectsHeading: 'Proyectos',
+      projectsSubheading: 'Portafolio activo y rendimiento de proyectos',
       clientProjectsSubWorker: 'Selecciona un proyecto para ver detalles y registrar mano de obra o gastos',
       createNewProjectBtn: 'Crear Nuevo Proyecto',
       noProjectsFoundTitle: 'No se encontraron proyectos',

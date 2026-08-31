@@ -134,13 +134,13 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
           <span>{t('common.backToDashboard')}</span>
         </button>
         <div className="access-denied-card">
-          <div style={{ color: '#ef4444', marginBottom: '0.75rem', display: 'flex', justifyContent: 'center' }}>
-            <Lock size={44} strokeWidth={1.25} />
+          <div style={{ color: 'var(--arka-gold)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+            <Lock size={44} strokeWidth={1.5} />
           </div>
-          <h3 style={{ margin: '0 0 0.5rem 0', color: '#991b1b', fontSize: '1.25rem' }}>
+          <h3 style={{ margin: '0 0 8px 0', color: 'var(--arka-navy)', fontSize: '20px', fontFamily: 'var(--font-display)' }}>
             {t('teamSettings.accessRestrictedTitle')}
           </h3>
-          <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
+          <p style={{ margin: 0, color: 'var(--arka-text-secondary)', fontSize: '14px' }}>
             {t('teamSettings.accessRestrictedText')}
           </p>
         </div>
@@ -169,7 +169,7 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
 
       {error && <div className="alert error" style={{ marginBottom: '1.5rem' }}>{error}</div>}
       {successToast && (
-        <div className="alert success" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div className="alert success fade-out" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <CheckCircle2 size={16} strokeWidth={1.5} />
           <span>{successToast}</span>
         </div>

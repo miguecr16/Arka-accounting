@@ -58,6 +58,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
       <div 
         className="modal-content kpi-drilldown-modal"
         onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: '800px' }}
       >
         {/* Modal Header */}
         <div className="kpi-modal-header">
@@ -66,7 +67,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
               <ModalIcon size={22} strokeWidth={1.5} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#0f172a', fontWeight: 800, letterSpacing: '-0.02em' }}>
+              <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#0f172a', fontWeight: 800, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>
                 {modalTitle}
               </h3>
               <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>
@@ -86,7 +87,7 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
 
         {/* Metric Summary Pill */}
         <div style={{ marginBottom: '1.25rem' }}>
-          <span className="kpi-modal-badge">{totalSummaryBadge}</span>
+          <span className="kpi-modal-badge" style={{ backgroundColor: 'var(--arka-gold-glow)', color: 'var(--arka-gold)', border: '1px solid var(--arka-gold-border)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: '13px', fontWeight: 600 }}>{totalSummaryBadge}</span>
         </div>
 
         {/* Table Content */}
@@ -203,9 +204,8 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                             onClose();
                             onSelectProject(targetId);
                           }}
-                          className="drilldown-enter-btn"
+                          className="table-action-edit-btn"
                           title={t('common.viewProject')}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                         >
                           <span>{t('common.viewProject')}</span>
                           <ArrowUpRight size={14} strokeWidth={1.5} />

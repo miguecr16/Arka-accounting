@@ -100,51 +100,21 @@ export default function Auth({ onAuthSuccess }) {
   return (
     <div className="auth-page-wrapper">
       {/* Top right language switch on Auth page */}
-      <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem' }}>
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          background: '#ffffff',
-          borderRadius: '9999px',
-          padding: '0.2rem',
-          border: '1px solid #cbd5e1',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.05)'
-        }}>
-          <button
-            type="button"
-            onClick={() => setLanguage('en')}
-            style={{
-              background: language === 'en' ? '#0f172a' : 'transparent',
-              color: language === 'en' ? '#ffffff' : '#64748b',
-              border: 'none',
-              padding: '0.25rem 0.55rem',
-              borderRadius: '9999px',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              transition: 'all 0.15s'
-            }}
-          >
-            EN
-          </button>
-          <button
-            type="button"
-            onClick={() => setLanguage('es')}
-            style={{
-              background: language === 'es' ? '#0f172a' : 'transparent',
-              color: language === 'es' ? '#ffffff' : '#64748b',
-              border: 'none',
-              padding: '0.25rem 0.55rem',
-              borderRadius: '9999px',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              transition: 'all 0.15s'
-            }}
-          >
-            ES
-          </button>
-        </div>
+      <div className="auth-lang-toggle">
+        <button
+          type="button"
+          onClick={() => setLanguage('en')}
+          className={`auth-lang-btn ${language === 'en' ? 'active' : ''}`}
+        >
+          EN
+        </button>
+        <button
+          type="button"
+          onClick={() => setLanguage('es')}
+          className={`auth-lang-btn ${language === 'es' ? 'active' : ''}`}
+        >
+          ES
+        </button>
       </div>
 
       <div className="auth-card">
@@ -153,12 +123,7 @@ export default function Auth({ onAuthSuccess }) {
           <img 
             src="/arka-logo.png" 
             alt="Arka Design Group" 
-            style={{
-              height: '92px',
-              maxWidth: '240px',
-              objectFit: 'contain',
-              marginBottom: '0.75rem'
-            }}
+            className="auth-logo"
           />
           <p className="auth-brand-subtitle">
             {mode === 'login' ? t('auth.signInSubtitle') : t('auth.createAccountSubtitle')}

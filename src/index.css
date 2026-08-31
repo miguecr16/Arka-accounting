@@ -1,32 +1,85 @@
+/* ==========================================================================
+   ARKA DESIGN GROUP — PREMIUM DESIGN SYSTEM
+   Global tokens, form controls, tables, navigation, and layout primitives
+   ========================================================================== */
+
 :root {
-  /* Brand Luxury Palette */
-  --arka-gold: #c89d56;
-  --arka-gold-light: #dfb76c;
-  --arka-gold-dark: #a87f3b;
-  --arka-gold-glow: rgba(200, 157, 86, 0.18);
-  --arka-gold-subtle: #fbf7ee;
-  --arka-gold-border: rgba(200, 157, 86, 0.35);
+  /* ── Primary Architectural Palette ── */
+  --arka-navy: #0D1726;
+  --arka-navy-secondary: #152238;
+  --arka-navy-hover: #1a2d4a;
 
-  --arka-charcoal: #0f172a;
-  --arka-charcoal-card: #182234;
-  --arka-charcoal-subtle: #1e293b;
+  /* ── Premium Gold Accents (strategic use only) ── */
+  --arka-gold: #C9A45C;
+  --arka-gold-soft: #E7D5A3;
+  --arka-gold-glow: rgba(201, 164, 92, 0.12);
+  --arka-gold-border: rgba(201, 164, 92, 0.25);
+  --arka-gold-subtle: #FBF8F0;
 
-  --arka-surface: #ffffff;
-  --arka-surface-subtle: #f8fafc;
-  --arka-surface-elevated: #ffffff;
-  --arka-border: #e2e8f0;
-  --arka-border-hairline: #f1f5f9;
+  /* ── Neutral Surfaces ── */
+  --arka-bg: #F7F6F2;
+  --arka-surface: #FFFFFF;
+  --arka-border: #E9E7E2;
+  --arka-border-subtle: #F0EEEA;
 
-  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* ── Text Hierarchy ── */
+  --arka-text-primary: #0D1726;
+  --arka-text-secondary: #687386;
+  --arka-text-tertiary: #9CA3AF;
 
-  font-family: var(--font-sans);
+  /* ── Typography ── */
+  --font-display: 'DM Sans', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+  /* ── Spacing Scale (8px base) ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Border Radii (subtle, not pill) ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* ── Shadows (very subtle) ── */
+  --shadow-xs: 0 1px 2px rgba(13, 23, 38, 0.04);
+  --shadow-sm: 0 1px 3px rgba(13, 23, 38, 0.06), 0 1px 2px rgba(13, 23, 38, 0.04);
+  --shadow-md: 0 4px 12px rgba(13, 23, 38, 0.06);
+  --shadow-lg: 0 8px 24px rgba(13, 23, 38, 0.08);
+  --shadow-overlay: 0 20px 60px rgba(13, 23, 38, 0.15);
+
+  /* ── Transitions ── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+
+  /* ── Legacy compatibility aliases ── */
+  --arka-charcoal: var(--arka-navy);
+  --arka-charcoal-card: var(--arka-navy-secondary);
+  --arka-charcoal-subtle: var(--arka-navy-hover);
+  --arka-gold-light: var(--arka-gold-soft);
+  --arka-gold-dark: #946B2D;
+  --arka-surface-subtle: var(--arka-bg);
+  --arka-surface-elevated: var(--arka-surface);
+  --arka-border-hairline: var(--arka-border-subtle);
+  --font-sans: var(--font-body);
+
+  /* ── Root Defaults ── */
+  font-family: var(--font-body);
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light;
-  color: var(--arka-charcoal);
-  background-color: var(--arka-surface-subtle);
-
+  color: var(--arka-text-primary);
+  background-color: var(--arka-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -41,64 +94,68 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: var(--arka-surface-subtle);
+  background-color: var(--arka-bg);
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
 }
 
-/* =========================================================
-   GLOBAL RESPONSIVE NAVBAR & HEADER
-   ========================================================= */
+/* ==========================================================================
+   PREMIUM HEADER / NAVIGATION
+   ========================================================================== */
 .app-main-header {
-  padding: 0.85rem 1.5rem;
-  background-color: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(12px);
+  padding: 0 var(--space-6);
+  background-color: var(--arka-surface);
   border-bottom: 1px solid var(--arka-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03);
   position: sticky;
   top: 0;
   z-index: 100;
   width: 100%;
-  transition: all 0.2s ease;
+  height: 56px;
+  transition: box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.app-main-header:hover {
+  box-shadow: var(--shadow-xs);
 }
 
 .header-brand-wrapper {
   display: flex;
   align-items: center;
+  gap: var(--space-4);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .header-brand-wrapper:hover {
-  transform: scale(1.015);
+  opacity: 0.85;
 }
 
 .header-brand-logo {
-  height: 48px;
-  max-width: 160px;
+  height: 32px;
+  max-width: 130px;
   object-fit: contain;
 }
 
 @media (min-width: 768px) {
   .app-main-header {
-    padding: 0.95rem 2.25rem;
+    padding: 0 var(--space-8);
+    height: 60px;
   }
   .header-brand-logo {
-    height: 54px;
-    max-width: 185px;
+    height: 36px;
+    max-width: 145px;
   }
 }
 
-/* Desktop navigation links & user info */
+/* ── Desktop Navigation & User Info ── */
 .header-desktop-actions {
   display: none;
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 @media (min-width: 768px) {
@@ -107,11 +164,11 @@ html, body {
   }
 }
 
-/* Mobile Controls (Language toggle & Hamburger button) */
+/* ── Mobile Controls ── */
 .header-mobile-controls {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
 }
 
 @media (min-width: 768px) {
@@ -121,134 +178,138 @@ html, body {
 }
 
 .mobile-hamburger-btn {
-  background: var(--arka-surface-subtle);
+  background: transparent;
   border: 1px solid var(--arka-border);
-  color: var(--arka-charcoal);
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  color: var(--arka-text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .mobile-hamburger-btn:hover,
 .mobile-hamburger-btn:active {
-  background: #f1f5f9;
-  border-color: var(--arka-gold);
-  color: var(--arka-gold-dark);
+  background: var(--arka-bg);
+  border-color: var(--arka-gold-border);
+  color: var(--arka-gold);
 }
 
-/* Common Header Buttons & Badges */
+/* ── Header Buttons & Badges ── */
 .nav-action-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.85rem;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  font-family: var(--font-body);
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 40px;
+  gap: var(--space-2);
+  transition: all var(--duration-fast) var(--ease-out);
+  min-height: 36px;
+  letter-spacing: 0;
 }
 
 .back-nav-btn {
-  background-color: var(--arka-surface-subtle);
+  background-color: transparent;
   border: 1px solid var(--arka-border);
-  color: #334155;
+  color: var(--arka-text-secondary);
 }
 
 .back-nav-btn:hover {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
-  color: var(--arka-charcoal);
+  background-color: var(--arka-bg);
+  border-color: var(--arka-border);
+  color: var(--arka-text-primary);
 }
 
 .org-nav-btn {
-  background-color: #ffffff;
+  background-color: transparent;
   border: 1px solid var(--arka-border);
-  color: var(--arka-charcoal);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  color: var(--arka-text-primary);
 }
 
 .org-nav-btn:hover {
   background-color: var(--arka-gold-subtle);
-  border-color: var(--arka-gold);
-  color: var(--arka-charcoal);
+  border-color: var(--arka-gold-border);
+  color: var(--arka-text-primary);
 }
 
+/* ── Language Toggle ── */
 .header-lang-toggle {
   display: inline-flex;
   align-items: center;
-  background: var(--arka-surface-subtle);
-  border-radius: 9999px;
-  padding: 0.2rem;
+  background: var(--arka-bg);
+  border-radius: var(--radius-sm);
+  padding: 2px;
   border: 1px solid var(--arka-border);
 }
 
 .header-lang-toggle .lang-btn {
   background: transparent;
-  color: #64748b;
+  color: var(--arka-text-tertiary);
   border: none;
-  padding: 0.35rem 0.7rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-family: var(--font-body);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 32px;
+  transition: all var(--duration-fast) var(--ease-out);
+  min-height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  letter-spacing: 0.04em;
 }
 
 .header-lang-toggle .lang-btn.active {
-  background: var(--arka-charcoal);
-  color: var(--arka-gold-light);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  background: var(--arka-navy);
+  color: var(--arka-gold-soft);
+  box-shadow: var(--shadow-xs);
 }
 
+/* ── Role Badge ── */
 .header-role-badge {
-  padding: 0.35rem 0.85rem;
-  border-radius: 9999px;
-  font-size: 0.725rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
+  font-family: var(--font-body);
 }
 
 .header-role-badge.admin {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  color: var(--arka-gold-light);
-  border: 1px solid rgba(200, 157, 86, 0.3);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  background: var(--arka-navy);
+  color: var(--arka-gold-soft);
+  border: none;
 }
 
 .header-role-badge.trabajador {
-  background-color: var(--arka-surface-subtle);
-  color: #475569;
+  background-color: var(--arka-bg);
+  color: var(--arka-text-secondary);
   border: 1px solid var(--arka-border);
 }
 
+/* ── User Badge ── */
 .header-user-badge {
-  background: #ffffff;
+  background: var(--arka-surface);
   border: 1px solid var(--arka-border);
-  padding: 0.45rem 0.95rem;
-  border-radius: 9999px;
-  font-size: 0.8rem;
-  color: #475569;
+  padding: 4px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  color: var(--arka-text-secondary);
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: var(--space-2);
   font-weight: 500;
-  max-width: 220px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  max-width: 200px;
 }
 
 .user-email-text {
@@ -258,58 +319,61 @@ html, body {
 }
 
 .user-status-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  background-color: #22c55e;
   flex-shrink: 0;
 }
 
+/* ── Sign Out ── */
 .header-signout-btn {
-  padding: 0.5rem 1rem;
-  background-color: #ffffff;
-  border: 1px solid #fee2e2;
-  color: #ef4444;
-  border-radius: 9999px;
+  padding: var(--space-2) var(--space-3);
+  background-color: transparent;
+  border: 1px solid var(--arka-border);
+  color: var(--arka-text-secondary);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.85rem;
-  transition: all 0.2s ease;
-  min-height: 40px;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  font-family: var(--font-body);
+  transition: all var(--duration-fast) ease;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .header-signout-btn:hover {
-  background-color: #fef2f2;
-  border-color: #fca5a5;
-  color: #dc2626;
-  transform: translateY(-1px);
+  background-color: #FEF2F2;
+  border-color: #FECACA;
+  color: #B91C1C;
 }
 
-/* =========================================================
-   MOBILE SLIDE-OUT DRAWER NAVIGATION
-   ========================================================= */
+/* ==========================================================================
+   MOBILE SLIDE-OUT DRAWER
+   ========================================================================== */
 .mobile-drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(6px);
+  background: rgba(13, 23, 38, 0.5);
+  backdrop-filter: blur(4px);
   z-index: 9999;
   display: flex;
   justify-content: flex-end;
-  animation: fadeIn 0.2s ease-out;
+  animation: arka-fadeIn var(--duration-fast) ease-out;
 }
 
 .mobile-drawer-content {
-  background: #ffffff;
+  background: var(--arka-surface);
   width: 84vw;
-  max-width: 330px;
+  max-width: 340px;
   height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: -6px 0 30px rgba(0, 0, 0, 0.2);
-  animation: slideLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 1.75rem 1.35rem;
+  box-shadow: -8px 0 32px rgba(13, 23, 38, 0.12);
+  animation: arka-slideLeft var(--duration-normal) var(--ease-out);
+  padding: var(--space-6) var(--space-5);
   overflow-y: auto;
 }
 
@@ -317,95 +381,110 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--arka-border-hairline);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--arka-border-subtle);
 }
 
 .mobile-drawer-close {
-  background: var(--arka-surface-subtle);
+  background: transparent;
   border: 1px solid var(--arka-border);
-  color: #64748b;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  color: var(--arka-text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast);
 }
 
 .mobile-drawer-close:hover {
-  background: #f1f5f9;
-  color: var(--arka-charcoal);
+  background: var(--arka-bg);
+  color: var(--arka-text-primary);
 }
 
 .mobile-drawer-user-info {
-  padding: 1.15rem 0;
-  border-bottom: 1px solid var(--arka-border-hairline);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--arka-border-subtle);
 }
 
 .mobile-drawer-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  padding: 1.5rem 0;
+  gap: var(--space-2);
+  padding: var(--space-5) 0;
   flex: 1;
 }
 
 .mobile-nav-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.9rem 1.15rem;
-  border-radius: 14px;
-  border: 1px solid var(--arka-border);
-  background: var(--arka-surface-subtle);
-  color: var(--arka-charcoal);
-  font-size: 0.95rem;
-  font-weight: 600;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--arka-text-primary);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  font-family: var(--font-body);
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--duration-fast) var(--ease-out);
   min-height: 48px;
 }
 
 .mobile-nav-link:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+  background: var(--arka-bg);
 }
 
 .mobile-nav-link.active {
-  background: var(--arka-charcoal);
-  color: var(--arka-gold-light);
-  border-color: var(--arka-charcoal);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  background: var(--arka-navy);
+  color: var(--arka-gold-soft);
 }
 
 .mobile-drawer-footer {
-  padding-top: 1rem;
-  border-top: 1px solid var(--arka-border-hairline);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--arka-border-subtle);
 }
 
 .mobile-drawer-signout-btn {
   width: 100%;
-  padding: 0.85rem 1rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.95rem;
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: 1px solid var(--arka-border);
+  color: var(--arka-text-secondary);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  font-family: var(--font-body);
   cursor: pointer;
   min-height: 48px;
-  transition: all 0.2s;
+  transition: all var(--duration-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
 }
 
 .mobile-drawer-signout-btn:hover {
-  background: #fee2e2;
+  background: #FEF2F2;
+  border-color: #FECACA;
+  color: #B91C1C;
 }
 
+@keyframes arka-slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes arka-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Legacy animation aliases */
 @keyframes slideLeft {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
@@ -416,11 +495,9 @@ html, body {
   to { opacity: 1; }
 }
 
-/* =========================================================
-   LUXURY FORM INPUTS & REFINED GOLD FOCUS STATES
-   ========================================================= */
-
-/* Text, number, date, email, password inputs and selects */
+/* ==========================================================================
+   FORM CONTROLS — Premium Rounded Rectangles
+   ========================================================================== */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -430,38 +507,37 @@ input[type="tel"],
 input[type="url"],
 input[type="search"],
 select {
-  border-radius: 9999px !important;
-  border: 1px solid #cbd5e1;
-  background-color: #ffffff;
-  color: var(--arka-charcoal);
-  padding: 0.75rem 1.25rem;
-  font-size: 0.95rem;
-  font-family: inherit;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--arka-border);
+  background-color: var(--arka-surface);
+  color: var(--arka-text-primary);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
   outline: none;
   width: 100%;
-  min-height: 44px; /* Touch Target standard */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 44px;
+  box-shadow: none;
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
 }
 
-/* Textarea with soft circular rounded borders */
 textarea {
-  border-radius: 18px !important;
-  border: 1px solid #cbd5e1;
-  background-color: #ffffff;
-  color: var(--arka-charcoal);
-  padding: 0.85rem 1.25rem;
-  font-size: 0.95rem;
-  font-family: inherit;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--arka-border);
+  background-color: var(--arka-surface);
+  color: var(--arka-text-primary);
+  padding: 0.75rem 0.875rem;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
   outline: none;
   width: 100%;
   min-height: 88px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none;
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
   resize: vertical;
 }
 
-/* Champagne Gold Luxury Focus States */
+/* Gold Focus Ring */
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
@@ -473,97 +549,31 @@ input[type="search"]:focus,
 select:focus,
 textarea:focus {
   border-color: var(--arka-gold) !important;
-  box-shadow: 0 0 0 3.5px var(--arka-gold-glow) !important;
-  background-color: #ffffff;
+  box-shadow: 0 0 0 3px var(--arka-gold-glow) !important;
+  background-color: var(--arka-surface);
 }
 
 /* File Inputs */
 input[type="file"] {
-  border-radius: 9999px !important;
-  border: 1px dashed #cbd5e1;
-  background-color: var(--arka-surface-subtle);
-  padding: 0.6rem 1.25rem;
-  font-size: 0.85rem;
-  color: #475569;
+  border-radius: var(--radius-md) !important;
+  border: 1px dashed var(--arka-border);
+  background-color: var(--arka-bg);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--arka-text-secondary);
   width: 100%;
   min-height: 44px;
   cursor: pointer;
   outline: none;
-  transition: all 0.2s;
+  transition: all var(--duration-fast);
 }
 
 input[type="file"]:hover {
-  border-color: var(--arka-gold);
+  border-color: var(--arka-gold-border);
   background-color: var(--arka-gold-subtle);
 }
 
-/* =========================================================
-   CURRENCY INPUT VISUAL CUE WRAPPER ($ PREFIX)
-   ========================================================= */
-.currency-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.currency-input-wrapper .currency-symbol {
-  position: absolute;
-  left: 1.15rem;
-  color: var(--arka-gold);
-  font-weight: 800;
-  font-size: 1.05rem;
-  pointer-events: none;
-  user-select: none;
-  z-index: 2;
-}
-
-.currency-input-wrapper input {
-  padding-left: 2.15rem !important;
-  width: 100%;
-}
-
-/* Form Group Layout & Labels */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  margin-bottom: 0.45rem;
-}
-
-.form-group label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #475569;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-/* Alerts */
-.alert {
-  padding: 0.85rem 1.25rem;
-  border-radius: 14px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.alert.error {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-}
-
-.alert.success {
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-}
-
-/* Hide native number input spin buttons (up/down arrows) globally */
+/* Hide native number spinners */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -575,18 +585,87 @@ input[type=number] {
   appearance: textfield;
 }
 
-/* =========================================================
-   TABLE RESPONSIVENESS & STICKY LUXURY HEADERS
-   ========================================================= */
+/* ==========================================================================
+   CURRENCY INPUT ($ PREFIX)
+   ========================================================================== */
+.currency-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.currency-input-wrapper .currency-symbol {
+  position: absolute;
+  left: 0.875rem;
+  color: var(--arka-gold);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+.currency-input-wrapper input {
+  padding-left: 1.75rem !important;
+  width: 100%;
+}
+
+/* ==========================================================================
+   FORM GROUP LAYOUT
+   ========================================================================== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.form-group label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--arka-text-secondary);
+  letter-spacing: 0.02em;
+  font-family: var(--font-body);
+}
+
+/* ==========================================================================
+   ALERTS
+   ========================================================================== */
+.alert {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.alert.error {
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+
+.alert.success {
+  background-color: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  color: #166534;
+}
+
+/* ==========================================================================
+   DATA TABLES — Premium Clean Presentation
+   ========================================================================== */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  border-radius: 16px;
-  margin-bottom: 1rem;
-  background: #ffffff;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  background: var(--arka-surface);
   border: 1px solid var(--arka-border);
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
 }
 
 .data-table {
@@ -594,30 +673,31 @@ input[type=number] {
   border-collapse: separate;
   border-spacing: 0;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.8125rem;
 }
 
 .data-table th {
   position: sticky;
   top: 0;
-  background-color: #f8fafc;
-  color: #64748b;
-  font-weight: 700;
-  font-size: 0.725rem;
+  background-color: var(--arka-bg);
+  color: var(--arka-text-secondary);
+  font-weight: 600;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 0.9rem 1.15rem;
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--arka-border);
   white-space: nowrap;
   z-index: 5;
+  font-family: var(--font-body);
 }
 
 .data-table td {
-  padding: 0.95rem 1.15rem;
-  border-bottom: 1px solid var(--arka-border-hairline);
-  color: var(--arka-charcoal);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--arka-border-subtle);
+  color: var(--arka-text-primary);
   vertical-align: middle;
-  transition: background-color 0.15s ease;
+  transition: background-color var(--duration-fast) ease;
 }
 
 .data-table tr:last-child td {
@@ -625,10 +705,10 @@ input[type=number] {
 }
 
 .data-table tr:hover td {
-  background-color: #fafbfd;
+  background-color: var(--arka-bg);
 }
 
-/* Right-align numeric and currency cells */
+/* Right-align numeric/currency cells */
 .numeric-col,
 .currency-col {
   text-align: right !important;
@@ -641,6 +721,111 @@ th.currency-col {
 
 @media (max-width: 768px) {
   .table-responsive {
-    box-shadow: inset -6px 0 8px -4px rgba(0, 0, 0, 0.06);
+    box-shadow: inset -4px 0 6px -4px rgba(13, 23, 38, 0.04);
   }
+}
+
+/* ==========================================================================
+   MODAL OVERLAY BASE
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 23, 38, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: var(--space-4);
+  animation: arka-fadeIn var(--duration-fast) ease-out;
+}
+
+.modal-content {
+  background: var(--arka-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-overlay);
+  animation: arka-modalEnter var(--duration-normal) var(--ease-out);
+}
+
+@keyframes arka-modalEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-content {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 95vh;
+    align-self: flex-end;
+  }
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+}
+
+/* Modal Actions Footer */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--arka-border-subtle);
+}
+
+.cancel-btn {
+  padding: var(--space-2) var(--space-5);
+  background: transparent;
+  border: 1px solid var(--arka-border);
+  color: var(--arka-text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  min-height: 40px;
+  transition: all var(--duration-fast);
+}
+
+.cancel-btn:hover {
+  background: var(--arka-bg);
+  color: var(--arka-text-primary);
+}
+
+.submit-btn {
+  padding: var(--space-2) var(--space-6);
+  background: var(--arka-navy);
+  border: none;
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  min-height: 40px;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: var(--arka-navy-hover);
+  box-shadow: 0 0 0 3px var(--arka-gold-glow);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

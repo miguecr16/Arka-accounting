@@ -20,7 +20,7 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
   return (
     <div className="project-card">
       <div className="project-card-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div className={`status-badge ${getStatusBadgeClass(statusText)}`} style={{ margin: 0 }}>
             {statusText}
           </div>
@@ -32,14 +32,12 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
               }}
               className="card-edit-btn"
               title={t('common.edit')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
             >
-              <SlidersHorizontal size={13} strokeWidth={1.5} />
-              <span>{t('common.edit')}</span>
+              <SlidersHorizontal size={16} strokeWidth={1.5} />
             </button>
           )}
         </div>
-        <h3 className="project-name">{project.project_name}</h3>
+        <h3 className="project-name" style={{ fontFamily: 'var(--font-display)' }}>{project.project_name}</h3>
         <p className="client-name">{project.client_name}</p>
       </div>
       
@@ -47,12 +45,12 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
       {isAdmin && (
         <div className="project-metrics">
           <div className="metric">
+            <span style={{ fontFamily: 'var(--font-display)' }}>{formatToUSD(project.gross_profit)}</span>
             <span>{t('dashboard.grossProfit')}</span>
-            <strong>{formatToUSD(project.gross_profit)}</strong>
           </div>
           <div className="metric">
+            <span style={{ fontFamily: 'var(--font-display)' }}>{project.gross_margin_percentage ? `${parseFloat(project.gross_margin_percentage).toFixed(2)}%` : '0%'}</span>
             <span>{t('dashboard.grossMargin')}</span>
-            <strong>{project.gross_margin_percentage ? `${parseFloat(project.gross_margin_percentage).toFixed(2)}%` : '0%'}</strong>
           </div>
         </div>
       )}
@@ -63,13 +61,12 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '0.4rem',
-          ...((!isAdmin) ? { marginTop: '1.25rem' } : {})
+          gap: '8px',
         }}
         onClick={() => onSelectProject(project.project_id || project.id)}
       >
-        <span>{t('dashboard.enterProjectBtn')}</span>
-        <ArrowUpRight size={15} strokeWidth={1.5} />
+        <span>{t('dashboard.enterProjectBtn') || "Ver proyecto"}</span>
+        <ArrowUpRight size={16} strokeWidth={1.5} />
       </button>
     </div>
   );

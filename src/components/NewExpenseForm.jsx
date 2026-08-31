@@ -188,13 +188,13 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
     <div className="modal-overlay">
       <div className="modal-content" style={{ maxWidth: category ? '560px' : '440px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.35rem' }}>
+          <h3 style={{ margin: 0, fontSize: '1.35rem', fontFamily: 'var(--font-display)' }}>
             {isEditMode ? t('expenseForm.modalTitleEdit') : t('expenseForm.modalTitleNew')}
           </h3>
           <button 
             type="button" 
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--arka-text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
           >
             <X size={20} strokeWidth={1.5} />
           </button>

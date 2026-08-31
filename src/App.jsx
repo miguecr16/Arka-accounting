@@ -115,21 +115,21 @@ function AppContent() {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f8fafc',
-        fontFamily: 'var(--font-sans)',
-        color: '#64748b'
+        backgroundColor: 'var(--arka-bg)',
+        fontFamily: 'var(--font-body)',
+        color: 'var(--arka-text-secondary)'
       }}>
         <img 
           src="/arka-logo.png" 
           alt="Arka Design Group" 
           style={{
-            height: '76px',
-            maxWidth: '220px',
+            height: '64px',
+            maxWidth: '180px',
             objectFit: 'contain',
-            marginBottom: '1.25rem'
+            marginBottom: '1rem'
           }}
         />
-        <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500 }}>
+        <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 500, letterSpacing: '0.01em' }}>
           {language === 'es' ? 'Verificando sesión segura y permisos...' : 'Verifying secure session & permissions...'}
         </p>
       </div>
@@ -155,7 +155,7 @@ function AppContent() {
   const isAdmin = userRole === 'admin';
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: 0 }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--arka-bg)', padding: 0 }}>
       {/* =========================================================
           TOP RESPONSIVE STUDIO NAVBAR
           ========================================================= */}
@@ -288,14 +288,14 @@ function AppContent() {
               <img 
                 src="/arka-logo.png" 
                 alt="Arka Design Group" 
-                style={{ height: '48px', objectFit: 'contain' }}
+                style={{ height: '32px', objectFit: 'contain' }}
               />
               <button 
                 type="button"
                 className="mobile-drawer-close"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <X size={20} strokeWidth={1.5} />
+                <X size={18} strokeWidth={1.5} />
               </button>
             </div>
 
@@ -303,7 +303,7 @@ function AppContent() {
             <div className="mobile-drawer-user-info">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
                 <span className="user-status-dot"></span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>{userEmail}</span>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--arka-text-primary)' }}>{userEmail}</span>
               </div>
               <span className={`header-role-badge ${isAdmin ? 'admin' : 'trabajador'}`}>
                 {isAdmin ? t('common.adminRole') : t('common.trabajadorRole')}

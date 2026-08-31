@@ -399,29 +399,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
           {isAdmin && (
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              style={{
-                backgroundColor: '#ffffff',
-                border: '1px solid #fca5a5',
-                color: '#dc2626',
-                padding: '0.45rem 0.95rem',
-                borderRadius: '9999px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s',
-                boxShadow: '0 1px 2px rgba(220, 38, 38, 0.05)'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = '#fef2f2';
-                e.currentTarget.style.borderColor = '#ef4444';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = '#ffffff';
-                e.currentTarget.style.borderColor = '#fca5a5';
-              }}
+              className="delete-project-btn"
               title="Permanently delete this project"
             >
               <Trash2 size={15} strokeWidth={1.5} />
@@ -625,29 +603,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                                 onClick={() => handleDeleteExpense(item)}
                                 disabled={actionLoadingId === item.id}
                                 title={t('common.delete')}
-                                style={{
-                                  background: '#ffffff',
-                                  border: '1px solid #fecaca',
-                                  color: '#dc2626',
-                                  padding: '0.35rem 0.65rem',
-                                  borderRadius: '6px',
-                                  fontSize: '0.8rem',
-                                  fontWeight: 600,
-                                  cursor: actionLoadingId === item.id ? 'not-allowed' : 'pointer',
-                                  transition: 'all 0.2s',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '36px'
-                                }}
-                                onMouseOver={(e) => {
-                                  e.currentTarget.style.backgroundColor = '#fef2f2';
-                                  e.currentTarget.style.borderColor = '#ef4444';
-                                }}
-                                onMouseOut={(e) => {
-                                  e.currentTarget.style.backgroundColor = '#ffffff';
-                                  e.currentTarget.style.borderColor = '#fecaca';
-                                }}
+                                className="delete-expense-btn"
                               >
                                 {actionLoadingId === item.id ? '...' : <Trash2 size={14} strokeWidth={1.5} />}
                               </button>

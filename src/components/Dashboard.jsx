@@ -100,7 +100,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
         <section className="global-overview-section">
           <div className="global-overview-header">
             <div>
-              <h2 className="overview-title">{t('dashboard.globalOverviewTitle')}</h2>
+              <h2 className="overview-title" style={{ fontFamily: 'var(--font-display)' }}>{t('dashboard.globalOverviewTitle')}</h2>
               <p className="overview-subtitle">{t('dashboard.globalOverviewSubtitle')}</p>
             </div>
             <div className="studio-pill">{t('dashboard.studioPill')}</div>
@@ -114,11 +114,11 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               title={t('dashboard.clickToBreakdown')}
             >
               <div className="kpi-icon-wrapper">
-                <DollarSign size={20} strokeWidth={1.5} />
+                <DollarSign size={18} strokeWidth={1.5} />
               </div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.totalCompanyProfit')}</span>
-                <strong className="kpi-value profit-value">{formatToUSD(totalCompanyProfit)}</strong>
+                <strong className="kpi-value profit-value" style={{ fontFamily: 'var(--font-display)' }}>{formatToUSD(totalCompanyProfit)}</strong>
                 <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
@@ -130,11 +130,11 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               title={t('dashboard.clickToBreakdown')}
             >
               <div className="kpi-icon-wrapper">
-                <Clock size={20} strokeWidth={1.5} />
+                <Clock size={18} strokeWidth={1.5} />
               </div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.totalHoursWorked')}</span>
-                <strong className="kpi-value">{totalCompanyHours} hrs</strong>
+                <strong className="kpi-value" style={{ fontFamily: 'var(--font-display)' }}>{totalCompanyHours} hrs</strong>
                 <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
@@ -146,11 +146,11 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               title={t('dashboard.clickToActiveList')}
             >
               <div className="kpi-icon-wrapper">
-                <HardHat size={20} strokeWidth={1.5} />
+                <HardHat size={18} strokeWidth={1.5} />
               </div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.activeProjects')}</span>
-                <strong className="kpi-value">{activeProjectsCount}</strong>
+                <strong className="kpi-value" style={{ fontFamily: 'var(--font-display)' }}>{activeProjectsCount}</strong>
                 <small className="kpi-subtext">{t('dashboard.clickToActiveList')}</small>
               </div>
             </div>
@@ -162,11 +162,11 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               title={t('dashboard.clickToBreakdown')}
             >
               <div className="kpi-icon-wrapper">
-                <TrendingUp size={20} strokeWidth={1.5} />
+                <TrendingUp size={18} strokeWidth={1.5} />
               </div>
               <div className="kpi-content">
                 <span className="kpi-label">{t('dashboard.totalContractVolume')}</span>
-                <strong className="kpi-value">{formatToUSD(totalContractVolume)}</strong>
+                <strong className="kpi-value" style={{ fontFamily: 'var(--font-display)' }}>{formatToUSD(totalContractVolume)}</strong>
                 <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
       {/* 2. PROJECTS SECTION */}
       <div className="dashboard-header">
         <div>
-          <h2 className="projects-heading">{t('dashboard.clientProjectsTitle')}</h2>
+          <h2 className="projects-heading" style={{ fontFamily: 'var(--font-display)' }}>{t('dashboard.clientProjectsTitle')}</h2>
           <p className="projects-subheading">
             {isAdmin 
               ? t('dashboard.clientProjectsSubAdmin')
@@ -198,12 +198,12 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
         </div>
       ) : projects.length === 0 ? (
         <div className="empty-state-card">
-          <div style={{ color: '#94a3b8', marginBottom: '0.75rem', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
             <FolderOpen size={44} strokeWidth={1.25} />
           </div>
-          <h3>{t('dashboard.noProjectsFoundTitle')}</h3>
+          <h3 style={{ fontFamily: 'var(--font-display)' }}>{t('dashboard.noProjectsFoundTitle')}</h3>
           <p>{t('dashboard.noProjectsFoundText')}</p>
-          <button className="create-btn" style={{ marginTop: '1.25rem' }} onClick={handleOpenCreateModal}>
+          <button className="create-btn" style={{ marginTop: '16px' }} onClick={handleOpenCreateModal}>
             <PlusCircle size={18} strokeWidth={1.5} />
             <span>{t('dashboard.createNewProjectBtn')}</span>
           </button>

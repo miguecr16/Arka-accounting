@@ -246,13 +246,13 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
     <div className="modal-overlay">
       <div className={`modal-content wizard-modal ${!isEditMode ? 'simplified' : ''}`}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.4rem' }}>
+          <h3 style={{ margin: 0, fontSize: '1.4rem', fontFamily: 'var(--font-display)' }}>
             {isEditMode ? t('wizard.modalTitleEdit') : t('wizard.modalTitleNew')}
           </h3>
           <button 
             type="button" 
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--arka-text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
           >
             <X size={20} strokeWidth={1.5} />
           </button>
@@ -263,7 +263,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
         <form onSubmit={handleSubmit} className="expense-form">
           {/* SECTION 1: CORE GENERAL & FINANCIAL INFORMATION (Always Visible) */}
           <div className="wizard-section">
-            <div className="wizard-section-title">{t('wizard.secGeneralTitle')}</div>
+            <div className="wizard-section-title" style={{ fontFamily: 'var(--font-display)' }}>{t('wizard.secGeneralTitle')}</div>
             
             <div className="wizard-grid-2">
               <div className="form-group">
@@ -366,9 +366,9 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
           {isEditMode && isKitchenProject && (
             <div className="wizard-section slide-down">
               <div className="wizard-section-title">
-                <span>{t('wizard.secCabinetsTitle')}</span>
-                <span className="live-cost-badge">
-                  {t('wizard.estCabinetsTotal')} <strong>{formatToUSD(totalCabinetsCost)}</strong>
+                <span style={{ fontFamily: 'var(--font-display)' }}>{t('wizard.secCabinetsTitle')}</span>
+                <span className="live-cost-badge" style={{ backgroundColor: 'var(--arka-gold-glow)', color: 'var(--arka-navy)', padding: '4px 8px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--arka-gold-border)', fontSize: '0.85rem' }}>
+                  {t('wizard.estCabinetsTotal')} <strong style={{ color: 'var(--arka-gold)' }}>{formatToUSD(totalCabinetsCost)}</strong>
                 </span>
               </div>
 
@@ -539,9 +539,9 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
           {isEditMode && hasCountertopScope && (
             <div className="wizard-section slide-down">
               <div className="wizard-section-title">
-                <span>{t('wizard.secCountertopsTitle')}</span>
-                <span className="live-cost-badge countertop-badge">
-                  {t('wizard.estCountertopTotal')} <strong>{formatToUSD(totalCountertopCost)}</strong>
+                <span style={{ fontFamily: 'var(--font-display)' }}>{t('wizard.secCountertopsTitle')}</span>
+                <span className="live-cost-badge countertop-badge" style={{ backgroundColor: 'var(--arka-gold-glow)', color: 'var(--arka-navy)', padding: '4px 8px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--arka-gold-border)', fontSize: '0.85rem' }}>
+                  {t('wizard.estCountertopTotal')} <strong style={{ color: 'var(--arka-gold)' }}>{formatToUSD(totalCountertopCost)}</strong>
                 </span>
               </div>
 
@@ -687,11 +687,11 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
               <div className="medidas-container">
                 <div className="medidas-header">
                   <div>
-                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b' }}>{t('wizard.medidasTitle')}</h4>
-                    <small style={{ color: '#64748b' }}>{t('wizard.medidasSubtitle')}</small>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--arka-navy)', fontFamily: 'var(--font-display)' }}>{t('wizard.medidasTitle')}</h4>
+                    <small style={{ color: 'var(--arka-text-secondary)' }}>{t('wizard.medidasSubtitle')}</small>
                   </div>
-                  <div className="medidas-total-badge">
-                    {t('wizard.totalMedidasBadge')} <strong>{totalMedidasSqFt.toFixed(2)} sqft</strong>
+                  <div className="medidas-total-badge" style={{ backgroundColor: 'var(--arka-gold-glow)', color: 'var(--arka-navy)', padding: '4px 8px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--arka-gold-border)', fontSize: '0.85rem' }}>
+                    {t('wizard.totalMedidasBadge')} <strong style={{ color: 'var(--arka-gold)' }}>{totalMedidasSqFt.toFixed(2)} sqft</strong>
                   </div>
                 </div>
 
