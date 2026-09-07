@@ -134,20 +134,18 @@
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(8, 1fr);
   gap: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .kpi-grid {
     grid-template-columns: repeat(4, 1fr);
-  }
-  .kpi-grid > *:nth-child(n+5) {
-    grid-column: span 1;
+    gap: 12px 0;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -187,6 +185,10 @@
 
 .kpi-card.highlight {
   border-left: 3px solid #3B5998;
+}
+
+.kpi-card.highlight-gold {
+  border-left: 3px solid var(--arka-gold);
 }
 
 .kpi-card.highlight-profit {

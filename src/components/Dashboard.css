@@ -305,9 +305,9 @@
 }
 
 .project-metrics {
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 16px;
   padding: 16px 0;
   border-top: 1px solid var(--arka-border-subtle);
   margin-bottom: 16px;

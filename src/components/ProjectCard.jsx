@@ -51,11 +51,21 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
             <span>{t('dashboard.contractValue') || 'Contrato'}</span>
           </div>
           <div className="metric">
-            <span style={{ fontFamily: 'var(--font-display)' }}>{formatToUSD(project.gross_profit)}</span>
+            <span style={{ fontFamily: 'var(--font-display)', color: 'var(--arka-gold)' }}>
+              {formatToUSD(project.total_collected || 0)}
+            </span>
+            <span>{t('dashboard.totalCollected') || 'Abonos'}</span>
+          </div>
+          <div className="metric">
+            <span style={{ fontFamily: 'var(--font-display)', color: '#1B7A4A' }}>
+              {formatToUSD(project.gross_profit)}
+            </span>
             <span>{t('dashboard.grossProfit')}</span>
           </div>
           <div className="metric">
-            <span style={{ fontFamily: 'var(--font-display)' }}>{project.gross_margin_percentage ? `${parseFloat(project.gross_margin_percentage).toFixed(2)}%` : '0%'}</span>
+            <span style={{ fontFamily: 'var(--font-display)' }}>
+              {project.gross_margin_percentage ? `${parseFloat(project.gross_margin_percentage).toFixed(2)}%` : '0%'}
+            </span>
             <span>{t('dashboard.grossMargin')}</span>
           </div>
         </div>

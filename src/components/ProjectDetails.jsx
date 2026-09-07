@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
 import NewExpenseForm from './NewExpenseForm.jsx';
 import NewChangeOrderModal from './NewChangeOrderModal.jsx';
+import NewPaymentModal from './NewPaymentModal.jsx';
 import { 
   ArrowLeft, 
   Trash2, 
@@ -16,7 +17,8 @@ import {
   Info, 
   AlertTriangle, 
   X, 
-  User 
+  User,
+  Coins
 } from 'lucide-react';
 import './ProjectDetails.css';
 
@@ -27,7 +29,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   const [projectData, setProjectData] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [changeOrders, setChangeOrders] = useState([]);
-  const [activeTab, setActiveTab] = useState('expenses'); // 'expenses' | 'change_orders'
+  const [payments, setPayments] = useState([]);
+  const [activeTab, setActiveTab] = useState('expenses'); // 'expenses' | 'change_orders' | 'payments'
   const [loading, setLoading] = useState(true);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -40,6 +43,9 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
 
   const [isChangeOrderModalOpen, setIsChangeOrderModalOpen] = useState(false);
   const [editingChangeOrder, setEditingChangeOrder] = useState(null);
+
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(null);
 
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
@@ -118,16 +124,39 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       if (expenseError) throw expenseError;
       setExpenses(expenseData || []);
 
-      // 3. Fetch change orders for this project (if admin)
+      // 3. Fetch change orders, payments, and deposit for this project (if admin)
       if (isAdmin) {
-        const { data: coData, error: coError } = await supabase
-          .from('change_orders')
-          .select('*')
-          .eq('project_id', projectId)
-          .order('id', { ascending: false });
+        const [coRes, payRes, projRes] = await Promise.all([
+          supabase
+            .from('change_orders')
+            .select('*')
+            .eq('project_id', projectId)
+            .order('id', { ascending: false }),
+          supabase
+            .from('project_payments')
+            .select('*')
+            .eq('project_id', projectId)
+            .order('payment_date', { ascending: false })
+            .order('id', { ascending: false }),
+          supabase
+            .from('projects')
+            .select('deposit_received')
+            .eq('id', projectId)
+            .single()
+        ]);
 
-        if (coError) throw coError;
-        setChangeOrders(coData || []);
+        if (coRes.error) console.error('Error fetching change orders:', coRes.error);
+        setChangeOrders(coRes.data || []);
+
+        if (payRes.error) console.warn('Error fetching project_payments:', payRes.error);
+        setPayments(payRes.data || []);
+
+        if (!projRes.error && projRes.data) {
+          setProjectData(prev => ({
+            ...prev,
+            deposit_received: projRes.data.deposit_received
+          }));
+        }
       }
 
     } catch (err) {
@@ -236,6 +265,38 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     } catch (err) {
       console.error('Error deleting expense:', err);
       alert('Error deleting expense: ' + (err.message || 'Unknown error'));
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Handle Delete Single Payment (Admin only)
+  const handleDeletePayment = async (payment) => {
+    if (!isAdmin) return;
+
+    const confirmMsg = t('projectDetails.deletePaymentConfirm') || '¿Estás seguro de que deseas eliminar este registro de abono?';
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      setActionLoadingId(payment.id);
+
+      const { error: delError } = await supabase
+        .from('project_payments')
+        .delete()
+        .eq('id', payment.id);
+
+      if (delError) throw delError;
+
+      await logAuditEvent({
+        action: 'Eliminó',
+        entity: 'Abono',
+        details: `Eliminó abono por ${formatToUSD(payment.amount)} (${payment.payment_date}) en proyecto "${projectData?.project_name || projectId}"`
+      });
+
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error deleting payment:', err);
+      alert('Error deleting payment: ' + (err.message || 'Unknown error'));
     } finally {
       setActionLoadingId(null);
     }
@@ -391,6 +452,10 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
 
   const currentStatus = projectData?.status || 'Planeación';
 
+  const totalPayments = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+  const depositReceived = parseFloat(projectData?.deposit_received) || 0;
+  const totalCollected = depositReceived + totalPayments;
+
   return (
     <div className="project-details-container">
       {/* Navigation Header with Status Selector and Admin Delete */}
@@ -460,6 +525,10 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
               <span>{t('projectDetails.finalContractValue')}</span>
               <strong>{formatToUSD(projectData?.final_contract_value)}</strong>
             </div>
+            <div className="kpi-card highlight-gold">
+              <span>{t('projectDetails.totalCollected')}</span>
+              <strong style={{ color: 'var(--arka-gold)' }}>{formatToUSD(totalCollected)}</strong>
+            </div>
             <div className="kpi-card">
               <span>{t('projectDetails.totalDirectCosts')}</span>
               <strong>{formatToUSD(projectData?.total_direct_costs)}</strong>
@@ -502,6 +571,14 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             <FileText size={16} strokeWidth={1.5} />
             <span>{t('projectDetails.tabChangeOrders')}</span>
             <span className="tab-count">{changeOrders.length}</span>
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'payments' ? 'active' : ''}`}
+            onClick={() => setActiveTab('payments')}
+          >
+            <Coins size={16} strokeWidth={1.5} />
+            <span>{t('projectDetails.tabPayments')}</span>
+            <span className="tab-count">{payments.length}</span>
           </button>
         </div>
       )}
@@ -800,6 +877,124 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
         </div>
       )}
 
+      {/* TAB 3: Client Payments (Abonos) (Strictly Admin Only) */}
+      {isAdmin && activeTab === 'payments' && (
+        <div>
+          <div className="section-header-actions">
+            <div>
+              <h3>{t('projectDetails.paymentsTitle')}</h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--arka-text-secondary)' }}>
+                {t('projectDetails.paymentsSubtitle')}
+              </p>
+            </div>
+            <button 
+              className="primary-action-btn"
+              onClick={() => {
+                setEditingPayment(null);
+                setIsPaymentModalOpen(true);
+              }}
+            >
+              <PlusCircle size={17} strokeWidth={1.5} />
+              <span>{t('projectDetails.logPaymentBtn')}</span>
+            </button>
+          </div>
+
+          {/* Quick Payments Summary Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '16px',
+            marginBottom: '20px',
+            padding: '16px',
+            background: 'var(--arka-bg)',
+            border: '1px solid var(--arka-border)',
+            borderRadius: 'var(--radius-md)'
+          }}>
+            <div>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--arka-text-secondary)', fontWeight: 600 }}>
+                {t('projectDetails.initialDeposit')}
+              </span>
+              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--arka-navy)', marginTop: '2px', fontFamily: 'var(--font-display)' }}>
+                {formatToUSD(depositReceived)}
+              </strong>
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--arka-text-secondary)', fontWeight: 600 }}>
+                {t('projectDetails.totalPayments')}
+              </span>
+              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--arka-navy)', marginTop: '2px', fontFamily: 'var(--font-display)' }}>
+                {formatToUSD(totalPayments)}
+              </strong>
+            </div>
+            <div style={{ borderLeft: '2px solid var(--arka-gold)', paddingLeft: '12px' }}>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--arka-gold)', fontWeight: 600 }}>
+                {t('projectDetails.totalCollected')}
+              </span>
+              <strong style={{ display: 'block', fontSize: '20px', color: 'var(--arka-gold)', marginTop: '2px', fontFamily: 'var(--font-display)' }}>
+                {formatToUSD(totalCollected)}
+              </strong>
+            </div>
+          </div>
+
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>{t('projectDetails.colPaymentDate')}</th>
+                  <th>{t('projectDetails.colPaymentDescription')}</th>
+                  <th className="currency-col">{t('projectDetails.colPaymentAmount')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('common.actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="no-data-cell">
+                      {t('projectDetails.noPaymentsLogged')}
+                    </td>
+                  </tr>
+                ) : (
+                  payments.map((pay) => (
+                    <tr key={pay.id}>
+                      <td><strong>{pay.payment_date}</strong></td>
+                      <td>{pay.description || <span style={{ color: '#9ca3af' }}>-</span>}</td>
+                      <td className="currency-col" style={{ fontWeight: 700, color: '#1B7A4A' }}>
+                        {formatToUSD(pay.amount)}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center', justifyContent: 'flex-end' }}>
+                          <button
+                            className="table-action-edit-btn"
+                            title={t('common.edit')}
+                            onClick={() => {
+                              setEditingPayment(pay);
+                              setIsPaymentModalOpen(true);
+                            }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                          >
+                            <Pencil size={13} strokeWidth={1.5} />
+                            <span>{t('common.edit')}</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleDeletePayment(pay)}
+                            disabled={actionLoadingId === pay.id}
+                            title={t('common.delete')}
+                            className="delete-expense-btn"
+                          >
+                            {actionLoadingId === pay.id ? '...' : <Trash2 size={14} strokeWidth={1.5} />}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Modals (Creation & Edit) */}
       {isExpenseModalOpen && (
         <NewExpenseForm
@@ -828,6 +1023,23 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
           onCreated={() => {
             setIsChangeOrderModalOpen(false);
             setEditingChangeOrder(null);
+            fetchAllData();
+          }}
+        />
+      )}
+
+      {isPaymentModalOpen && (
+        <NewPaymentModal
+          projectId={projectId}
+          projectName={projectData?.project_name || ''}
+          paymentToEdit={editingPayment}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setEditingPayment(null);
+          }}
+          onSaved={() => {
+            setIsPaymentModalOpen(false);
+            setEditingPayment(null);
             fetchAllData();
           }}
         />

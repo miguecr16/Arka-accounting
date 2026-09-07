@@ -27,8 +27,44 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
         .select('*');
 
       if (dbError) throw dbError;
+
+      let mergedData = data || [];
+
+      // If Admin, compute total_collected per project (deposit_received + SUM(payments))
+      if (isAdmin) {
+        try {
+          const [projectsRes, paymentsRes] = await Promise.all([
+            supabase.from('projects').select('id, deposit_received'),
+            supabase.from('project_payments').select('project_id, amount')
+          ]);
+
+          const depositMap = {};
+          (projectsRes.data || []).forEach(p => {
+            depositMap[p.id] = parseFloat(p.deposit_received) || 0;
+          });
+
+          const paymentsMap = {};
+          (paymentsRes.data || []).forEach(pm => {
+            const pid = pm.project_id;
+            paymentsMap[pid] = (paymentsMap[pid] || 0) + (parseFloat(pm.amount) || 0);
+          });
+
+          mergedData = mergedData.map(proj => {
+            const targetId = proj.project_id || proj.id;
+            const deposit = depositMap[targetId] !== undefined ? depositMap[targetId] : (parseFloat(proj.deposit_received) || 0);
+            const payments = paymentsMap[targetId] || 0;
+            return {
+              ...proj,
+              deposit_received: deposit,
+              total_collected: deposit + payments
+            };
+          });
+        } catch (adminErr) {
+          console.warn('Error fetching payments for admin dashboard:', adminErr);
+        }
+      }
       
-      const sortedData = (data || []).sort((a, b) => a.project_name.localeCompare(b.project_name));
+      const sortedData = mergedData.sort((a, b) => a.project_name.localeCompare(b.project_name));
       setProjects(sortedData);
     } catch (err) {
       console.error('Error fetching projects:', err);
