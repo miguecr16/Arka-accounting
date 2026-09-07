@@ -7,6 +7,10 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
   const { t } = useLanguage();
   const isAdmin = userRole === 'admin';
 
+  const finalContract = parseFloat(project.final_contract_value || project.base_contract_value) || 0;
+  const totalCollected = parseFloat(project.total_collected) || 0;
+  const pendingBalance = finalContract - totalCollected;
+
   const getStatusBadgeClass = (status) => {
     const s = (status || '').toLowerCase().trim();
     if (s.includes('ejecución') || s.includes('ejecucion') || s.includes('progress')) return 'en-ejecucion';
@@ -46,15 +50,24 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
         <div className="project-metrics">
           <div className="metric">
             <span style={{ fontFamily: 'var(--font-display)' }}>
-              {formatToUSD(project.final_contract_value || project.base_contract_value)}
+              {formatToUSD(finalContract)}
             </span>
             <span>{t('dashboard.contractValue') || 'Contrato'}</span>
           </div>
           <div className="metric">
             <span style={{ fontFamily: 'var(--font-display)', color: 'var(--arka-gold)' }}>
-              {formatToUSD(project.total_collected || 0)}
+              {formatToUSD(totalCollected)}
             </span>
             <span>{t('dashboard.totalCollected') || 'Abonos'}</span>
+          </div>
+          <div className="metric">
+            <span style={{ 
+              fontFamily: 'var(--font-display)', 
+              color: pendingBalance > 0 ? '#D97706' : '#1B7A4A' 
+            }}>
+              {formatToUSD(pendingBalance)}
+            </span>
+            <span>{t('dashboard.pendingBalance') || 'Saldo'}</span>
           </div>
           <div className="metric">
             <span style={{ fontFamily: 'var(--font-display)', color: '#1B7A4A' }}>

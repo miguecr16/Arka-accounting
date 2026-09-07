@@ -76,6 +76,7 @@ export const translations = {
       noProjectsFoundText: 'Create your first project to start tracking real-time job costing and materials.',
       contractValue: 'Contract Value',
       totalCollected: 'Collected',
+      pendingBalance: 'Pending Balance',
       grossProfit: 'Gross Profit',
       grossMargin: 'Margin',
       enterProjectBtn: 'Add / View'
@@ -120,6 +121,7 @@ export const translations = {
       newChangeOrderBtn: 'New Change Order',
       financialImpactNote: 'Financial Impact: Only Approved change orders are added to the Final Contract Value and Gross Profit above.',
       totalCollected: 'Total Collected',
+      pendingBalance: 'Pending Balance',
       initialDeposit: 'Initial Deposit',
       totalPayments: 'Total Payments',
       paymentsTitle: 'Client Payments History (Abonos)',
@@ -400,6 +402,7 @@ export const translations = {
       grossMargin: 'Margen',
       contractValue: 'Valor Contrato',
       totalCollected: 'Total Recaudado',
+      pendingBalance: 'Saldo Pendiente',
       enterProjectBtn: 'Agregar / Ver'
     },
     kpiModal: {
@@ -442,6 +445,7 @@ export const translations = {
       newChangeOrderBtn: 'Nueva Orden de Cambio',
       financialImpactNote: 'Impacto Financiero: Solo las órdenes de cambio Aprobadas se suman al Valor Final del Contrato y a la Ganancia Bruta.',
       totalCollected: 'Total Recaudado',
+      pendingBalance: 'Saldo Pendiente',
       initialDeposit: 'Anticipo Inicial',
       totalPayments: 'Total Abonos',
       paymentsTitle: 'Historial de Abonos de Clientes',

@@ -306,11 +306,16 @@
 
 .project-metrics {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 12px;
   padding: 16px 0;
   border-top: 1px solid var(--arka-border-subtle);
   margin-bottom: 16px;
+}
+@media (max-width: 480px) {
+  .project-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 .metric {
   display: flex;

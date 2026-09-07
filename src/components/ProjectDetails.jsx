@@ -455,6 +455,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   const totalPayments = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
   const depositReceived = parseFloat(projectData?.deposit_received) || 0;
   const totalCollected = depositReceived + totalPayments;
+  const finalContractValue = parseFloat(projectData?.final_contract_value || projectData?.base_contract_value) || 0;
+  const pendingBalance = finalContractValue - totalCollected;
 
   return (
     <div className="project-details-container">
@@ -528,6 +530,12 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             <div className="kpi-card highlight-gold">
               <span>{t('projectDetails.totalCollected')}</span>
               <strong style={{ color: 'var(--arka-gold)' }}>{formatToUSD(totalCollected)}</strong>
+            </div>
+            <div className="kpi-card">
+              <span>{t('projectDetails.pendingBalance')}</span>
+              <strong style={{ color: pendingBalance > 0 ? '#D97706' : '#1B7A4A' }}>
+                {formatToUSD(pendingBalance)}
+              </strong>
             </div>
             <div className="kpi-card">
               <span>{t('projectDetails.totalDirectCosts')}</span>
@@ -932,6 +940,20 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
               </span>
               <strong style={{ display: 'block', fontSize: '20px', color: 'var(--arka-gold)', marginTop: '2px', fontFamily: 'var(--font-display)' }}>
                 {formatToUSD(totalCollected)}
+              </strong>
+            </div>
+            <div style={{ borderLeft: '2px solid var(--arka-border)', paddingLeft: '12px' }}>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--arka-text-secondary)', fontWeight: 600 }}>
+                {t('projectDetails.pendingBalance')}
+              </span>
+              <strong style={{ 
+                display: 'block', 
+                fontSize: '20px', 
+                color: pendingBalance > 0 ? '#D97706' : '#1B7A4A', 
+                marginTop: '2px', 
+                fontFamily: 'var(--font-display)' 
+              }}>
+                {formatToUSD(pendingBalance)}
               </strong>
             </div>
           </div>
