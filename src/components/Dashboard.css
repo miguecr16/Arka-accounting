@@ -54,19 +54,25 @@
 
 @media (min-width: 640px) {
   .global-kpi-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   .volume-card {
-    grid-column: 1 / -1;
+    grid-column: span 2;
   }
 }
 
 @media (min-width: 1024px) {
   .global-kpi-grid {
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
   .volume-card {
     grid-column: auto;
+  }
+}
+
+@media (min-width: 1280px) {
+  .global-kpi-grid {
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 

@@ -5,7 +5,7 @@ import { formatToUSD } from '../utils/currencyFormatter.js';
 import ProjectCard from './ProjectCard.jsx';
 import NewProjectModal from './NewProjectModal.jsx';
 import KpiSummaryModal from './KpiSummaryModal.jsx';
-import { DollarSign, Clock, HardHat, TrendingUp, PlusCircle, FolderOpen } from 'lucide-react';
+import { DollarSign, Clock, HardHat, TrendingUp, PlusCircle, FolderOpen, Wallet } from 'lucide-react';
 import './Dashboard.css';
 
 export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) {
@@ -102,9 +102,15 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
   }).length;
 
   const totalContractVolume = projects.reduce(
-    (acc, p) => acc + (parseFloat(p.final_contract_value) || 0),
+    (acc, p) => acc + (parseFloat(p.final_contract_value || p.base_contract_value) || 0),
     0
   );
+
+  const totalPendingBalance = projects.reduce((acc, p) => {
+    const finalContract = parseFloat(p.final_contract_value || p.base_contract_value) || 0;
+    const collected = parseFloat(p.total_collected) || 0;
+    return acc + (finalContract - collected);
+  }, 0);
 
   const handleOpenCreateModal = () => {
     setEditingProject(null);
@@ -166,7 +172,33 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               </div>
             </div>
 
-            {/* KPI 2: Profit */}
+            {/* KPI 2: Total Pending Balance */}
+            <div className="global-kpi-card pending-card">
+              <div 
+                className="kpi-icon-wrapper"
+                style={{
+                  color: totalPendingBalance > 0 ? '#D97706' : 'var(--arka-gold)',
+                  background: totalPendingBalance > 0 ? '#FEF3C7' : '#FBF8F0'
+                }}
+              >
+                <Wallet size={18} strokeWidth={1.5} />
+              </div>
+              <div className="kpi-content">
+                <span className="kpi-label">{t('dashboard.totalPendingBalance')}</span>
+                <strong 
+                  className="kpi-value" 
+                  style={{ 
+                    fontFamily: 'var(--font-display)',
+                    color: totalPendingBalance > 0 ? '#D97706' : '#1B7A4A'
+                  }}
+                >
+                  {formatToUSD(totalPendingBalance)}
+                </strong>
+                <small className="kpi-subtext">{t('dashboard.totalPendingBalanceSub')}</small>
+              </div>
+            </div>
+
+            {/* KPI 3: Profit */}
             <div 
               className="global-kpi-card profit-card interactive-kpi"
               onClick={() => setActiveKpiModal('profit')}
@@ -182,7 +214,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               </div>
             </div>
 
-            {/* KPI 3: Hours */}
+            {/* KPI 4: Hours */}
             <div 
               className="global-kpi-card hours-card interactive-kpi"
               onClick={() => setActiveKpiModal('hours')}
@@ -198,7 +230,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               </div>
             </div>
 
-            {/* KPI 4: Active Projects */}
+            {/* KPI 5: Active Projects */}
             <div 
               className="global-kpi-card active-card interactive-kpi"
               onClick={() => setActiveKpiModal('active')}
