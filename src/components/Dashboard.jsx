@@ -21,7 +21,10 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
 
   const fetchProjects = async () => {
     try {
-      // Fetch strictly from the view
+      setLoading(true);
+      setError('');
+
+      // 1. Fetch strictly from the projects_dashboard_view
       const { data, error: dbError } = await supabase
         .from('projects_dashboard_view')
         .select('*');
@@ -30,41 +33,45 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
 
       let mergedData = data || [];
 
-      // If Admin, compute total_collected per project (deposit_received + SUM(payments))
-      if (isAdmin) {
-        try {
-          const [projectsRes, paymentsRes] = await Promise.all([
-            supabase.from('projects').select('id, deposit_received'),
-            supabase.from('project_payments').select('project_id, amount')
-          ]);
+      // 2. Fetch project deposits and payments concurrently to compute total_collected per project
+      try {
+        const [projectsRes, paymentsRes] = await Promise.all([
+          supabase.from('projects').select('id, deposit_received'),
+          supabase.from('project_payments').select('project_id, amount')
+        ]);
 
-          const depositMap = {};
-          (projectsRes.data || []).forEach(p => {
-            depositMap[p.id] = parseFloat(p.deposit_received) || 0;
-          });
+        const depositMap = {};
+        (projectsRes.data || []).forEach((p) => {
+          depositMap[p.id] = parseFloat(p.deposit_received) || 0;
+        });
 
-          const paymentsMap = {};
-          (paymentsRes.data || []).forEach(pm => {
-            const pid = pm.project_id;
+        const paymentsMap = {};
+        (paymentsRes.data || []).forEach((pm) => {
+          const pid = pm.project_id;
+          if (pid) {
             paymentsMap[pid] = (paymentsMap[pid] || 0) + (parseFloat(pm.amount) || 0);
-          });
+          }
+        });
 
-          mergedData = mergedData.map(proj => {
-            const targetId = proj.project_id || proj.id;
-            const deposit = depositMap[targetId] !== undefined ? depositMap[targetId] : (parseFloat(proj.deposit_received) || 0);
-            const payments = paymentsMap[targetId] || 0;
-            return {
-              ...proj,
-              deposit_received: deposit,
-              total_collected: deposit + payments
-            };
-          });
-        } catch (adminErr) {
-          console.warn('Error fetching payments for admin dashboard:', adminErr);
-        }
+        mergedData = mergedData.map((proj) => {
+          const targetId = proj.project_id || proj.id;
+          const deposit = depositMap[targetId] !== undefined 
+            ? depositMap[targetId] 
+            : (parseFloat(proj.deposit_received) || 0);
+          const paymentsSum = paymentsMap[targetId] || 0;
+          return {
+            ...proj,
+            deposit_received: deposit,
+            total_collected: deposit + paymentsSum
+          };
+        });
+      } catch (calcErr) {
+        console.warn('Could not fetch payments/deposits for dashboard:', calcErr);
       }
       
-      const sortedData = mergedData.sort((a, b) => a.project_name.localeCompare(b.project_name));
+      const sortedData = mergedData.sort((a, b) => 
+        (a.project_name || '').localeCompare(b.project_name || '')
+      );
       setProjects(sortedData);
     } catch (err) {
       console.error('Error fetching projects:', err);
@@ -76,7 +83,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [userRole]);
 
   // Global Company Overview calculations (Admin only)
   const totalCompanyProfit = projects.reduce(
