@@ -124,6 +124,7 @@ export const translations = {
       financialImpactNote: 'Financial Impact: Only Approved change orders are added to the Final Contract Value and Gross Profit above.',
       totalCollected: 'Total Collected',
       pendingBalance: 'Pending Balance',
+      generateInvoiceBtn: 'Generate Invoice',
       initialDeposit: 'Initial Deposit',
       totalPayments: 'Total Payments',
       paymentsTitle: 'Client Payments History (Abonos)',
@@ -298,6 +299,21 @@ export const translations = {
       amountError: 'Please enter a valid positive payment amount.',
       dateError: 'Please select a valid payment date.'
     },
+    invoiceModal: {
+      title: 'Generate PDF Invoice',
+      invoiceNumber: 'Invoice Number',
+      date: 'Issue Date',
+      description: 'Billing Description',
+      descPlaceholder: 'e.g., 50% Deposit, Progress Payment, Final Balance...',
+      amount: 'Amount to Bill ($)',
+      usePending: 'Use Pending Balance',
+      notes: 'Payment Instructions / Notes (Optional)',
+      notesPlaceholder: 'e.g., Wire transfer to Chase Bank #... / Zelle info',
+      downloadPdf: 'Download PDF Invoice',
+      generating: 'Generating PDF...',
+      amountError: 'Please enter a valid billing amount greater than $0.',
+      numberError: 'Please enter an invoice number.'
+    },
     teamSettings: {
       title: 'Organization & Activity',
       subtitle: 'Manage team member permissions and inspect the real-time global audit trail.',
@@ -450,6 +466,7 @@ export const translations = {
       financialImpactNote: 'Impacto Financiero: Solo las órdenes de cambio Aprobadas se suman al Valor Final del Contrato y a la Ganancia Bruta.',
       totalCollected: 'Total Recaudado',
       pendingBalance: 'Saldo Pendiente',
+      generateInvoiceBtn: 'Generar Factura',
       initialDeposit: 'Anticipo Inicial',
       totalPayments: 'Total Abonos',
       paymentsTitle: 'Historial de Abonos de Clientes',
@@ -605,6 +622,21 @@ export const translations = {
       saving: 'Guardando...',
       amountError: 'Por favor ingresa un monto válido mayor a 0.',
       dateError: 'Por favor selecciona una fecha de pago válida.'
+    },
+    invoiceModal: {
+      title: 'Generar Factura PDF',
+      invoiceNumber: 'Número de Factura',
+      date: 'Fecha de Emisión',
+      description: 'Descripción del Concepto',
+      descPlaceholder: 'ej. Anticipo 50%, Segundo Pago, Saldo Final...',
+      amount: 'Monto a Cobrar ($)',
+      usePending: 'Usar Saldo Pendiente',
+      notes: 'Instrucciones / Notas de Pago (Opcional)',
+      notesPlaceholder: 'ej. Transferencia bancaria Chase #... / Zelle: pagos@arkadesign.com',
+      downloadPdf: 'Descargar Factura PDF',
+      generating: 'Generando PDF...',
+      amountError: 'Por favor ingresa un monto válido mayor a $0.',
+      numberError: 'Por favor ingresa un número de factura.'
     },
     teamSettings: {
       title: 'Organización y Actividad',

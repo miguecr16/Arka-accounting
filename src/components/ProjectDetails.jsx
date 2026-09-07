@@ -6,6 +6,7 @@ import { formatToUSD } from '../utils/currencyFormatter.js';
 import NewExpenseForm from './NewExpenseForm.jsx';
 import NewChangeOrderModal from './NewChangeOrderModal.jsx';
 import NewPaymentModal from './NewPaymentModal.jsx';
+import InvoiceModal from './InvoiceModal.jsx';
 import { 
   ArrowLeft, 
   Trash2, 
@@ -46,6 +47,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState(null);
+
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
@@ -513,7 +516,37 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {/* Financial KPI Summary Banner (STRICTLY ADMIN ONLY) */}
       {isAdmin && (
         <div className="financial-banner">
-          <h3 className="banner-title">{t('projectDetails.financialSummaryTitle')}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+            <h3 className="banner-title" style={{ margin: 0 }}>{t('projectDetails.financialSummaryTitle')}</h3>
+            <button
+              onClick={() => setIsInvoiceModalOpen(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                backgroundColor: 'var(--arka-navy)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 200ms ease',
+                boxShadow: '0 2px 6px rgba(13, 23, 38, 0.15)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--arka-navy-hover)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--arka-navy)';
+              }}
+              title={t('projectDetails.generateInvoiceBtn')}
+            >
+              <FileText size={15} strokeWidth={1.5} />
+              <span>{t('projectDetails.generateInvoiceBtn')}</span>
+            </button>
+          </div>
           <div className="kpi-grid">
             <div className="kpi-card">
               <span>{t('projectDetails.baseContract')}</span>
@@ -1064,6 +1097,14 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             setEditingPayment(null);
             fetchAllData();
           }}
+        />
+      )}
+
+      {isInvoiceModalOpen && (
+        <InvoiceModal
+          projectData={projectData}
+          pendingBalance={pendingBalance}
+          onClose={() => setIsInvoiceModalOpen(false)}
         />
       )}
 
