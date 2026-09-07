@@ -8,8 +8,11 @@ export function generateInvoicePdf({
   dueDate = '',
   clientName = '',
   projectName = '',
-  description = 'Billing / Progress Payment',
-  amount = 0,
+  lineItems = [],
+  subtotal = 0,
+  total = 0,
+  paymentsApplied = 0,
+  balanceDue = 0,
   notes = '',
   language = 'es'
 }) {
@@ -22,119 +25,156 @@ export function generateInvoicePdf({
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 15;
+  const margin = 14;
 
-  // Primary Colors (Arka Luxury Palette)
+  // Color Palette (QuickBooks + Arka Luxury)
   const navyColor = [13, 23, 38]; // #0D1726
   const goldColor = [180, 140, 60]; // #B48C3C
-  const darkGray = [51, 65, 85]; // #334155
-  const lightGray = [100, 116, 139]; // #64748B
+  const darkGray = [30, 41, 59]; // #1E293B
+  const textMuted = [100, 116, 139]; // #64748B
   const softBg = [251, 249, 245]; // #FBF9F5
+  const borderGray = [226, 232, 240]; // #E2E8F0
+  const emeraldGreen = [27, 122, 74]; // #1B7A4A
 
   // 1. Top Decorative Golden Bar
   doc.setFillColor(goldColor[0], goldColor[1], goldColor[2]);
-  doc.rect(0, 0, pageWidth, 5, 'F');
+  doc.rect(0, 0, pageWidth, 4, 'F');
 
-  // 2. Company Brand & Title Header
+  // 2. HEADER SECTION (Left: Company Info | Right: INVOICE Title & Metadata)
+  // Company Title
   doc.setTextColor(navyColor[0], navyColor[1], navyColor[2]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  doc.text('ARKA DESIGN GROUP', margin, 20);
+  doc.setFontSize(16);
+  doc.text('ARKA DESIGN GROUP', margin, 18);
 
+  // Company Address / Contact Info
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
-  doc.text(isSpanish ? 'ESTUDIO DE ARQUITECTURA & DISEÑO DE INTERIORES' : 'ARCHITECTURE & INTERIOR DESIGN STUDIO', margin, 25);
+  doc.setFontSize(8.5);
+  doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+  doc.text(isSpanish ? 'Estudio de Arquitectura & Diseño de Interiores' : 'Architecture & Interior Design Studio', margin, 23);
+  doc.text('123 Design District Blvd, Suite 400', margin, 27.5);
+  doc.text('Miami, FL 33137', margin, 32);
+  doc.text('info@arkadesigngroup.com | (305) 555-0199', margin, 36.5);
 
-  // Invoice Title on the right
+  // Right Side: INVOICE Title & Box
+  const rightX = pageWidth - margin;
   doc.setTextColor(navyColor[0], navyColor[1], navyColor[2]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  const invoiceTitle = isSpanish ? 'FACTURA' : 'INVOICE';
-  doc.text(invoiceTitle, pageWidth - margin, 20, { align: 'right' });
+  doc.setFontSize(24);
+  const titleText = isSpanish ? 'FACTURA' : 'INVOICE';
+  doc.text(titleText, rightX, 18, { align: 'right' });
 
+  // Invoice Details Table (Right aligned)
+  const metaStartY = 24;
+  const metaLabelX = rightX - 38;
+
+  doc.setFontSize(8.5);
+  
+  // Invoice #
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
-  doc.text(`#${invoiceNumber}`, pageWidth - margin, 26, { align: 'right' });
-
-  // Golden Divider Line
-  doc.setDrawColor(goldColor[0], goldColor[1], goldColor[2]);
-  doc.setLineWidth(0.75);
-  doc.line(margin, 30, pageWidth - margin, 30);
-
-  // 3. Information Columns (Billed To & Invoice Details)
-  const infoY = 38;
-
-  // Left: Bill To (Cliente & Proyecto)
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
-  doc.text(isSpanish ? 'FACTURADO A:' : 'BILLED TO:', margin, infoY);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
+  doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+  doc.text(isSpanish ? 'FACTURA #:' : 'INVOICE #:', metaLabelX, metaStartY, { align: 'right' });
   doc.setTextColor(navyColor[0], navyColor[1], navyColor[2]);
-  doc.text(clientName || (isSpanish ? 'Cliente General' : 'General Client'), margin, infoY + 6);
+  doc.text(invoiceNumber, rightX, metaStartY, { align: 'right' });
 
+  // Date
+  doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+  doc.text(isSpanish ? 'FECHA:' : 'DATE:', metaLabelX, metaStartY + 5, { align: 'right' });
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
   doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-  doc.text(`${isSpanish ? 'Proyecto:' : 'Project:'} ${projectName || '-'}`, margin, infoY + 12);
+  doc.text(invoiceDate, rightX, metaStartY + 5, { align: 'right' });
 
-  // Right: Dates & Invoice Metadata
-  const rightColX = pageWidth - margin;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
-  doc.text(isSpanish ? 'DETALLES DE FACTURACIÓN:' : 'INVOICE DETAILS:', rightColX, infoY, { align: 'right' });
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-  doc.text(`${isSpanish ? 'Fecha de Emisión:' : 'Issue Date:'} ${invoiceDate}`, rightColX, infoY + 6, { align: 'right' });
+  // Due Date
   if (dueDate) {
-    doc.text(`${isSpanish ? 'Fecha de Vencimiento:' : 'Due Date:'} ${dueDate}`, rightColX, infoY + 11, { align: 'right' });
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+    doc.text(isSpanish ? 'VENCIMIENTO:' : 'DUE DATE:', metaLabelX, metaStartY + 10, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+    doc.text(dueDate, rightX, metaStartY + 10, { align: 'right' });
   }
 
-  // 4. Line Items Table
-  const parsedAmount = parseFloat(amount) || 0;
-  const tableData = [
-    [
-      '1',
-      description || (isSpanish ? 'Abono / Pago de Proyecto' : 'Project Payment / Installment'),
-      formatToUSD(parsedAmount)
-    ]
-  ];
+  // Divider Line
+  doc.setDrawColor(goldColor[0], goldColor[1], goldColor[2]);
+  doc.setLineWidth(0.6);
+  doc.line(margin, 43, rightX, 43);
+
+  // 3. BILL TO & PROJECT SECTION
+  const billToY = 50;
+
+  // Bill To Box
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
+  doc.text(isSpanish ? 'FACTURAR A / CLIENTE:' : 'BILL TO:', margin, billToY);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(navyColor[0], navyColor[1], navyColor[2]);
+  doc.text(clientName || (isSpanish ? 'Cliente General' : 'General Client'), margin, billToY + 5.5);
+
+  // Project Info
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
+  const projX = margin + 85;
+  doc.text(isSpanish ? 'PROYECTO / UBICACIÓN:' : 'PROJECT / SITE:', projX, billToY);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(navyColor[0], navyColor[1], navyColor[2]);
+  doc.text(projectName || '-', projX, billToY + 5.5);
+
+  // 4. LINE ITEMS TABLE (QuickBooks Style Grid)
+  const items = lineItems && lineItems.length > 0 
+    ? lineItems 
+    : [{ item: 'General Services', description: 'Remodeling & Construction', qty: 1, rate: total, amount: total }];
+
+  const tableBody = items.map((item, index) => {
+    const q = parseFloat(item.qty) || 1;
+    const r = parseFloat(item.rate) || 0;
+    const a = parseFloat(item.amount) || (q * r);
+    return [
+      item.item || `${index + 1}`,
+      item.description || '-',
+      q.toString(),
+      formatToUSD(r),
+      formatToUSD(a)
+    ];
+  });
 
   autoTable(doc, {
-    startY: 62,
+    startY: 65,
     head: [[
-      isSpanish ? '#' : '#',
-      isSpanish ? 'DESCRIPCIÓN DEL CONCEPTO' : 'BILLING DESCRIPTION',
+      isSpanish ? 'ITEM / SERVICIO' : 'ITEM / SERVICE',
+      isSpanish ? 'DESCRIPCIÓN' : 'DESCRIPTION',
+      isSpanish ? 'CANT' : 'QTY',
+      isSpanish ? 'TASA / PRECIO' : 'RATE',
       isSpanish ? 'MONTO' : 'AMOUNT'
     ]],
-    body: tableData,
+    body: tableBody,
     theme: 'grid',
     headStyles: {
       fillColor: navyColor,
       textColor: [255, 255, 255],
       fontStyle: 'bold',
-      fontSize: 9,
-      cellPadding: 4,
-      halign: 'left'
+      fontSize: 8.5,
+      cellPadding: 3.5,
+      lineColor: navyColor
     },
     columnStyles: {
-      0: { cellWidth: 12, halign: 'center' },
-      1: { cellWidth: 'auto', fontStyle: 'normal' },
-      2: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
+      0: { cellWidth: 42, fontStyle: 'bold', textColor: navyColor },
+      1: { cellWidth: 'auto', textColor: darkGray },
+      2: { cellWidth: 16, halign: 'right', fontStyle: 'normal' },
+      3: { cellWidth: 28, halign: 'right', fontStyle: 'normal' },
+      4: { cellWidth: 30, halign: 'right', fontStyle: 'bold', textColor: navyColor }
     },
     styles: {
       font: 'helvetica',
-      fontSize: 9,
-      cellPadding: 5,
+      fontSize: 8.5,
+      cellPadding: 4,
       textColor: darkGray,
-      lineColor: [226, 232, 240],
+      lineColor: borderGray,
       lineWidth: 0.2
     },
     alternateRowStyles: {
@@ -143,57 +183,87 @@ export function generateInvoicePdf({
     margin: { left: margin, right: margin }
   });
 
-  const finalTableY = doc.lastAutoTable.finalY + 10;
+  const finalTableY = doc.lastAutoTable.finalY + 6;
 
-  // 5. Total Summary Card (Bottom Right)
-  const summaryBoxWidth = 70;
-  const summaryBoxX = pageWidth - margin - summaryBoxWidth;
-  
-  doc.setFillColor(softBg[0], softBg[1], softBg[2]);
-  doc.roundedRect(summaryBoxX, finalTableY, summaryBoxWidth, 24, 2, 2, 'F');
-  doc.setDrawColor(goldColor[0], goldColor[1], goldColor[2]);
-  doc.setLineWidth(0.5);
-  doc.roundedRect(summaryBoxX, finalTableY, summaryBoxWidth, 24, 2, 2, 'D');
+  // 5. TOTALS SECTION (Bottom Right)
+  const totalsWidth = 72;
+  const totalsX = pageWidth - margin - totalsWidth;
+  let currentY = finalTableY;
 
+  // Subtotal Row
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+  doc.text(isSpanish ? 'Subtotal:' : 'Subtotal:', totalsX, currentY + 4);
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
-  doc.text(isSpanish ? 'TOTAL A PAGAR' : 'TOTAL AMOUNT DUE', summaryBoxX + 6, finalTableY + 8);
+  doc.text(formatToUSD(subtotal || total), rightX, currentY + 4, { align: 'right' });
+  currentY += 7;
 
+  // Total Row
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+  doc.text(isSpanish ? 'Total Factura:' : 'Total Invoice:', totalsX, currentY + 4);
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(navyColor[0], navyColor[1], navyColor[2]);
-  doc.text(formatToUSD(parsedAmount), summaryBoxX + 6, finalTableY + 18);
+  doc.text(formatToUSD(total), rightX, currentY + 4, { align: 'right' });
+  currentY += 7;
 
-  // 6. Notes / Payment Instructions
-  if (notes && notes.trim()) {
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
-    doc.text(isSpanish ? 'NOTAS / INSTRUCCIONES:' : 'NOTES / INSTRUCTIONS:', margin, finalTableY + 6);
-
+  // Payments Applied Row (if any)
+  if (paymentsApplied > 0) {
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-    const splitNotes = doc.splitTextToSize(notes, summaryBoxX - margin - 8);
-    doc.text(splitNotes, margin, finalTableY + 12);
+    doc.setTextColor(emeraldGreen[0], emeraldGreen[1], emeraldGreen[2]);
+    doc.text(isSpanish ? 'Pagos / Abonos Aplicados:' : 'Payments Applied:', totalsX, currentY + 4);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`-${formatToUSD(paymentsApplied)}`, rightX, currentY + 4, { align: 'right' });
+    currentY += 7;
   }
 
-  // 7. Footer
-  const footerY = pageHeight - 18;
-  doc.setDrawColor(226, 232, 240);
+  // Balance Due Card (Highlighted Box)
+  currentY += 2;
+  doc.setFillColor(navyColor[0], navyColor[1], navyColor[2]);
+  doc.roundedRect(totalsX - 4, currentY, totalsWidth + 4, 14, 1.5, 1.5, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
+  doc.text(isSpanish ? 'SALDO A PAGAR:' : 'BALANCE DUE:', totalsX, currentY + 6);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text(formatToUSD(balanceDue !== undefined ? balanceDue : total), rightX - 2, currentY + 10, { align: 'right' });
+
+  // 6. TERMS & NOTES SECTION (Bottom Left)
+  if (notes && notes.trim()) {
+    const notesWidth = totalsX - margin - 12;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
+    doc.text(isSpanish ? 'TÉRMINOS E INSTRUCCIONES DE PAGO:' : 'TERMS & PAYMENT INSTRUCTIONS:', margin, finalTableY + 4);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+    const splitNotes = doc.splitTextToSize(notes, notesWidth);
+    doc.text(splitNotes, margin, finalTableY + 9);
+  }
+
+  // 7. FOOTER
+  const footerY = pageHeight - 14;
+  doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
   doc.setLineWidth(0.3);
-  doc.line(margin, footerY - 4, pageWidth - margin, footerY - 4);
+  doc.line(margin, footerY - 3, rightX, footerY - 3);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
+  doc.setFontSize(7.5);
+  doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
   doc.text(
     isSpanish 
-      ? 'Gracias por su preferencia. Documento generado por Arka Design Group OS.' 
-      : 'Thank you for your business. Document generated by Arka Design Group OS.',
+      ? 'Gracias por su preferencia. Documento profesional generado por Arka Design Group OS.' 
+      : 'Thank you for your business. Professional invoice generated by Arka Design Group OS.',
     pageWidth / 2,
-    footerY,
+    footerY + 2,
     { align: 'center' }
   );
 

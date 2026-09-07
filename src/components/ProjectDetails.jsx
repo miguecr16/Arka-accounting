@@ -1104,6 +1104,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
         <InvoiceModal
           projectData={projectData}
           pendingBalance={pendingBalance}
+          totalCollected={totalCollected}
           onClose={() => setIsInvoiceModalOpen(false)}
         />
       )}
