@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { X } from 'lucide-react';
 import './Dashboard.css';
 
-export default function NewChangeOrderModal({ projectId, onClose, onCreated, changeOrderToEdit, projectOrgId }) {
+export default function NewChangeOrderModal({ projectId, onClose, onCreated, changeOrderToEdit }) {
   const { t } = useLanguage();
   const isEditMode = !!changeOrderToEdit;
 
@@ -31,11 +31,9 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
 
     try {
       const charge = parseFloat(extraCharge);
-      const orgId = changeOrderToEdit?.organization_id || projectOrgId || 'a0000000-0000-0000-0000-000000000001';
 
       const payload = {
         project_id: projectId,
-        organization_id: orgId,
         description: description.trim(),
         extra_charge_to_client: isNaN(charge) ? 0 : charge,
         status

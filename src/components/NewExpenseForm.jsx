@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { X, UploadCloud, FileText } from 'lucide-react';
 import './Dashboard.css';
 
-export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseToEdit, projectOrgId }) {
+export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseToEdit }) {
   const { t } = useLanguage();
   const isEditMode = !!expenseToEdit;
 
@@ -150,11 +150,9 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
 
       const cost = parseFloat(costAmount);
       const hours = parseInt(hoursWorked, 10);
-      const orgId = expenseToEdit?.organization_id || projectOrgId || 'a0000000-0000-0000-0000-000000000001';
 
       const payload = {
         project_id: projectId,
-        organization_id: orgId,
         date,
         category,
         proveedor: proveedor.trim() || null,
@@ -177,8 +175,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
         await logAuditEvent({
           action: 'Editó',
           entity: 'Gasto',
-          details: `Actualizó ${category} ($${payload.cost_amount}, ${payload.hours_worked} hrs${payload.proveedor ? ', Proveedor: ' + payload.proveedor : ''}) en proyecto ID #${projectId}`,
-          organization_id: orgId
+          details: `Actualizó ${category} ($${payload.cost_amount}, ${payload.hours_worked} hrs${payload.proveedor ? ', Proveedor: ' + payload.proveedor : ''}) en proyecto ID #${projectId}`
         });
       } else {
         const { error: dbError } = await supabase
@@ -191,8 +188,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
         await logAuditEvent({
           action: 'Creó',
           entity: 'Gasto',
-          details: `Registró ${category} ($${payload.cost_amount}, ${payload.hours_worked} hrs${payload.proveedor ? ', Proveedor: ' + payload.proveedor : ''}) en proyecto ID #${projectId}`,
-          organization_id: orgId
+          details: `Registró ${category} ($${payload.cost_amount}, ${payload.hours_worked} hrs${payload.proveedor ? ', Proveedor: ' + payload.proveedor : ''}) en proyecto ID #${projectId}`
         });
       }
 

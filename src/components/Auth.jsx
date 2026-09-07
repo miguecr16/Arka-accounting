@@ -80,20 +80,6 @@ export default function Auth({ onAuthSuccess }) {
           } catch (profileErr) {
             console.warn('Profile insertion error (may be handled by DB trigger):', profileErr);
           }
-
-          try {
-            await supabase
-              .from('organization_members')
-              .upsert([
-                {
-                  organization_id: 'a0000000-0000-0000-0000-000000000001',
-                  user_id: data.user.id,
-                  role: 'trabajador'
-                }
-              ], { onConflict: 'organization_id, user_id' });
-          } catch (orgMemErr) {
-            console.warn('Organization member insertion error:', orgMemErr);
-          }
         }
 
         if (data?.session && onAuthSuccess) {

@@ -804,7 +804,6 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {isExpenseModalOpen && (
         <NewExpenseForm
           projectId={projectId}
-          projectOrgId={projectData?.organization_id}
           expenseToEdit={editingExpense}
           onSuccess={() => {
             setIsExpenseModalOpen(false);
@@ -821,7 +820,6 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {isChangeOrderModalOpen && (
         <NewChangeOrderModal
           projectId={projectId}
-          projectOrgId={projectData?.organization_id}
           changeOrderToEdit={editingChangeOrder}
           onClose={() => {
             setIsChangeOrderModalOpen(false);
