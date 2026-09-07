@@ -107,7 +107,23 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
           </div>
 
           <div className="global-kpi-grid">
-            {/* KPI 1: Profit */}
+            {/* KPI 1: Contract Volume (Primary / First) */}
+            <div 
+              className="global-kpi-card volume-card interactive-kpi"
+              onClick={() => setActiveKpiModal('volume')}
+              title={t('dashboard.clickToBreakdown')}
+            >
+              <div className="kpi-icon-wrapper">
+                <TrendingUp size={18} strokeWidth={1.5} />
+              </div>
+              <div className="kpi-content">
+                <span className="kpi-label">{t('dashboard.totalContractVolume')}</span>
+                <strong className="kpi-value" style={{ fontFamily: 'var(--font-display)' }}>{formatToUSD(totalContractVolume)}</strong>
+                <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
+              </div>
+            </div>
+
+            {/* KPI 2: Profit */}
             <div 
               className="global-kpi-card profit-card interactive-kpi"
               onClick={() => setActiveKpiModal('profit')}
@@ -123,7 +139,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               </div>
             </div>
 
-            {/* KPI 2: Hours */}
+            {/* KPI 3: Hours */}
             <div 
               className="global-kpi-card hours-card interactive-kpi"
               onClick={() => setActiveKpiModal('hours')}
@@ -139,7 +155,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               </div>
             </div>
 
-            {/* KPI 3: Active Projects */}
+            {/* KPI 4: Active Projects */}
             <div 
               className="global-kpi-card active-card interactive-kpi"
               onClick={() => setActiveKpiModal('active')}
@@ -152,22 +168,6 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
                 <span className="kpi-label">{t('dashboard.activeProjects')}</span>
                 <strong className="kpi-value" style={{ fontFamily: 'var(--font-display)' }}>{activeProjectsCount}</strong>
                 <small className="kpi-subtext">{t('dashboard.clickToActiveList')}</small>
-              </div>
-            </div>
-
-            {/* KPI 4: Contract Volume */}
-            <div 
-              className="global-kpi-card volume-card interactive-kpi"
-              onClick={() => setActiveKpiModal('volume')}
-              title={t('dashboard.clickToBreakdown')}
-            >
-              <div className="kpi-icon-wrapper">
-                <TrendingUp size={18} strokeWidth={1.5} />
-              </div>
-              <div className="kpi-content">
-                <span className="kpi-label">{t('dashboard.totalContractVolume')}</span>
-                <strong className="kpi-value" style={{ fontFamily: 'var(--font-display)' }}>{formatToUSD(totalContractVolume)}</strong>
-                <small className="kpi-subtext">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
           </div>

@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { X, UploadCloud } from 'lucide-react';
+import { X, UploadCloud, FileText } from 'lucide-react';
 import './Dashboard.css';
 
-export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseToEdit }) {
+export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseToEdit, projectOrgId }) {
   const { t } = useLanguage();
   const isEditMode = !!expenseToEdit;
 
@@ -15,13 +15,12 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
   const [hoursWorked, setHoursWorked] = useState('');
   const [proveedor, setProveedor] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [receiptFile, setReceiptFile] = useState(null);
-  const [existingReceiptUrl, setExistingReceiptUrl] = useState('');
+  const [receiptFiles, setReceiptFiles] = useState([]);
+  const [existingReceiptUrls, setExistingReceiptUrls] = useState([]);
 
   // Category specific fields (Cabinets)
   const [cabModel, setCabModel] = useState('');
   const [cabColor, setCabColor] = useState('');
-  const [cabQuantity, setCabQuantity] = useState('');
 
   // Category specific fields (Countertops)
   const [ctMaterial, setCtMaterial] = useState('Quartz');
@@ -30,6 +29,24 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const parseExistingUrls = (raw) => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) return parsed.filter(Boolean);
+        } catch (e) {
+          // fallback
+        }
+      }
+      return trimmed ? [trimmed] : [];
+    }
+    return [];
+  };
 
   // Populate data when editing
   useEffect(() => {
@@ -40,13 +57,12 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
       setHoursWorked(expenseToEdit.hours_worked !== undefined ? String(expenseToEdit.hours_worked) : '');
       setProveedor(expenseToEdit.proveedor || expenseToEdit.details?.provider || '');
       setDescripcion(expenseToEdit.descripcion || '');
-      setExistingReceiptUrl(expenseToEdit.receipt_image_url || '');
+      setExistingReceiptUrls(parseExistingUrls(expenseToEdit.receipt_image_url));
 
       const d = expenseToEdit.details || {};
       if (expenseToEdit.category === 'Cabinets') {
         setCabModel(d.model || '');
         setCabColor(d.color || '');
-        setCabQuantity(d.quantity !== undefined ? String(d.quantity) : '');
       } else if (expenseToEdit.category === 'Countertops') {
         setCtMaterial(d.material || 'Quartz');
         setCtSlabs(d.slabs !== undefined ? String(d.slabs) : '');
@@ -84,38 +100,40 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
     setError('');
 
     try {
-      let receipt_image_url = existingReceiptUrl;
+      let uploadedUrls = [...existingReceiptUrls];
 
-      // 1. Upload receipt to Supabase Storage and retrieve FULL public URL
-      if (receiptFile) {
-        const fileExt = receiptFile.name.split('.').pop();
-        const cleanExt = fileExt ? fileExt.toLowerCase() : 'jpg';
-        const fileName = `${projectId}_${Date.now()}.${cleanExt}`;
-        const filePath = `${fileName}`;
+      // 1. Upload multiple receipts/PDFs to Supabase Storage and retrieve public URLs
+      if (receiptFiles && receiptFiles.length > 0) {
+        for (let i = 0; i < receiptFiles.length; i++) {
+          const file = receiptFiles[i];
+          const fileExt = file.name.split('.').pop();
+          const cleanExt = fileExt ? fileExt.toLowerCase() : (file.type === 'application/pdf' ? 'pdf' : 'jpg');
+          const fileName = `${projectId}_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 7)}.${cleanExt}`;
+          const filePath = `${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('imagenes_arka')
-          .upload(filePath, receiptFile, {
-            cacheControl: '3600',
-            upsert: true
-          });
+          const { error: uploadError } = await supabase.storage
+            .from('imagenes_arka')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: true
+            });
 
-        if (uploadError) {
-          console.error('Storage upload error:', uploadError);
-          throw new Error(`Receipt upload failed: ${uploadError.message}`);
+          if (uploadError) {
+            console.error('Storage upload error:', uploadError);
+            throw new Error(`File upload failed (${file.name}): ${uploadError.message}`);
+          }
+
+          const { data: publicUrlData } = supabase.storage
+            .from('imagenes_arka')
+            .getPublicUrl(filePath);
+
+          if (publicUrlData?.publicUrl) {
+            uploadedUrls.push(publicUrlData.publicUrl);
+          }
         }
-
-        // Get FULL public URL
-        const { data: publicUrlData } = supabase.storage
-          .from('imagenes_arka')
-          .getPublicUrl(filePath);
-
-        if (!publicUrlData?.publicUrl) {
-          throw new Error('Could not retrieve public URL for uploaded receipt.');
-        }
-
-        receipt_image_url = publicUrlData.publicUrl;
       }
+
+      const receipt_image_url = uploadedUrls.length > 0 ? JSON.stringify(uploadedUrls) : null;
 
       // 2. Build structured details JSONB
       const details = {};
@@ -123,7 +141,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
         if (proveedor) details.provider = proveedor.trim();
         if (cabModel) details.model = cabModel.trim();
         if (cabColor) details.color = cabColor.trim();
-        if (cabQuantity) details.quantity = Number(cabQuantity);
       } else if (category === 'Countertops') {
         if (ctMaterial) details.material = ctMaterial.trim();
         if (proveedor) details.provider = proveedor.trim();
@@ -133,9 +150,11 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
 
       const cost = parseFloat(costAmount);
       const hours = parseInt(hoursWorked, 10);
+      const orgId = expenseToEdit?.organization_id || projectOrgId || 'a0000000-0000-0000-0000-000000000001';
 
       const payload = {
         project_id: projectId,
+        organization_id: orgId,
         date,
         category,
         proveedor: proveedor.trim() || null,
@@ -158,7 +177,8 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
         await logAuditEvent({
           action: 'Editó',
           entity: 'Gasto',
-          details: `Actualizó ${category} ($${payload.cost_amount}, ${payload.hours_worked} hrs${payload.proveedor ? ', Proveedor: ' + payload.proveedor : ''}) en proyecto ID #${projectId}`
+          details: `Actualizó ${category} ($${payload.cost_amount}, ${payload.hours_worked} hrs${payload.proveedor ? ', Proveedor: ' + payload.proveedor : ''}) en proyecto ID #${projectId}`,
+          organization_id: orgId
         });
       } else {
         const { error: dbError } = await supabase
@@ -171,30 +191,73 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
         await logAuditEvent({
           action: 'Creó',
           entity: 'Gasto',
-          details: `Registró ${category} ($${payload.cost_amount}, ${payload.hours_worked} hrs${payload.proveedor ? ', Proveedor: ' + payload.proveedor : ''}) en proyecto ID #${projectId}`
+          details: `Registró ${category} ($${payload.cost_amount}, ${payload.hours_worked} hrs${payload.proveedor ? ', Proveedor: ' + payload.proveedor : ''}) en proyecto ID #${projectId}`,
+          organization_id: orgId
         });
       }
 
       onSuccess();
     } catch (err) {
-      console.error('Error saving expense:', err);
-      setError(err.message || 'Failed to save expense/hours record.');
+      console.error('Error saving expense/hours:', err);
+      setError(err.message || 'Failed to save expense record.');
     } finally {
       setLoading(false);
     }
   };
 
+  const renderFileInput = () => (
+    <div className="form-group">
+      <label htmlFor="receipt">
+        {t('expenseForm.receiptImageLabel')} {existingReceiptUrls.length > 0 && <small style={{ color: '#059669' }}>({existingReceiptUrls.length} {t('expenseForm.currentAttached')})</small>}
+      </label>
+      <input
+        type="file"
+        id="receipt"
+        multiple
+        accept="image/*, application/pdf"
+        onChange={(e) => setReceiptFiles(Array.from(e.target.files || []))}
+      />
+      <small style={{ color: '#6b7280', fontSize: '0.8rem' }}>
+        {existingReceiptUrls.length > 0 
+          ? t('expenseForm.receiptExistingHint')
+          : t('expenseForm.receiptNewHint')}
+      </small>
+      {receiptFiles.length > 0 && (
+        <div style={{ marginTop: '0.35rem', fontSize: '0.775rem', color: 'var(--arka-navy)', fontWeight: 600 }}>
+          {receiptFiles.length} file(s) ready: {receiptFiles.map(f => f.name).join(', ')}
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-content" style={{ maxWidth: category ? '560px' : '440px' }}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div 
+        className="modal-content" 
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: category ? '560px' : '480px',
+          transition: 'all 0.25s ease'
+        }}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.35rem', fontFamily: 'var(--font-display)' }}>
+          <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--arka-navy)', fontFamily: 'var(--font-display)' }}>
             {isEditMode ? t('expenseForm.modalTitleEdit') : t('expenseForm.modalTitleNew')}
           </h3>
           <button 
             type="button" 
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--arka-text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
+            onClick={onClose} 
+            className="modal-close-btn"
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              cursor: 'pointer', 
+              color: 'var(--arka-text-secondary)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0
+            }}
           >
             <X size={20} strokeWidth={1.5} />
           </button>
@@ -219,6 +282,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
               <option value="Cabinets">{t('expenseForm.catCabinets')}</option>
               <option value="Countertops">{t('expenseForm.catCountertops')}</option>
               <option value="Subcontratista">{t('expenseForm.catSubcontratista')}</option>
+              <option value="Otros gastos">{t('expenseForm.catOtros') || 'Otros gastos'}</option>
             </select>
           </div>
 
@@ -268,11 +332,13 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                   {t('expenseForm.hoursConstraintMsg')}
                 </small>
               </div>
+
+              {renderFileInput()}
             </div>
           )}
 
-          {/* B. MATERIALES */}
-          {category === 'Materiales' && (
+          {/* B. MATERIALES & OTROS GASTOS */}
+          {(category === 'Materiales' || category === 'Otros gastos') && (
             <div className="wizard-section slide-down" style={{ marginTop: '0.75rem' }}>
               <div className="form-group">
                 <label htmlFor="proveedor">{t('expenseForm.proveedorLabel')}</label>
@@ -324,26 +390,11 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="receipt">
-                  {t('expenseForm.receiptImageLabel')} {existingReceiptUrl && <small style={{ color: '#059669' }}>{t('expenseForm.currentAttached')}</small>}
-                </label>
-                <input
-                  type="file"
-                  id="receipt"
-                  accept="image/*"
-                  onChange={(e) => setReceiptFile(e.target.files[0] || null)}
-                />
-                <small style={{ color: '#6b7280', fontSize: '0.8rem' }}>
-                  {existingReceiptUrl 
-                    ? t('expenseForm.receiptExistingHint')
-                    : t('expenseForm.receiptNewHint')}
-                </small>
-              </div>
+              {renderFileInput()}
             </div>
           )}
 
-          {/* C. CABINETS */}
+          {/* C. CABINETS (Without Cantidad de Cajas) */}
           {category === 'Cabinets' && (
             <div className="wizard-section slide-down" style={{ marginTop: '0.75rem' }}>
               <div className="form-group">
@@ -386,15 +437,6 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                     onChange={(e) => setCabColor(e.target.value)}
                   />
                 </div>
-                <div className="form-group">
-                  <label>{t('expenseForm.quantityUnitsLabel')}</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={cabQuantity}
-                    onChange={(e) => setCabQuantity(e.target.value)}
-                  />
-                </div>
               </div>
 
               <div className="form-group">
@@ -424,17 +466,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="receipt">
-                  {t('expenseForm.receiptImageLabel')} {existingReceiptUrl && <small style={{ color: '#059669' }}>{t('expenseForm.currentAttached')}</small>}
-                </label>
-                <input
-                  type="file"
-                  id="receipt"
-                  accept="image/*"
-                  onChange={(e) => setReceiptFile(e.target.files[0] || null)}
-                />
-              </div>
+              {renderFileInput()}
             </div>
           )}
 
@@ -527,21 +559,11 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="receipt">
-                  {t('expenseForm.receiptImageLabel')} {existingReceiptUrl && <small style={{ color: '#059669' }}>{t('expenseForm.currentAttached')}</small>}
-                </label>
-                <input
-                  type="file"
-                  id="receipt"
-                  accept="image/*"
-                  onChange={(e) => setReceiptFile(e.target.files[0] || null)}
-                />
-              </div>
+              {renderFileInput()}
             </div>
           )}
 
-          {/* E. SUBCONTRATISTA / GENERAL */}
+          {/* E. SUBCONTRATISTA */}
           {category === 'Subcontratista' && (
             <div className="wizard-section slide-down" style={{ marginTop: '0.75rem' }}>
               <div className="form-group">
@@ -594,17 +616,7 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="receipt">
-                  {t('expenseForm.receiptImageLabel')} {existingReceiptUrl && <small style={{ color: '#059669' }}>{t('expenseForm.currentAttached')}</small>}
-                </label>
-                <input
-                  type="file"
-                  id="receipt"
-                  accept="image/*"
-                  onChange={(e) => setReceiptFile(e.target.files[0] || null)}
-                />
-              </div>
+              {renderFileInput()}
             </div>
           )}
 

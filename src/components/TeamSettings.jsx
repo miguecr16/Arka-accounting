@@ -76,6 +76,19 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
 
       if (updateError) throw updateError;
 
+      // Also sync to organization_members table if available
+      try {
+        await supabase
+          .from('organization_members')
+          .upsert({
+            organization_id: 'a0000000-0000-0000-0000-000000000001',
+            user_id: userId,
+            role: newRole
+          }, { onConflict: 'organization_id, user_id' });
+      } catch (orgErr) {
+        console.warn('Syncing role to organization_members:', orgErr);
+      }
+
       // Log audit event
       const displayName = userFullName || userEmail?.split('@')[0] || userEmail;
       await logAuditEvent({

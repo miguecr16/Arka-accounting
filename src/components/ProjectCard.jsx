@@ -45,6 +45,12 @@ export default function ProjectCard({ project, onSelectProject, onEditProject, u
       {isAdmin && (
         <div className="project-metrics">
           <div className="metric">
+            <span style={{ fontFamily: 'var(--font-display)' }}>
+              {formatToUSD(project.final_contract_value || project.base_contract_value)}
+            </span>
+            <span>{t('dashboard.contractValue') || 'Contrato'}</span>
+          </div>
+          <div className="metric">
             <span style={{ fontFamily: 'var(--font-display)' }}>{formatToUSD(project.gross_profit)}</span>
             <span>{t('dashboard.grossProfit')}</span>
           </div>

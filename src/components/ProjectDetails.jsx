@@ -43,7 +43,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
 
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
-  const resolveReceiptUrl = (rawUrl) => {
+  const resolveSingleUrl = (rawUrl) => {
     if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) return null;
     const clean = rawUrl.trim();
     if (clean.startsWith('http://') || clean.startsWith('https://')) {
@@ -51,6 +51,35 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     }
     // Handle legacy raw filename stored previously
     return `https://ddenuevupwywvatplfnt.supabase.co/storage/v1/object/public/imagenes_arka/${clean}`;
+  };
+
+  const resolveReceiptUrls = (raw) => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+      return raw.map(resolveSingleUrl).filter(Boolean);
+    }
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            return parsed.map(resolveSingleUrl).filter(Boolean);
+          }
+        } catch (e) {
+          // fallback to single url
+        }
+      }
+      const single = resolveSingleUrl(trimmed);
+      return single ? [single] : [];
+    }
+    return [];
+  };
+
+  const isPdfUrl = (url) => {
+    if (!url) return false;
+    const clean = url.split('?')[0].toLowerCase();
+    return clean.endsWith('.pdf');
   };
 
   // Close lightbox on Escape key
@@ -278,7 +307,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       );
     }
 
-    if (item.category === 'Materiales') {
+    if (item.category === 'Materiales' || item.category === 'Otros gastos') {
       return (
         <div style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
           {hasProveedor && <strong>{item.proveedor} </strong>}
@@ -517,8 +546,8 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                 ) : (
                   expenses.map((item) => {
                     const isLabor = item.category === 'Mano de Obra';
-                    const isMaterial = item.category === 'Materiales';
-                    const receiptUrl = resolveReceiptUrl(item.receipt_image_url);
+                    const isMaterial = item.category === 'Materiales' || item.category === 'Otros gastos';
+                    const receiptUrls = resolveReceiptUrls(item.receipt_image_url);
 
                     return (
                       <tr key={item.id}>
@@ -537,46 +566,92 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
                             : (item.cost_amount > 0 ? formatToUSD(item.cost_amount) : '-')}
                         </td>
 
-                        {/* Hours (Contextual: strictly '-' for Materiales) */}
+                        {/* Hours (Contextual: strictly '-' for Materiales & Otros gastos) */}
                         <td className="numeric-col" style={{ fontWeight: item.hours_worked > 0 ? 700 : 400 }}>
                           {isMaterial 
                             ? '-' 
                             : (item.hours_worked > 0 ? `${item.hours_worked} hrs` : '-')}
                         </td>
                         
-                        {/* Receipt Thumbnail (Contextual: strictly '-' for Labor unless receipt present) */}
+                        {/* Receipt Thumbnail / PDF files */}
                         <td style={{ textAlign: 'center' }}>
-                          {receiptUrl ? (
-                            <img
-                              src={receiptUrl}
-                              alt="Receipt"
-                              onClick={() => setSelectedReceiptImage(receiptUrl)}
-                              title="Click to view full receipt in-app"
-                              style={{
-                                width: '40px',
-                                height: '40px',
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                border: '1px solid #cbd5e1',
-                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-                                cursor: 'pointer',
-                                transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
-                                display: 'inline-block'
-                              }}
-                              onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'scale(1.12)';
-                                e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.18)';
-                                e.currentTarget.style.borderColor = 'var(--arka-gold)';
-                              }}
-                              onMouseOut={(e) => {
-                                e.currentTarget.style.transform = 'scale(1)';
-                                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.08)';
-                                e.currentTarget.style.borderColor = '#cbd5e1';
-                              }}
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
+                          {receiptUrls.length > 0 ? (
+                            <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                              {receiptUrls.map((url, idx) => {
+                                const isPdf = isPdfUrl(url);
+                                if (isPdf) {
+                                  return (
+                                    <a
+                                      key={idx}
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      title="Open PDF Document"
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.25rem',
+                                        padding: '4px 8px',
+                                        borderRadius: '6px',
+                                        backgroundColor: '#FEF2F2',
+                                        border: '1px solid #FECACA',
+                                        color: '#B91C1C',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 700,
+                                        textDecoration: 'none',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.15s ease'
+                                      }}
+                                      onMouseOver={(e) => {
+                                        e.currentTarget.style.backgroundColor = '#FEE2E2';
+                                        e.currentTarget.style.borderColor = '#F87171';
+                                      }}
+                                      onMouseOut={(e) => {
+                                        e.currentTarget.style.backgroundColor = '#FEF2F2';
+                                        e.currentTarget.style.borderColor = '#FECACA';
+                                      }}
+                                    >
+                                      <FileText size={14} strokeWidth={2} />
+                                      <span>PDF</span>
+                                    </a>
+                                  );
+                                }
+
+                                return (
+                                  <img
+                                    key={idx}
+                                    src={url}
+                                    alt={`Receipt ${idx + 1}`}
+                                    onClick={() => setSelectedReceiptImage(url)}
+                                    title="Click to view full receipt in-app"
+                                    style={{
+                                      width: '36px',
+                                      height: '36px',
+                                      objectFit: 'cover',
+                                      borderRadius: '8px',
+                                      border: '1px solid #cbd5e1',
+                                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+                                      cursor: 'pointer',
+                                      transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
+                                      display: 'inline-block'
+                                    }}
+                                    onMouseOver={(e) => {
+                                      e.currentTarget.style.transform = 'scale(1.12)';
+                                      e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.18)';
+                                      e.currentTarget.style.borderColor = 'var(--arka-gold)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                      e.currentTarget.style.transform = 'scale(1)';
+                                      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.08)';
+                                      e.currentTarget.style.borderColor = '#cbd5e1';
+                                    }}
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                );
+                              })}
+                            </div>
                           ) : (
                             <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>-</span>
                           )}
@@ -729,6 +804,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {isExpenseModalOpen && (
         <NewExpenseForm
           projectId={projectId}
+          projectOrgId={projectData?.organization_id}
           expenseToEdit={editingExpense}
           onSuccess={() => {
             setIsExpenseModalOpen(false);
@@ -745,6 +821,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       {isChangeOrderModalOpen && (
         <NewChangeOrderModal
           projectId={projectId}
+          projectOrgId={projectData?.organization_id}
           changeOrderToEdit={editingChangeOrder}
           onClose={() => {
             setIsChangeOrderModalOpen(false);

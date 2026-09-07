@@ -200,7 +200,8 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
         project_type: formData.project_type,
         base_contract_value: baseContract,
         deposit_received: isNaN(deposit) ? 0 : deposit,
-        scope_details: scopeDetails
+        scope_details: scopeDetails,
+        organization_id: projectToEdit?.organization_id || 'a0000000-0000-0000-0000-000000000001'
       };
 
       if (isEditMode) {

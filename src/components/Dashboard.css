@@ -56,7 +56,7 @@
   .global-kpi-grid {
     grid-template-columns: 1fr 1fr;
   }
-  .profit-card {
+  .volume-card {
     grid-column: 1 / -1;
   }
 }
@@ -65,7 +65,7 @@
   .global-kpi-grid {
     grid-template-columns: 1.5fr 1fr 1fr 1fr;
   }
-  .profit-card {
+  .volume-card {
     grid-column: auto;
   }
 }
@@ -125,15 +125,15 @@
   margin-bottom: 4px;
 }
 
-.profit-card .kpi-value {
+.volume-card .kpi-value {
   font-size: 28px;
 }
 @media (min-width: 1024px) {
-  .profit-card .kpi-value {
+  .volume-card .kpi-value {
     font-size: 36px;
   }
   .kpi-value {
-    font-size: 28px;
+    font-size: 26px;
   }
 }
 
