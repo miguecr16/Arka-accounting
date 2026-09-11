@@ -1,0 +1,216 @@
+.analytics-container {
+  padding: var(--space-5) var(--space-4);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .analytics-container {
+    padding: var(--space-8) var(--space-8);
+  }
+}
+
+.analytics-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+@media (min-width: 768px) {
+  .analytics-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+}
+
+.analytics-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--arka-navy);
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
+}
+
+.analytics-subtitle {
+  font-size: 14px;
+  color: var(--arka-text-secondary);
+  margin: 0;
+}
+
+.analytics-toggle-group {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: var(--radius-md);
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid var(--arka-border);
+}
+
+.analytics-toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--arka-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.analytics-toggle-btn.active {
+  background: #ffffff;
+  color: var(--arka-navy);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.analytics-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.analytics-kpi-card {
+  background: #ffffff;
+  border: 1px solid var(--arka-border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.analytics-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.analytics-kpi-card.income::before {
+  background: var(--arka-gold);
+}
+
+.analytics-kpi-card.expenses::before {
+  background: #64748b;
+}
+
+.analytics-kpi-card.profit::before {
+  background: #10b981;
+}
+
+.analytics-kpi-card.margin::before {
+  background: #3b82f6;
+}
+
+.analytics-kpi-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--arka-text-secondary);
+  margin-bottom: 6px;
+}
+
+.analytics-kpi-value {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--arka-navy);
+  letter-spacing: -0.01em;
+}
+
+.analytics-kpi-subtext {
+  font-size: 12px;
+  color: var(--arka-text-secondary);
+  margin-top: 4px;
+}
+
+.analytics-chart-card {
+  background: #ffffff;
+  border: 1px solid var(--arka-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  margin-bottom: 28px;
+}
+
+.analytics-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.analytics-chart-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--arka-navy);
+  margin: 0;
+}
+
+.analytics-chart-legend-custom {
+  display: flex;
+  gap: 16px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.analytics-table-container {
+  background: #ffffff;
+  border: 1px solid var(--arka-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+
+.analytics-table th {
+  background: #f8fafc;
+  color: var(--arka-navy);
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--arka-border);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.analytics-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--arka-border);
+  color: #334155;
+}
+
+.analytics-table tr:last-child td {
+  border-bottom: none;
+}
+
+.analytics-table tr:hover {
+  background: #fcfcfd;
+}

@@ -7,6 +7,7 @@ import NewExpenseForm from './NewExpenseForm.jsx';
 import NewChangeOrderModal from './NewChangeOrderModal.jsx';
 import NewPaymentModal from './NewPaymentModal.jsx';
 import InvoiceModal from './InvoiceModal.jsx';
+import { generateCloseoutReportPdf } from '../utils/closeoutReportPdfGenerator.js';
 import { 
   ArrowLeft, 
   Trash2, 
@@ -19,7 +20,8 @@ import {
   AlertTriangle, 
   X, 
   User,
-  Coins
+  Coins,
+  Award
 } from 'lucide-react';
 import './ProjectDetails.css';
 
@@ -49,8 +51,33 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   const [editingPayment, setEditingPayment] = useState(null);
 
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [generatingCloseout, setGeneratingCloseout] = useState(false);
 
   const [actionLoadingId, setActionLoadingId] = useState(null);
+
+  const handleGenerateCloseoutReport = async () => {
+    try {
+      setGeneratingCloseout(true);
+      generateCloseoutReportPdf({
+        projectData,
+        expenses,
+        changeOrders,
+        payments,
+        language
+      });
+
+      await logAuditEvent({
+        action: 'Generó Informe',
+        entity: 'Informe de Cierre',
+        details: `Generó Informe Final de Cierre PDF para el proyecto "${projectData?.project_name || projectId}" (Cliente: "${projectData?.client_name}")`
+      });
+    } catch (err) {
+      console.error('Error generating closeout report:', err);
+      alert('Error generating closeout report: ' + (err.message || 'Unknown error'));
+    } finally {
+      setGeneratingCloseout(false);
+    }
+  };
 
   const resolveSingleUrl = (rawUrl) => {
     if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) return null;
@@ -494,6 +521,33 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
             {!isAdmin && <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>({t('common.readOnly')})</small>}
           </div>
 
+          {/* Generate Closeout Report in top bar if Finalizado */}
+          {isAdmin && ['finalizado', 'finished', 'completed', 'terminado'].includes((currentStatus || '').toLowerCase().trim()) && (
+            <button
+              onClick={handleGenerateCloseoutReport}
+              disabled={generatingCloseout}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                backgroundColor: '#10B981',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '12.5px',
+                fontWeight: 600,
+                cursor: generatingCloseout ? 'not-allowed' : 'pointer',
+                transition: 'all 200ms ease',
+                boxShadow: '0 2px 5px rgba(16, 185, 129, 0.25)'
+              }}
+              title={t('projectDetails.generateCloseoutReport')}
+            >
+              <Award size={15} strokeWidth={1.75} />
+              <span>{generatingCloseout ? (t('projectDetails.generatingCloseout') || 'Generando...') : (t('projectDetails.generateCloseoutReport') || 'Generar Informe Final')}</span>
+            </button>
+          )}
+
           {/* Admin-Only Delete Project Button */}
           {isAdmin && (
             <button
@@ -518,34 +572,69 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
         <div className="financial-banner">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
             <h3 className="banner-title" style={{ margin: 0 }}>{t('projectDetails.financialSummaryTitle')}</h3>
-            <button
-              onClick={() => setIsInvoiceModalOpen(true)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 16px',
-                backgroundColor: 'var(--arka-navy)',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 200ms ease',
-                boxShadow: '0 2px 6px rgba(13, 23, 38, 0.15)'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--arka-navy-hover)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--arka-navy)';
-              }}
-              title={t('projectDetails.generateInvoiceBtn')}
-            >
-              <FileText size={15} strokeWidth={1.5} />
-              <span>{t('projectDetails.generateInvoiceBtn')}</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              {/* Closeout Report Button inside banner */}
+              {['finalizado', 'finished', 'completed', 'terminado'].includes((currentStatus || '').toLowerCase().trim()) && (
+                <button
+                  onClick={handleGenerateCloseoutReport}
+                  disabled={generatingCloseout}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    backgroundColor: '#10B981',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: generatingCloseout ? 'not-allowed' : 'pointer',
+                    transition: 'all 200ms ease',
+                    boxShadow: '0 2px 6px rgba(16, 185, 129, 0.25)'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#059669';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#10B981';
+                  }}
+                  title={t('projectDetails.generateCloseoutReport')}
+                >
+                  <Award size={16} strokeWidth={1.75} />
+                  <span>{generatingCloseout ? (t('projectDetails.generatingCloseout') || 'Generando...') : (t('projectDetails.generateCloseoutReport') || 'Generar Informe Final')}</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => setIsInvoiceModalOpen(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  backgroundColor: 'var(--arka-navy)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 200ms ease',
+                  boxShadow: '0 2px 6px rgba(13, 23, 38, 0.15)'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--arka-navy-hover)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--arka-navy)';
+                }}
+                title={t('projectDetails.generateInvoiceBtn')}
+              >
+                <FileText size={15} strokeWidth={1.5} />
+                <span>{t('projectDetails.generateInvoiceBtn')}</span>
+              </button>
+            </div>
           </div>
           <div className="kpi-grid">
             <div className="kpi-card">

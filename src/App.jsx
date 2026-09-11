@@ -4,15 +4,16 @@ import { LanguageProvider, useLanguage } from './context/LanguageContext.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import ProjectDetails from './components/ProjectDetails.jsx';
 import TeamSettings from './components/TeamSettings.jsx';
+import Analytics from './components/Analytics.jsx';
 import Auth from './components/Auth.jsx';
-import { ArrowLeft, ShieldCheck, Building2, Menu, X, LogOut } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Building2, Menu, X, LogOut, TrendingUp } from 'lucide-react';
 
 function AppContent() {
   const { language, setLanguage, t } = useLanguage();
   const [session, setSession] = useState(null);
   const [userRole, setUserRole] = useState('trabajador'); // 'admin' | 'trabajador'
   const [authLoading, setAuthLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'project-details' | 'team-settings'
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'project-details' | 'team-settings' | 'analytics'
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -106,6 +107,12 @@ function AppContent() {
     setCurrentView('team-settings');
   };
 
+  const handleOpenAnalytics = () => {
+    setIsMobileMenuOpen(false);
+    setSelectedProjectId(null);
+    setCurrentView('analytics');
+  };
+
   // Prevent flash while loading session
   if (authLoading) {
     return (
@@ -183,6 +190,18 @@ function AppContent() {
             >
               <ArrowLeft size={16} strokeWidth={1.5} />
               <span>{t('common.backToProjects')}</span>
+            </button>
+          )}
+
+          {/* Admin Performance Analytics Link */}
+          {isAdmin && currentView !== 'analytics' && (
+            <button
+              onClick={handleOpenAnalytics}
+              title="View Performance Analytics & Financial Charts"
+              className="nav-action-btn org-nav-btn"
+            >
+              <TrendingUp size={16} strokeWidth={1.5} />
+              <span>{t('nav.analytics')}</span>
             </button>
           )}
 
@@ -324,6 +343,17 @@ function AppContent() {
               {isAdmin && (
                 <button
                   type="button"
+                  className={`mobile-nav-link ${currentView === 'analytics' ? 'active' : ''}`}
+                  onClick={handleOpenAnalytics}
+                >
+                  <TrendingUp size={18} strokeWidth={1.5} />
+                  <span>{t('nav.analytics')}</span>
+                </button>
+              )}
+
+              {isAdmin && (
+                <button
+                  type="button"
                   className={`mobile-nav-link ${currentView === 'team-settings' ? 'active' : ''}`}
                   onClick={handleOpenTeamSettings}
                 >
@@ -362,6 +392,12 @@ function AppContent() {
             projectId={selectedProjectId} 
             onBack={handleBackToDashboard} 
             userRole={userRole} 
+          />
+        )}
+        {currentView === 'analytics' && (
+          <Analytics
+            onBack={handleBackToDashboard}
+            userRole={userRole}
           />
         )}
         {currentView === 'team-settings' && (
