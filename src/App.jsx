@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { LanguageProvider, useLanguage } from './context/LanguageContext.jsx';
 import Dashboard from './components/Dashboard.jsx';
@@ -8,14 +9,40 @@ import Analytics from './components/Analytics.jsx';
 import Auth from './components/Auth.jsx';
 import { ArrowLeft, ShieldCheck, Building2, Menu, X, LogOut, TrendingUp } from 'lucide-react';
 
+function ProjectDetailsRouteWrapper({ userRole }) {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
+  return (
+    <ProjectDetails 
+      projectId={id} 
+      onBack={handleBack} 
+      userRole={userRole} 
+    />
+  );
+}
+
 function AppContent() {
   const { language, setLanguage, t } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [session, setSession] = useState(null);
   const [userRole, setUserRole] = useState('trabajador'); // 'admin' | 'trabajador'
   const [authLoading, setAuthLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'project-details' | 'team-settings' | 'analytics'
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const isDashboard = location.pathname === '/';
+  const isAnalytics = location.pathname === '/analytics';
+  const isTeamSettings = location.pathname === '/team-settings' || location.pathname === '/organization';
 
   const fetchUserRole = async (userId) => {
     try {
@@ -82,35 +109,34 @@ function AppContent() {
       await supabase.auth.signOut();
       setSession(null);
       setUserRole('trabajador');
-      setCurrentView('dashboard');
-      setSelectedProjectId(null);
+      navigate('/');
     } catch (err) {
       console.error('Error signing out:', err);
     }
   };
 
-  const handleSelectProject = (projectId) => {
+  const handleBackNav = () => {
     setIsMobileMenuOpen(false);
-    setSelectedProjectId(projectId);
-    setCurrentView('project-details');
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
   };
 
-  const handleBackToDashboard = () => {
+  const handleGoHome = () => {
     setIsMobileMenuOpen(false);
-    setSelectedProjectId(null);
-    setCurrentView('dashboard');
+    navigate('/');
   };
 
   const handleOpenTeamSettings = () => {
     setIsMobileMenuOpen(false);
-    setSelectedProjectId(null);
-    setCurrentView('team-settings');
+    navigate('/team-settings');
   };
 
   const handleOpenAnalytics = () => {
     setIsMobileMenuOpen(false);
-    setSelectedProjectId(null);
-    setCurrentView('analytics');
+    navigate('/analytics');
   };
 
   // Prevent flash while loading session
@@ -169,7 +195,7 @@ function AppContent() {
       <header className="app-main-header">
         {/* Brand Logo */}
         <div 
-          onClick={handleBackToDashboard}
+          onClick={handleGoHome}
           className="header-brand-wrapper"
           title="Arka Design Group - Home"
         >
@@ -183,9 +209,9 @@ function AppContent() {
         {/* Desktop Navigation Links & Actions (hidden on mobile via CSS) */}
         <div className="header-desktop-actions">
           {/* Back button when inside subviews */}
-          {currentView !== 'dashboard' && (
+          {!isDashboard && (
             <button 
-              onClick={handleBackToDashboard}
+              onClick={handleBackNav}
               className="nav-action-btn back-nav-btn"
             >
               <ArrowLeft size={16} strokeWidth={1.5} />
@@ -194,7 +220,7 @@ function AppContent() {
           )}
 
           {/* Admin Performance Analytics Link */}
-          {isAdmin && currentView !== 'analytics' && (
+          {isAdmin && !isAnalytics && (
             <button
               onClick={handleOpenAnalytics}
               title="View Performance Analytics & Financial Charts"
@@ -206,7 +232,7 @@ function AppContent() {
           )}
 
           {/* Admin Organization & Activity Link */}
-          {isAdmin && currentView !== 'team-settings' && (
+          {isAdmin && !isTeamSettings && (
             <button
               onClick={handleOpenTeamSettings}
               title="View Organization & Activity History"
@@ -333,8 +359,8 @@ function AppContent() {
             <nav className="mobile-drawer-nav">
               <button
                 type="button"
-                className={`mobile-nav-link ${currentView === 'dashboard' ? 'active' : ''}`}
-                onClick={handleBackToDashboard}
+                className={`mobile-nav-link ${isDashboard ? 'active' : ''}`}
+                onClick={handleGoHome}
               >
                 <Building2 size={18} strokeWidth={1.5} />
                 <span>{t('dashboard.clientProjectsTitle')}</span>
@@ -343,7 +369,7 @@ function AppContent() {
               {isAdmin && (
                 <button
                   type="button"
-                  className={`mobile-nav-link ${currentView === 'analytics' ? 'active' : ''}`}
+                  className={`mobile-nav-link ${isAnalytics ? 'active' : ''}`}
                   onClick={handleOpenAnalytics}
                 >
                   <TrendingUp size={18} strokeWidth={1.5} />
@@ -354,7 +380,7 @@ function AppContent() {
               {isAdmin && (
                 <button
                   type="button"
-                  className={`mobile-nav-link ${currentView === 'team-settings' ? 'active' : ''}`}
+                  className={`mobile-nav-link ${isTeamSettings ? 'active' : ''}`}
                   onClick={handleOpenTeamSettings}
                 >
                   <ShieldCheck size={18} strokeWidth={1.5} />
@@ -379,33 +405,49 @@ function AppContent() {
         </div>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area with URL Routes */}
       <main className="app-main-content">
-        {currentView === 'dashboard' && (
-          <Dashboard 
-            onSelectProject={handleSelectProject} 
-            userRole={userRole} 
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <Dashboard 
+                onSelectProject={(projectId) => navigate(`/project/${projectId}`)} 
+                userRole={userRole} 
+              />
+            } 
           />
-        )}
-        {currentView === 'project-details' && (
-          <ProjectDetails 
-            projectId={selectedProjectId} 
-            onBack={handleBackToDashboard} 
-            userRole={userRole} 
+          <Route 
+            path="/project/:id" 
+            element={<ProjectDetailsRouteWrapper userRole={userRole} />} 
           />
-        )}
-        {currentView === 'analytics' && (
-          <Analytics
-            onBack={handleBackToDashboard}
-            userRole={userRole}
+          <Route 
+            path="/analytics" 
+            element={
+              <Analytics
+                onBack={handleBackNav}
+                userRole={userRole}
+              />
+            } 
           />
-        )}
-        {currentView === 'team-settings' && (
-          <TeamSettings
-            onBack={handleBackToDashboard}
-            userRole={userRole}
+          <Route 
+            path="/team-settings" 
+            element={
+              <TeamSettings
+                onBack={handleBackNav}
+                userRole={userRole}
+              />
+            } 
           />
-        )}
+          <Route 
+            path="/organization" 
+            element={<Navigate to="/team-settings" replace />} 
+          />
+          <Route 
+            path="*" 
+            element={<Navigate to="/" replace />} 
+          />
+        </Routes>
       </main>
     </div>
   );
@@ -413,8 +455,11 @@ function AppContent() {
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
+    <BrowserRouter>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
+    </BrowserRouter>
   );
 }
+

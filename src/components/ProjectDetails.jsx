@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
@@ -25,7 +26,21 @@ import {
 } from 'lucide-react';
 import './ProjectDetails.css';
 
-export default function ProjectDetails({ projectId, onBack, userRole = 'trabajador' }) {
+export default function ProjectDetails({ projectId: propProjectId, onBack, userRole = 'trabajador' }) {
+  const { id: routeProjectId } = useParams();
+  const navigate = useNavigate();
+  const projectId = propProjectId || routeProjectId;
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   const { t, language } = useLanguage();
   const isAdmin = userRole === 'admin';
 
@@ -256,7 +271,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
       });
 
       setIsDeleteModalOpen(false);
-      onBack();
+      navigate('/', { replace: true });
     } catch (err) {
       console.error('Error deleting project:', err);
       alert('Failed to delete project: ' + (err.message || 'Unknown error'));
@@ -471,7 +486,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
   if (error && !projectData) {
     return (
       <div className="project-details-container">
-        <button className="back-btn" onClick={onBack}>
+        <button className="back-btn" onClick={handleBack}>
           <ArrowLeft size={16} strokeWidth={1.5} />
           <span>{t('common.backToDashboard')}</span>
         </button>
@@ -492,7 +507,7 @@ export default function ProjectDetails({ projectId, onBack, userRole = 'trabajad
     <div className="project-details-container">
       {/* Navigation Header with Status Selector and Admin Delete */}
       <div className="details-header-nav">
-        <button className="back-btn" onClick={onBack}>
+        <button className="back-btn" onClick={handleBack}>
           <ArrowLeft size={16} strokeWidth={1.5} />
           <span>{t('common.backToDashboard')}</span>
         </button>

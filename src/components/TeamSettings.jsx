@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
@@ -7,8 +8,19 @@ import './TeamSettings.css';
 import './ProjectDetails.css';
 
 export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const isAdmin = userRole === 'admin';
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
 
   const [activeTab, setActiveTab] = useState('organization'); // 'organization' | 'activity'
   const [profiles, setProfiles] = useState([]);
@@ -129,7 +141,7 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
   if (!isAdmin) {
     return (
       <div className="team-settings-container">
-        <button className="back-btn" onClick={onBack}>
+        <button className="back-btn" onClick={handleBack}>
           <ArrowLeft size={16} strokeWidth={1.5} />
           <span>{t('common.backToDashboard')}</span>
         </button>
@@ -152,7 +164,7 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
     <div className="team-settings-container">
       {/* Navigation Header */}
       <div className="team-header-nav">
-        <button className="back-btn" onClick={onBack}>
+        <button className="back-btn" onClick={handleBack}>
           <ArrowLeft size={16} strokeWidth={1.5} />
           <span>{t('common.backToDashboard')}</span>
         </button>

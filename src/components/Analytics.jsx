@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
@@ -29,9 +30,20 @@ import {
 import './Analytics.css';
 
 export default function Analytics({ onBack, userRole = 'admin' }) {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const isSpanish = language === 'es';
   const isAdmin = userRole === 'admin';
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -192,12 +204,10 @@ export default function Analytics({ onBack, userRole = 'admin' }) {
           <p style={{ color: 'var(--arka-text-secondary)', maxWidth: '440px', margin: '0 auto 20px' }}>
             {t('analytics.accessRestrictedText') || 'El módulo de Análisis de Desempeño está estrictamente reservado para administradores.'}
           </p>
-          {onBack && (
-            <button className="nav-action-btn back-nav-btn" onClick={onBack}>
-              <ArrowLeft size={16} />
-              <span>{t('common.backToDashboard')}</span>
-            </button>
-          )}
+          <button className="nav-action-btn back-nav-btn" onClick={handleBack}>
+            <ArrowLeft size={16} />
+            <span>{t('common.backToDashboard')}</span>
+          </button>
         </div>
       </div>
     );
