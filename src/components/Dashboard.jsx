@@ -173,7 +173,11 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
             </div>
 
             {/* KPI 2: Total Pending Balance */}
-            <div className="global-kpi-card pending-card flex-1 min-w-[260px] p-4 md:p-6">
+            <div 
+              className="global-kpi-card pending-card interactive-kpi flex-1 min-w-[260px] p-4 md:p-6"
+              onClick={() => setActiveKpiModal('pending')}
+              title={t('dashboard.clickToBreakdown')}
+            >
               <div 
                 className="kpi-icon-wrapper"
                 style={{
@@ -194,7 +198,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
                 >
                   {formatToUSD(totalPendingBalance)}
                 </strong>
-                <small className="kpi-subtext text-xs text-gray-400 mt-2 block">{t('dashboard.totalPendingBalanceSub')}</small>
+                <small className="kpi-subtext text-xs text-gray-400 mt-2 block">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
 

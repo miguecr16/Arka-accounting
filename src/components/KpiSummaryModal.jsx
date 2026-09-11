@@ -1,6 +1,6 @@
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
-import { DollarSign, Clock, HardHat, TrendingUp, ArrowUpRight } from 'lucide-react';
+import { DollarSign, Clock, HardHat, TrendingUp, Wallet, ArrowUpRight } from 'lucide-react';
 import './Dashboard.css';
 
 export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectProject }) {
@@ -51,6 +51,26 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
     displayProjects.sort((a, b) => (parseFloat(b.final_contract_value) || 0) - (parseFloat(a.final_contract_value) || 0));
     const total = displayProjects.reduce((sum, p) => sum + (parseFloat(p.final_contract_value) || 0), 0);
     totalSummaryBadge = `${t('common.grandTotal')}: ${formatToUSD(total)}`;
+  } else if (kpiType === 'pending') {
+    modalTitle = t('kpiModal.pendingTitle') || 'Pending Balance Breakdown';
+    ModalIcon = Wallet;
+    modalSubtitle = t('kpiModal.pendingSub') || 'All projects sorted by outstanding balance';
+    displayProjects = displayProjects.map((p) => {
+      const finalVal = parseFloat(p.final_contract_value || p.base_contract_value) || 0;
+      const paymentsTotal = (p.project_payments || []).reduce((sum, pay) => sum + (parseFloat(pay.amount) || 0), 0);
+      const collected = (parseFloat(p.deposit_received) || 0) + paymentsTotal;
+      const pending = finalVal - collected;
+      return {
+        ...p,
+        _calculatedPending: pending,
+        _calculatedCollected: collected,
+        _calculatedContract: finalVal
+      };
+    }).filter((p) => p._calculatedPending > 0);
+
+    displayProjects.sort((a, b) => b._calculatedPending - a._calculatedPending);
+    const total = displayProjects.reduce((sum, p) => sum + p._calculatedPending, 0);
+    totalSummaryBadge = `${t('dashboard.totalPendingBalance')}: ${formatToUSD(total)}`;
   }
 
   return (
@@ -113,6 +133,13 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                     <th className="currency-col">{t('kpiModal.finalContractCol')}</th>
                   </>
                 )}
+                {kpiType === 'pending' && (
+                  <>
+                    <th className="currency-col">{t('kpiModal.contractValueCol')}</th>
+                    <th className="currency-col">{t('kpiModal.collectedCol')}</th>
+                    <th className="currency-col">{t('kpiModal.pendingCol')}</th>
+                  </>
+                )}
                 <th style={{ textAlign: 'center' }}>{t('common.actions')}</th>
               </tr>
             </thead>
@@ -120,7 +147,9 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
               {displayProjects.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="no-data-cell">
-                    {t('kpiModal.noProjectsFound')}
+                    {kpiType === 'pending' 
+                      ? (t('kpiModal.noPendingFound') || 'All accounts are settled.') 
+                      : t('kpiModal.noProjectsFound')}
                   </td>
                 </tr>
               ) : (
@@ -184,6 +213,21 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
                           </td>
                           <td className="currency-col" style={{ fontWeight: 700, color: '#0f172a' }}>
                             {formatToUSD(p.final_contract_value)}
+                          </td>
+                        </>
+                      )}
+
+                      {/* Pending Balance columns */}
+                      {kpiType === 'pending' && (
+                        <>
+                          <td className="currency-col" style={{ color: '#0f172a', fontWeight: 600 }}>
+                            {formatToUSD(p._calculatedContract)}
+                          </td>
+                          <td className="currency-col" style={{ color: '#16a34a' }}>
+                            {formatToUSD(p._calculatedCollected)}
+                          </td>
+                          <td className="currency-col" style={{ fontWeight: 700, color: '#D97706' }}>
+                            {formatToUSD(p._calculatedPending)}
                           </td>
                         </>
                       )}

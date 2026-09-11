@@ -93,6 +93,8 @@ export const translations = {
       activeSub: 'Currently active jobs in planning, progress, or paused',
       volumeTitle: 'Total Contract Volume Breakdown',
       volumeSub: 'All projects sorted by final contract value',
+      pendingTitle: 'Pending Balance Breakdown',
+      pendingSub: 'All projects sorted by outstanding balance',
       projectClient: 'Project / Client',
       grossProfitCol: 'Gross Profit',
       marginCol: 'Margin %',
@@ -100,10 +102,13 @@ export const translations = {
       directCostsCol: 'Direct Costs',
       statusCol: 'Status',
       contractValueCol: 'Contract Value',
+      collectedCol: 'Collected',
+      pendingCol: 'Pending',
       baseContractCol: 'Base Contract',
       approvedExtrasCol: 'Approved Extras',
       finalContractCol: 'Final Contract',
-      noProjectsFound: 'No matching projects found for this metric.'
+      noProjectsFound: 'No matching projects found for this metric.',
+      noPendingFound: 'All accounts are settled.'
     },
     projectDetails: {
       financialSummaryTitle: 'Financial Summary & Job Costing',
@@ -486,6 +491,8 @@ export const translations = {
       activeSub: 'Obras actualmente activas en planeación, ejecución o pausadas',
       volumeTitle: 'Desglose del Volumen Total de Contratos',
       volumeSub: 'Todos los proyectos ordenados por valor de contrato final',
+      pendingTitle: 'Desglose de Cuentas por Cobrar',
+      pendingSub: 'Todos los proyectos ordenados por saldo pendiente',
       projectClient: 'Proyecto / Cliente',
       grossProfitCol: 'Ganancia Bruta',
       marginCol: 'Margen %',
@@ -493,10 +500,13 @@ export const translations = {
       directCostsCol: 'Costos Directos',
       statusCol: 'Estado',
       contractValueCol: 'Valor del Contrato',
+      collectedCol: 'Recaudado',
+      pendingCol: 'Pendiente',
       baseContractCol: 'Contrato Base',
       approvedExtrasCol: 'Extras Aprobados',
       finalContractCol: 'Contrato Final',
-      noProjectsFound: 'No se encontraron proyectos para esta métrica.'
+      noProjectsFound: 'No se encontraron proyectos para esta métrica.',
+      noPendingFound: 'Todas las cuentas están al día (sin saldos pendientes).'
     },
     projectDetails: {
       financialSummaryTitle: 'Resumen Financiero y Costeo de Obra',
