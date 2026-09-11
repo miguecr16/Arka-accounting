@@ -155,10 +155,10 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
             <div className="studio-pill">{t('dashboard.studioPill')}</div>
           </div>
 
-          <div className="global-kpi-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
+          <div className="global-kpi-grid flex flex-wrap gap-4 md:gap-6">
             {/* KPI 1: Contract Volume (Primary / First) */}
             <div 
-              className="global-kpi-card volume-card interactive-kpi p-4 md:p-6"
+              className="global-kpi-card volume-card interactive-kpi flex-1 min-w-[260px] p-4 md:p-6"
               onClick={() => setActiveKpiModal('volume')}
               title={t('dashboard.clickToBreakdown')}
             >
@@ -168,12 +168,12 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               <div className="kpi-content">
                 <span className="kpi-label min-h-[2.5rem] flex items-center leading-tight">{t('dashboard.totalContractVolume')}</span>
                 <strong className="kpi-value text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>{formatToUSD(totalContractVolume)}</strong>
-                <small className="kpi-subtext text-xs text-gray-400 mt-2 truncate w-full block">{t('dashboard.clickToBreakdown')}</small>
+                <small className="kpi-subtext text-xs text-gray-400 mt-2 block">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
 
             {/* KPI 2: Total Pending Balance */}
-            <div className="global-kpi-card pending-card p-4 md:p-6">
+            <div className="global-kpi-card pending-card flex-1 min-w-[260px] p-4 md:p-6">
               <div 
                 className="kpi-icon-wrapper"
                 style={{
@@ -194,13 +194,13 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
                 >
                   {formatToUSD(totalPendingBalance)}
                 </strong>
-                <small className="kpi-subtext text-xs text-gray-400 mt-2 truncate w-full block">{t('dashboard.totalPendingBalanceSub')}</small>
+                <small className="kpi-subtext text-xs text-gray-400 mt-2 block">{t('dashboard.totalPendingBalanceSub')}</small>
               </div>
             </div>
 
             {/* KPI 3: Profit */}
             <div 
-              className="global-kpi-card profit-card interactive-kpi p-4 md:p-6"
+              className="global-kpi-card profit-card interactive-kpi flex-1 min-w-[260px] p-4 md:p-6"
               onClick={() => setActiveKpiModal('profit')}
               title={t('dashboard.clickToBreakdown')}
             >
@@ -210,13 +210,13 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               <div className="kpi-content">
                 <span className="kpi-label min-h-[2.5rem] flex items-center leading-tight">{t('dashboard.totalCompanyProfit')}</span>
                 <strong className="kpi-value profit-value text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>{formatToUSD(totalCompanyProfit)}</strong>
-                <small className="kpi-subtext text-xs text-gray-400 mt-2 truncate w-full block">{t('dashboard.clickToBreakdown')}</small>
+                <small className="kpi-subtext text-xs text-gray-400 mt-2 block">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
 
             {/* KPI 4: Hours */}
             <div 
-              className="global-kpi-card hours-card interactive-kpi p-4 md:p-6"
+              className="global-kpi-card hours-card interactive-kpi flex-1 min-w-[260px] p-4 md:p-6"
               onClick={() => setActiveKpiModal('hours')}
               title={t('dashboard.clickToBreakdown')}
             >
@@ -226,13 +226,13 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               <div className="kpi-content">
                 <span className="kpi-label min-h-[2.5rem] flex items-center leading-tight">{t('dashboard.totalHoursWorked')}</span>
                 <strong className="kpi-value text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>{totalCompanyHours} hrs</strong>
-                <small className="kpi-subtext text-xs text-gray-400 mt-2 truncate w-full block">{t('dashboard.clickToBreakdown')}</small>
+                <small className="kpi-subtext text-xs text-gray-400 mt-2 block">{t('dashboard.clickToBreakdown')}</small>
               </div>
             </div>
 
             {/* KPI 5: Active Projects */}
             <div 
-              className="global-kpi-card active-card interactive-kpi p-4 md:p-6"
+              className="global-kpi-card active-card interactive-kpi flex-1 min-w-[260px] p-4 md:p-6"
               onClick={() => setActiveKpiModal('active')}
               title={t('dashboard.clickToActiveList')}
             >
@@ -242,7 +242,7 @@ export default function Dashboard({ onSelectProject, userRole = 'trabajador' }) 
               <div className="kpi-content">
                 <span className="kpi-label min-h-[2.5rem] flex items-center leading-tight">{t('dashboard.activeProjects')}</span>
                 <strong className="kpi-value text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>{activeProjectsCount}</strong>
-                <small className="kpi-subtext text-xs text-gray-400 mt-2 truncate w-full block">{t('dashboard.clickToActiveList')}</small>
+                <small className="kpi-subtext text-xs text-gray-400 mt-2 block">{t('dashboard.clickToActiveList')}</small>
               </div>
             </div>
           </div>
