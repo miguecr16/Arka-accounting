@@ -1,6 +1,6 @@
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
-import { DollarSign, Clock, HardHat, TrendingUp, X, ArrowUpRight } from 'lucide-react';
+import { DollarSign, Clock, HardHat, TrendingUp, ArrowUpRight } from 'lucide-react';
 import './Dashboard.css';
 
 export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectProject }) {
@@ -75,14 +75,6 @@ export default function KpiSummaryModal({ kpiType, projects, onClose, onSelectPr
               </p>
             </div>
           </div>
-          <button 
-            type="button" 
-            onClick={onClose}
-            className="kpi-modal-close-btn"
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <X size={20} strokeWidth={1.5} />
-          </button>
         </div>
 
         {/* Metric Summary Pill */}
