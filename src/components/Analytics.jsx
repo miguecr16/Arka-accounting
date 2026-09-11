@@ -55,7 +55,7 @@ export default function Analytics({ onBack, userRole = 'admin' }) {
       const [projRes, payRes, expRes] = await Promise.all([
         supabase.from('projects').select('id, project_name, client_name, deposit_received, base_contract_value, created_at, start_date'),
         supabase.from('project_payments').select('id, project_id, amount, payment_date, created_at'),
-        supabase.from('expenses_and_hours').select('id, project_id, category, amount, date, created_at')
+        supabase.from('expenses_and_hours').select('id, project_id, category, cost_amount, date, created_at')
       ]);
 
       if (projRes.error) throw projRes.error;
@@ -128,7 +128,7 @@ export default function Analytics({ onBack, userRole = 'admin' }) {
 
     // 3. Process Expenses
     expenses.forEach(exp => {
-      const amt = parseFloat(exp.amount) || 0;
+      const amt = parseFloat(exp.cost_amount) || 0;
       if (amt > 0) {
         const dateStr = exp.date || exp.created_at || new Date().toISOString();
         const d = new Date(dateStr);

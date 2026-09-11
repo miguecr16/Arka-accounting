@@ -146,7 +146,7 @@ export function generateCloseoutReportPdf({
 
   expenses.forEach(item => {
     const cat = (item.category || '').toLowerCase();
-    const amt = parseFloat(item.amount) || 0;
+    const amt = parseFloat(item.cost_amount !== undefined ? item.cost_amount : item.amount) || 0;
     if (cat.includes('material')) {
       materialsCost += amt;
     } else if (cat.includes('mano de obra') || cat.includes('labor')) {
