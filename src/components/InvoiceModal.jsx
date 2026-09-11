@@ -42,8 +42,8 @@ export default function InvoiceModal({
   const [lineItems, setLineItems] = useState([
     {
       id: 1,
-      item: isSpanish ? 'Servicios de Remodelación' : 'Remodeling & Construction Services',
-      description: isSpanish ? 'Fase de ejecución y materiales del proyecto' : 'Execution phase and materials per project scope',
+      item: isSpanish ? 'Servicios' : 'Services',
+      description: isSpanish ? 'Instalación de gabinetes de cocina' : 'Kitchen cabinets installation',
       qty: 1,
       rate: initialRate,
       amount: initialRate
