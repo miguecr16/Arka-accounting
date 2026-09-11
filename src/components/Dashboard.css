@@ -48,31 +48,27 @@
 /* KPI Grid */
 .global-kpi-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-4);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
 }
 
 @media (min-width: 640px) {
   .global-kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .volume-card {
-    grid-column: span 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1024px) {
   .global-kpi-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .volume-card {
-    grid-column: auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
   }
 }
 
 @media (min-width: 1280px) {
   .global-kpi-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1.5rem;
   }
 }
 
@@ -80,12 +76,21 @@
   background: var(--arka-surface);
   border: 1px solid var(--arka-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-6);
+  padding: 1rem;
   box-shadow: var(--shadow-xs);
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
   transition: all 250ms;
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .global-kpi-card {
+    padding: 1.25rem 1.5rem;
+    gap: 16px;
+  }
 }
 
 .global-kpi-card.interactive-kpi {
@@ -111,6 +116,8 @@
 .kpi-content {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  flex: 1;
 }
 
 .kpi-label {
@@ -118,38 +125,43 @@
   text-transform: uppercase;
   font-weight: 600;
   color: var(--arka-text-tertiary);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   margin-bottom: 4px;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  line-height: 1.3;
 }
 
 .kpi-value {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--arka-navy);
   letter-spacing: -0.02em;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
-.volume-card .kpi-value {
-  font-size: 28px;
-}
-@media (min-width: 1024px) {
-  .volume-card .kpi-value {
-    font-size: 36px;
-  }
+@media (min-width: 768px) {
   .kpi-value {
-    font-size: 26px;
+    font-size: 1.875rem;
   }
+}
+
+.kpi-subtext {
+  font-size: 11px;
+  color: var(--arka-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
 }
 
 .kpi-value.profit-value {
   color: #1B7A4A;
-}
-
-.kpi-subtext {
-  font-size: 12px;
-  color: var(--arka-text-secondary);
 }
 
 /* Dashboard Header */
