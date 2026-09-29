@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { LanguageProvider, useLanguage } from './context/LanguageContext.jsx';
+import { OrganizationProvider, useOrganization } from './context/OrganizationContext.jsx';
+import TenantLogo from './components/TenantLogo.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import ProjectDetails from './components/ProjectDetails.jsx';
 import TeamSettings from './components/TeamSettings.jsx';
@@ -32,6 +34,7 @@ function ProjectDetailsRouteWrapper({ userRole }) {
 
 function AppContent() {
   const { language, setLanguage, t } = useLanguage();
+  const { organization } = useOrganization();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -152,16 +155,10 @@ function AppContent() {
         fontFamily: 'var(--font-body)',
         color: 'var(--arka-text-secondary)'
       }}>
-        <img 
-          src="/arka-logo.png" 
-          alt="Arka Design Group" 
-          style={{
-            height: '64px',
-            maxWidth: '180px',
-            objectFit: 'contain',
-            marginBottom: '1rem'
-          }}
-        />
+        <TenantLogo size="large" showName={false} style={{ marginBottom: '1rem' }} />
+        <h2 style={{ margin: '0 0 0.5rem 0', fontFamily: 'var(--font-display)', color: 'var(--arka-navy)', fontSize: '1.25rem', fontWeight: 700 }}>
+          {organization?.name || 'Arka Design Group'}
+        </h2>
         <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 500, letterSpacing: '0.01em' }}>
           {language === 'es' ? 'Verificando sesión segura y permisos...' : 'Verifying secure session & permissions...'}
         </p>
@@ -197,13 +194,9 @@ function AppContent() {
         <div 
           onClick={handleGoHome}
           className="header-brand-wrapper"
-          title="Arka Design Group - Home"
+          title={`${organization?.name || 'Arka Design Group'} - Home`}
         >
-          <img 
-            src="/arka-logo.png" 
-            alt="Arka Design Group" 
-            className="header-brand-logo"
-          />
+          <TenantLogo />
         </div>
 
         {/* Desktop Navigation Links & Actions (hidden on mobile via CSS) */}
@@ -330,11 +323,7 @@ function AppContent() {
           >
             {/* Drawer Header */}
             <div className="mobile-drawer-header">
-              <img 
-                src="/arka-logo.png" 
-                alt="Arka Design Group" 
-                style={{ height: '32px', objectFit: 'contain' }}
-              />
+              <TenantLogo />
               <button 
                 type="button"
                 className="mobile-drawer-close"
@@ -457,7 +446,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <LanguageProvider>
-        <AppContent />
+        <OrganizationProvider>
+          <AppContent />
+        </OrganizationProvider>
       </LanguageProvider>
     </BrowserRouter>
   );

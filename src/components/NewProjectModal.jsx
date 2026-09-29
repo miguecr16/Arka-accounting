@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useOrganization } from '../context/OrganizationContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
 import { X, Plus } from 'lucide-react';
 import './Dashboard.css';
 
 export default function NewProjectModal({ onClose, onProjectCreated, projectToEdit }) {
   const { t } = useLanguage();
+  const { organizationId } = useOrganization();
   const isEditMode = !!projectToEdit;
 
   const [formData, setFormData] = useState({
@@ -219,9 +221,14 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
           details: `Actualizó proyecto "${formData.project_name.trim()}" (Cliente: ${formData.client_name.trim()}, Tipo: ${formData.project_type}, Valor: $${baseContract})`
         });
       } else {
+        const insertPayload = {
+          ...payload,
+          organization_id: organizationId
+        };
+
         const { error: dbError } = await supabase
           .from('projects')
-          .insert([payload]);
+          .insert([insertPayload]);
 
         if (dbError) throw dbError;
 

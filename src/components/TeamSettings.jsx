@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { ArrowLeft, RotateCw, Users, History, Lock, CheckCircle2 } from 'lucide-react';
+import { useOrganization } from '../context/OrganizationContext.jsx';
+import { ArrowLeft, RotateCw, Users, History, Lock, CheckCircle2, Globe, Mail, Phone, MapPin } from 'lucide-react';
 import './TeamSettings.css';
 import './ProjectDetails.css';
 
 export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { organization } = useOrganization();
   const isAdmin = userRole === 'admin';
 
   const handleBack = () => {
@@ -210,6 +212,104 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
       {/* TAB 1: Organization (Team Members from `profiles`) */}
       {activeTab === 'organization' && (
         <div>
+          {/* Organization Tenant Card */}
+          {organization && (
+            <div style={{
+              background: 'var(--arka-surface)',
+              border: '1px solid var(--arka-border)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '20px 24px',
+              marginBottom: '24px',
+              boxShadow: 'var(--shadow-xs)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '16px', borderBottom: '1px solid var(--arka-border-subtle)', paddingBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--arka-navy)',
+                    color: 'var(--arka-gold)',
+                    border: '1.5px solid var(--arka-gold)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-display)'
+                  }}>
+                    {(organization.name || 'OS').split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--arka-navy)', fontFamily: 'var(--font-display)' }}>
+                      {organization.name}
+                    </h3>
+                    <span style={{ fontSize: '12px', color: 'var(--arka-text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                      slug: {organization.slug || 'default'}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--arka-gold-subtle)',
+                    border: '1px solid var(--arka-gold-border)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: 'var(--arka-navy)'
+                  }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: organization.primary_color || 'var(--arka-gold)' }}></span>
+                    {organization.primary_color || '#C9A45C'}
+                  </span>
+                  <span style={{
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--arka-bg)',
+                    border: '1px solid var(--arka-border)',
+                    fontSize: '12px',
+                    color: 'var(--arka-text-secondary)'
+                  }}>
+                    Tenant Active
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', fontSize: '13px', color: 'var(--arka-text-secondary)' }}>
+                {organization.email && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Mail size={15} strokeWidth={1.5} color="var(--arka-gold)" />
+                    <span>{organization.email}</span>
+                  </div>
+                )}
+                {organization.phone && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Phone size={15} strokeWidth={1.5} color="var(--arka-gold)" />
+                    <span>{organization.phone}</span>
+                  </div>
+                )}
+                {organization.website && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Globe size={15} strokeWidth={1.5} color="var(--arka-gold)" />
+                    <a href={organization.website} target="_blank" rel="noreferrer" style={{ color: 'var(--arka-gold)', textDecoration: 'none' }}>
+                      {organization.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
+                )}
+                {organization.address && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <MapPin size={15} strokeWidth={1.5} color="var(--arka-gold)" />
+                    <span>{organization.address}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="section-header-actions">
             <h3>{t('teamSettings.regMembersTitle')}</h3>
             <span style={{ fontSize: '0.85rem', color: '#64748b' }}>

@@ -151,6 +151,48 @@ html, body {
   }
 }
 
+.tenant-branding-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  user-select: none;
+}
+
+.header-brand-avatar {
+  border-radius: var(--radius-md);
+  background-color: var(--arka-navy);
+  color: var(--arka-gold);
+  border: 1.5px solid var(--arka-gold-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  box-shadow: var(--shadow-xs);
+  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.header-brand-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  color: var(--arka-navy);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .header-brand-name {
+    font-size: 0.9375rem;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 /* ── Desktop Navigation & User Info ── */
 .header-desktop-actions {
   display: none;

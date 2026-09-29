@@ -3,12 +3,26 @@ import autoTable from 'jspdf-autotable';
 import { formatToUSD } from './currencyFormatter';
 import { arkaLogoBase64 } from '../assets/logoBase64';
 
+function hexToRgb(hex, fallback = [180, 140, 60]) {
+  if (!hex || typeof hex !== 'string') return fallback;
+  let c = hex.replace('#', '').trim();
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  if (c.length === 6) {
+    const num = parseInt(c, 16);
+    if (!isNaN(num)) {
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+    }
+  }
+  return fallback;
+}
+
 export function generateCloseoutReportPdf({
   projectData,
   expenses = [],
   changeOrders = [],
   payments = [],
-  language = 'es'
+  language = 'es',
+  organization = null
 }) {
   const isSpanish = language === 'es';
   const doc = new jsPDF({
@@ -22,15 +36,25 @@ export function generateCloseoutReportPdf({
   const margin = 14;
   const rightX = pageWidth - margin;
 
-  // Colors
-  const darkNavy = [15, 23, 42]; // #0F172A
+  // Dynamic Colors derived from organization
+  const primaryHex = organization?.primary_color || '#C9A45C';
+  const secondaryHex = organization?.secondary_color || '#0D1726';
+
+  const goldColor = hexToRgb(primaryHex, [180, 140, 60]);
+  const darkNavy = hexToRgb(secondaryHex, [15, 23, 42]);
   const darkGray = [30, 41, 59]; // #1E293B
   const textMuted = [100, 116, 139]; // #64748B
-  const goldColor = [180, 140, 60]; // #B48C3C
   const borderGray = [226, 232, 240]; // #E2E8F0
   const lightBg = [248, 250, 252]; // #F8FAFC
   const emeraldGreen = [16, 185, 129]; // #10B981
   const softAmber = [217, 119, 6]; // #D97706
+
+  // Dynamic Company Info
+  const companyName = (organization?.name || 'Arka Design Group').toUpperCase();
+  const companyAddress = organization?.address || '2312 SE 18th Cir, Ocala, FL 34471';
+  const companyEmail = organization?.email || 'info@arkadg.com';
+  const companyPhone = organization?.phone || '+1 (813) 610-9309';
+  const companyWebsite = organization?.website || 'https://www.arkadg.com';
 
   // Top Accent Bar
   doc.setFillColor(goldColor[0], goldColor[1], goldColor[2]);
@@ -38,12 +62,29 @@ export function generateCloseoutReportPdf({
 
   // 1. HEADER SECTION
   // Logo
+  let logoLoaded = false;
   try {
-    if (arkaLogoBase64) {
-      doc.addImage(arkaLogoBase64, 'PNG', margin, 9, 22, 22);
+    const logoToUse = organization?.logo_url || arkaLogoBase64;
+    if (logoToUse) {
+      doc.addImage(logoToUse, 'PNG', margin, 9, 22, 22);
+      logoLoaded = true;
     }
   } catch (err) {
     console.warn('Could not load logo into closeout report:', err);
+  }
+
+  if (!logoLoaded && !arkaLogoBase64) {
+    doc.setFillColor(darkNavy[0], darkNavy[1], darkNavy[2]);
+    doc.roundedRect(margin, 9, 22, 22, 2.5, 2.5, 'F');
+    doc.setDrawColor(goldColor[0], goldColor[1], goldColor[2]);
+    doc.setLineWidth(0.6);
+    doc.roundedRect(margin, 9, 22, 22, 2.5, 2.5, 'S');
+
+    doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    const initials = companyName.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('');
+    doc.text(initials || 'OS', margin + 11, 23, { align: 'center' });
   }
 
   // Company Info
@@ -51,16 +92,31 @@ export function generateCloseoutReportPdf({
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('ARKA DESIGN GROUP', margin, companyStartY);
+  doc.text(companyName, margin, companyStartY);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-  doc.text('2312 SE 18th Cir', margin, companyStartY + 4.5);
-  doc.text('Ocala, FL 34471', margin, companyStartY + 9);
-  doc.text('info@arkadg.com | +1 (813) 610-9309', margin, companyStartY + 13.5);
-  doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
-  doc.text('https://www.arkadg.com', margin, companyStartY + 18);
+
+  let currentCompY = companyStartY + 4.5;
+  if (companyAddress) {
+    const addressLines = companyAddress.includes('\n') 
+      ? companyAddress.split('\n') 
+      : doc.splitTextToSize(companyAddress, 70);
+    addressLines.forEach(line => {
+      doc.text(line.trim(), margin, currentCompY);
+      currentCompY += 4.5;
+    });
+  }
+  const contactLine = [companyEmail, companyPhone].filter(Boolean).join(' | ');
+  if (contactLine) {
+    doc.text(contactLine, margin, currentCompY);
+    currentCompY += 4.5;
+  }
+  if (companyWebsite) {
+    doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
+    doc.text(companyWebsite, margin, currentCompY);
+  }
 
   // Top Right: Title Block
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
@@ -314,7 +370,7 @@ export function generateCloseoutReportPdf({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
-  doc.text(isSpanish ? 'ARKA DESIGN GROUP — DIRECCIÓN DE PROYECTO' : 'ARKA DESIGN GROUP — PROJECT DIRECTOR', margin, signY + 4);
+  doc.text(isSpanish ? `${companyName} — DIRECCIÓN DE PROYECTO` : `${companyName} — PROJECT DIRECTOR`, margin, signY + 4);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
@@ -337,10 +393,11 @@ export function generateCloseoutReportPdf({
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+  const orgDisplayName = organization?.name || 'Arka Design Group';
   doc.text(
     isSpanish 
-      ? 'Documento de Cierre Oficial generado por Arka Design Group Operating System.' 
-      : 'Official Project Closeout Report generated by Arka Design Group Operating System.',
+      ? `Documento de Cierre Oficial generado por ${orgDisplayName} Operating System.` 
+      : `Official Project Closeout Report generated by ${orgDisplayName} Operating System.`,
     pageWidth / 2,
     footerY,
     { align: 'center' }

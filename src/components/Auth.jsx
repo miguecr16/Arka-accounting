@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import TenantLogo from './TenantLogo.jsx';
 import './Auth.css';
 
 export default function Auth({ onAuthSuccess }) {
@@ -118,13 +119,11 @@ export default function Auth({ onAuthSuccess }) {
       </div>
 
       <div className="auth-card">
-        {/* Official Brand Header with Golden Logo */}
+        {/* Official Brand Header with Logo */}
         <div className="auth-brand-header">
-          <img 
-            src="/arka-logo.png" 
-            alt="Arka Design Group" 
-            className="auth-logo"
-          />
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+            <TenantLogo size="large" showName className="auth-logo" />
+          </div>
           <p className="auth-brand-subtitle">
             {mode === 'login' ? t('auth.signInSubtitle') : t('auth.createAccountSubtitle')}
           </p>

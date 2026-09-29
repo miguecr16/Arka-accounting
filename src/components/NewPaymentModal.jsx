@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useOrganization } from '../context/OrganizationContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
 import { DollarSign, Calendar, FileText, X } from 'lucide-react';
 import './Dashboard.css';
@@ -14,6 +15,7 @@ export default function NewPaymentModal({
   onSaved 
 }) {
   const { t } = useLanguage();
+  const { organizationId } = useOrganization();
   const isEditMode = !!paymentToEdit;
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -63,9 +65,14 @@ export default function NewPaymentModal({
           details: `Actualizó abono a ${formatToUSD(parsedAmount)} (${description.trim() || 'Sin descripción'}) en proyecto "${projectName || projectId}"`
         });
       } else {
+        const insertPayload = {
+          ...payload,
+          organization_id: organizationId
+        };
+
         const { error: insertErr } = await supabase
           .from('project_payments')
-          .insert([payload]);
+          .insert([insertPayload]);
 
         if (insertErr) throw insertErr;
 

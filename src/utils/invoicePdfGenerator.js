@@ -3,6 +3,19 @@ import autoTable from 'jspdf-autotable';
 import { formatToUSD } from './currencyFormatter';
 import { arkaLogoBase64 } from '../assets/logoBase64';
 
+function hexToRgb(hex, fallback = [180, 140, 60]) {
+  if (!hex || typeof hex !== 'string') return fallback;
+  let c = hex.replace('#', '').trim();
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  if (c.length === 6) {
+    const num = parseInt(c, 16);
+    if (!isNaN(num)) {
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+    }
+  }
+  return fallback;
+}
+
 export function generateInvoicePdf({
   invoiceNumber = 'INV-1083',
   invoiceDate = new Date().toISOString().split('T')[0],
@@ -15,7 +28,8 @@ export function generateInvoicePdf({
   paymentsApplied = 0,
   balanceDue = 0,
   notes = '',
-  language = 'es'
+  language = 'es',
+  organization = null
 }) {
   const isSpanish = language === 'es';
   const doc = new jsPDF({
@@ -29,46 +43,92 @@ export function generateInvoicePdf({
   const margin = 14;
   const rightX = pageWidth - margin;
 
-  // Colors
-  const darkNavy = [15, 23, 42]; // #0F172A
+  // Dynamic Colors derived from organization
+  const primaryHex = organization?.primary_color || '#C9A45C';
+  const secondaryHex = organization?.secondary_color || '#0D1726';
+
+  const goldColor = hexToRgb(primaryHex, [180, 140, 60]);
+  const darkNavy = hexToRgb(secondaryHex, [15, 23, 42]);
   const darkGray = [30, 41, 59]; // #1E293B
   const textMuted = [100, 116, 139]; // #64748B
-  const goldColor = [180, 140, 60]; // #B48C3C
   const borderGray = [226, 232, 240]; // #E2E8F0
   const lightBg = [248, 250, 252]; // #F8FAFC
-  const headerBg = [15, 23, 42]; // #0F172A
+  const headerBg = darkNavy;
   const emeraldGreen = [16, 185, 129]; // #10B981
+
+  // Dynamic Company Details
+  const companyName = (organization?.name || 'Arka Design Group').toUpperCase();
+  const companyAddress = organization?.address || '2312 SE 18th Cir, Ocala, FL 34471';
+  const companyEmail = organization?.email || 'info@arkadg.com';
+  const companyPhone = organization?.phone || '+1 (813) 610-9309';
+  const companyWebsite = organization?.website || 'https://www.arkadg.com';
+  const invoiceTerms = organization?.invoice_terms || 'Quote is based on design and floorplans sent by customer. Plumbing and electrical are not included. Our company does not do any structural work.';
 
   // Top Decorative Gold Accent Line
   doc.setFillColor(goldColor[0], goldColor[1], goldColor[2]);
   doc.rect(0, 0, pageWidth, 3, 'F');
 
   // 1. HEADER SECTION
-  // A. Logo (Dark circle with gold emblem)
+  // A. Logo (Tenant logo or styled fallback)
+  let logoLoaded = false;
   try {
-    if (arkaLogoBase64) {
-      doc.addImage(arkaLogoBase64, 'PNG', margin, 9, 22, 22);
+    const logoToUse = organization?.logo_url || arkaLogoBase64;
+    if (logoToUse) {
+      doc.addImage(logoToUse, 'PNG', margin, 9, 22, 22);
+      logoLoaded = true;
     }
   } catch (err) {
     console.warn('Could not load logo into PDF:', err);
   }
 
-  // B. Company Info (Exact address and contact from Invoice 1083)
+  if (!logoLoaded && !arkaLogoBase64) {
+    doc.setFillColor(darkNavy[0], darkNavy[1], darkNavy[2]);
+    doc.roundedRect(margin, 9, 22, 22, 2.5, 2.5, 'F');
+    doc.setDrawColor(goldColor[0], goldColor[1], goldColor[2]);
+    doc.setLineWidth(0.6);
+    doc.roundedRect(margin, 9, 22, 22, 2.5, 2.5, 'S');
+
+    doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    const initials = companyName.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('');
+    doc.text(initials || 'OS', margin + 11, 23, { align: 'center' });
+  }
+
+  // B. Company Info (Dynamic Header)
   const companyStartY = 35;
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('ARKA DESIGN GROUP', margin, companyStartY);
+  doc.text(companyName, margin, companyStartY);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-  doc.text('2312 SE 18th Cir', margin, companyStartY + 4.5);
-  doc.text('Ocala, FL 34471', margin, companyStartY + 9);
-  doc.text('info@arkadg.com', margin, companyStartY + 13.5);
-  doc.text('+1 (813) 610-9309', margin, companyStartY + 18);
-  doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
-  doc.text('https://www.arkadg.com', margin, companyStartY + 22.5);
+
+  let currentCompY = companyStartY + 4.5;
+  if (companyAddress) {
+    const addressLines = companyAddress.includes('\n') 
+      ? companyAddress.split('\n') 
+      : doc.splitTextToSize(companyAddress, 70);
+    addressLines.forEach(line => {
+      doc.text(line.trim(), margin, currentCompY);
+      currentCompY += 4.5;
+    });
+  }
+  if (companyEmail) {
+    doc.text(companyEmail, margin, currentCompY);
+    currentCompY += 4.5;
+  }
+  if (companyPhone) {
+    doc.text(companyPhone, margin, currentCompY);
+    currentCompY += 4.5;
+  }
+  if (companyWebsite) {
+    doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
+    doc.text(companyWebsite, margin, currentCompY);
+    currentCompY += 4.5;
+  }
 
   // C. Top Right: Large "INVOICE" Title
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
@@ -272,36 +332,41 @@ export function generateInvoicePdf({
     termsY += (splitCustomNotes.length * 3.8) + 4;
   }
 
-  // Exact Zelle Payment
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
-  doc.text('Zelle Payment:', margin, termsY);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
-  doc.text(' info@arkadg.com', margin + 22, termsY);
-  termsY += 5;
+  // Payment Info (Zelle)
+  if (companyEmail) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
+    const zelleLabel = isSpanish ? 'Información de Pago (Zelle):' : 'Payment Info (Zelle):';
+    doc.text(zelleLabel, margin, termsY);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(goldColor[0], goldColor[1], goldColor[2]);
+    const labelWidth = doc.getTextWidth(zelleLabel);
+    doc.text(` ${companyEmail}`, margin + labelWidth + 1, termsY);
+    termsY += 5;
+  }
 
-  // Exact Contract Terms
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
-  doc.text('Contract Terms:', margin, termsY);
-  termsY += 3.8;
+  // Contract Terms & Conditions
+  if (invoiceTerms) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
+    doc.text(isSpanish ? 'Términos del Contrato:' : 'Contract Terms:', margin, termsY);
+    termsY += 3.8;
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.8);
-  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-  const contractText = 'Quote is based on design and floorplans sent by customer. Plumbing and electrical are not included. Our company does not do any structural work.';
-  const splitContract = doc.splitTextToSize(contractText, termsWidth);
-  doc.text(splitContract, margin, termsY);
-  termsY += (splitContract.length * 3.5) + 3;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.8);
+    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+    const splitContract = doc.splitTextToSize(invoiceTerms, termsWidth);
+    doc.text(splitContract, margin, termsY);
+    termsY += (splitContract.length * 3.5) + 3;
+  }
 
-  // Exact Credit Card Payment Fee
+  // Payment note
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.8);
   doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
-  doc.text('3.5% Credit Card payments Fee', margin, termsY);
+  doc.text(isSpanish ? 'Tarifa del 3.5% para pagos con tarjeta de crédito' : '3.5% Credit Card payments Fee', margin, termsY);
 
   // 6. BOTTOM "WAYS TO PAY" FOOTER (Exact specification from Invoice 1083)
   const waysToPayY = pageHeight - 16;

@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useOrganization } from '../context/OrganizationContext.jsx';
 import { X, UploadCloud, FileText } from 'lucide-react';
 import './Dashboard.css';
 
 export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseToEdit }) {
   const { t } = useLanguage();
+  const { organizationId } = useOrganization();
   const isEditMode = !!expenseToEdit;
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -178,9 +180,14 @@ export default function NewExpenseForm({ projectId, onSuccess, onClose, expenseT
           details: `Actualizó ${category} ($${payload.cost_amount}, ${payload.hours_worked} hrs${payload.proveedor ? ', Proveedor: ' + payload.proveedor : ''}) en proyecto ID #${projectId}`
         });
       } else {
+        const insertPayload = {
+          ...payload,
+          organization_id: organizationId
+        };
+
         const { error: dbError } = await supabase
           .from('expenses_and_hours')
-          .insert([payload]);
+          .insert([insertPayload]);
 
         if (dbError) throw dbError;
 

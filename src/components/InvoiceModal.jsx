@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useOrganization } from '../context/OrganizationContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
 import { generateInvoicePdf } from '../utils/invoicePdfGenerator.js';
 import { logAuditEvent } from '../utils/auditLogger.js';
@@ -24,6 +25,7 @@ export default function InvoiceModal({
   onClose
 }) {
   const { t, language } = useLanguage();
+  const { organization } = useOrganization();
   const isSpanish = language === 'es';
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -135,7 +137,8 @@ export default function InvoiceModal({
         paymentsApplied: appliedDeduction,
         balanceDue,
         notes: notes.trim(),
-        language
+        language,
+        organization
       });
 
       // Audit Log

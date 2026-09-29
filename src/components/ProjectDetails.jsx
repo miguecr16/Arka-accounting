@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useOrganization } from '../context/OrganizationContext.jsx';
 import { formatToUSD } from '../utils/currencyFormatter.js';
 import NewExpenseForm from './NewExpenseForm.jsx';
 import NewChangeOrderModal from './NewChangeOrderModal.jsx';
@@ -42,6 +43,7 @@ export default function ProjectDetails({ projectId: propProjectId, onBack, userR
   };
 
   const { t, language } = useLanguage();
+  const { organization } = useOrganization();
   const isAdmin = userRole === 'admin';
 
   const [projectData, setProjectData] = useState(null);
@@ -78,7 +80,8 @@ export default function ProjectDetails({ projectId: propProjectId, onBack, userR
         expenses,
         changeOrders,
         payments,
-        language
+        language,
+        organization
       });
 
       await logAuditEvent({
