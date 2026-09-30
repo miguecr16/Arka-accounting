@@ -164,12 +164,26 @@ export function OrganizationProvider({ children }) {
     await fetchOrganization(session?.user?.id);
   }, [fetchOrganization]);
 
+  const updateOrganizationLocally = useCallback((newFields) => {
+    if (!newFields || typeof newFields !== 'object') return;
+    setOrganization((prev) => {
+      const merged = {
+        ...prev,
+        ...newFields
+      };
+      applyThemeVariables(merged.primary_color, merged.secondary_color);
+      document.title = `${merged.name || 'OS'} - OS`;
+      return merged;
+    });
+  }, []);
+
   const value = {
     organization,
     organizationId,
     loading,
     error,
-    refreshOrganization
+    refreshOrganization,
+    updateOrganizationLocally
   };
 
   return (

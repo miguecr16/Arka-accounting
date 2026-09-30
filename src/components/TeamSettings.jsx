@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useOrganization } from '../context/OrganizationContext.jsx';
-import { ArrowLeft, RotateCw, Users, History, Lock, CheckCircle2, Globe, Mail, Phone, MapPin } from 'lucide-react';
+import { ArrowLeft, RotateCw, Users, History, Lock, CheckCircle2, Globe, Mail, Phone, MapPin, Building2 } from 'lucide-react';
 import './TeamSettings.css';
 import './ProjectDetails.css';
 
@@ -276,6 +276,26 @@ export default function TeamSettings({ onBack, userRole = 'trabajador' }) {
                   }}>
                     Tenant Active
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/settings/company')}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 12px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      backgroundColor: 'var(--arka-surface)',
+                      border: '1px solid var(--arka-gold-border)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--arka-navy)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Building2 size={13} strokeWidth={1.5} color="var(--arka-gold)" />
+                    <span>{t('nav.companySettings')}</span>
+                  </button>
                 </div>
               </div>
 

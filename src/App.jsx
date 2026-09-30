@@ -7,6 +7,7 @@ import TenantLogo from './components/TenantLogo.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import ProjectDetails from './components/ProjectDetails.jsx';
 import TeamSettings from './components/TeamSettings.jsx';
+import CompanySettings from './components/CompanySettings.jsx';
 import Analytics from './components/Analytics.jsx';
 import Auth from './components/Auth.jsx';
 import { ArrowLeft, ShieldCheck, Building2, Menu, X, LogOut, TrendingUp } from 'lucide-react';
@@ -46,6 +47,7 @@ function AppContent() {
   const isDashboard = location.pathname === '/';
   const isAnalytics = location.pathname === '/analytics';
   const isTeamSettings = location.pathname === '/team-settings' || location.pathname === '/organization';
+  const isCompanySettings = location.pathname === '/settings/company' || location.pathname === '/company-settings';
 
   const fetchUserRole = async (userId) => {
     try {
@@ -137,6 +139,11 @@ function AppContent() {
     navigate('/team-settings');
   };
 
+  const handleOpenCompanySettings = () => {
+    setIsMobileMenuOpen(false);
+    navigate('/settings/company');
+  };
+
   const handleOpenAnalytics = () => {
     setIsMobileMenuOpen(false);
     navigate('/analytics');
@@ -221,6 +228,18 @@ function AppContent() {
             >
               <TrendingUp size={16} strokeWidth={1.5} />
               <span>{t('nav.analytics')}</span>
+            </button>
+          )}
+
+          {/* Admin Company Settings & Branding Link */}
+          {isAdmin && !isCompanySettings && (
+            <button
+              onClick={handleOpenCompanySettings}
+              title="Manage Company Profile & Branding"
+              className="nav-action-btn org-nav-btn"
+            >
+              <Building2 size={16} strokeWidth={1.5} />
+              <span>{t('nav.companySettings')}</span>
             </button>
           )}
 
@@ -369,6 +388,17 @@ function AppContent() {
               {isAdmin && (
                 <button
                   type="button"
+                  className={`mobile-nav-link ${isCompanySettings ? 'active' : ''}`}
+                  onClick={handleOpenCompanySettings}
+                >
+                  <Building2 size={18} strokeWidth={1.5} />
+                  <span>{t('nav.companySettings')}</span>
+                </button>
+              )}
+
+              {isAdmin && (
+                <button
+                  type="button"
                   className={`mobile-nav-link ${isTeamSettings ? 'active' : ''}`}
                   onClick={handleOpenTeamSettings}
                 >
@@ -427,6 +457,19 @@ function AppContent() {
                 userRole={userRole}
               />
             } 
+          />
+          <Route 
+            path="/settings/company" 
+            element={
+              <CompanySettings
+                onBack={handleBackNav}
+                userRole={userRole}
+              />
+            } 
+          />
+          <Route 
+            path="/company-settings" 
+            element={<Navigate to="/settings/company" replace />} 
           />
           <Route 
             path="/organization" 
