@@ -1,7 +1,10 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 
+export const DEFAULT_PRIMARY_ORG_ID = 'a0000000-0000-0000-0000-000000000001';
+
 const DEFAULT_ORGANIZATION = {
+  id: DEFAULT_PRIMARY_ORG_ID,
   name: 'Arka Design Group',
   slug: 'arka-design-group',
   logo_url: null,
@@ -49,14 +52,14 @@ const OrganizationContext = createContext(null);
 
 export function OrganizationProvider({ children }) {
   const [organization, setOrganization] = useState(DEFAULT_ORGANIZATION);
-  const [organizationId, setOrganizationId] = useState(null);
+  const [organizationId, setOrganizationId] = useState(DEFAULT_PRIMARY_ORG_ID);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchOrganization = useCallback(async (userId) => {
     if (!userId) {
       setOrganization(DEFAULT_ORGANIZATION);
-      setOrganizationId(null);
+      setOrganizationId(DEFAULT_PRIMARY_ORG_ID);
       applyThemeVariables(DEFAULT_ORGANIZATION.primary_color, DEFAULT_ORGANIZATION.secondary_color);
       document.title = `${DEFAULT_ORGANIZATION.name} - OS`;
       setLoading(false);
@@ -130,7 +133,7 @@ export function OrganizationProvider({ children }) {
         document.title = `${merged.name} - OS`;
       } else {
         setOrganization(DEFAULT_ORGANIZATION);
-        setOrganizationId(targetOrgId || null);
+        setOrganizationId(targetOrgId || DEFAULT_PRIMARY_ORG_ID);
         applyThemeVariables(DEFAULT_ORGANIZATION.primary_color, DEFAULT_ORGANIZATION.secondary_color);
         document.title = `${DEFAULT_ORGANIZATION.name} - OS`;
       }
@@ -177,9 +180,15 @@ export function OrganizationProvider({ children }) {
     });
   }, []);
 
+  const resolvedOrgId = organizationId || organization?.id || DEFAULT_PRIMARY_ORG_ID;
+  const resolvedOrg = {
+    ...organization,
+    id: organization?.id || resolvedOrgId
+  };
+
   const value = {
-    organization,
-    organizationId,
+    organization: resolvedOrg,
+    organizationId: resolvedOrgId,
     loading,
     error,
     refreshOrganization,

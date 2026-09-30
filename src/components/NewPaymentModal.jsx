@@ -15,7 +15,7 @@ export default function NewPaymentModal({
   onSaved 
 }) {
   const { t } = useLanguage();
-  const { organizationId } = useOrganization();
+  const { organization, organizationId } = useOrganization();
   const isEditMode = !!paymentToEdit;
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -51,10 +51,58 @@ export default function NewPaymentModal({
         description: description.trim() || null
       };
 
+      // Retrieve active organization_id with multi-layer fallback
+      let activeOrgId = organization?.id || organizationId;
+
+      // 1. If not available from context, fetch from the parent project (guaranteed to match project RLS)
+      if (!activeOrgId && projectId) {
+        try {
+          const { data: projData } = await supabase
+            .from('projects')
+            .select('organization_id')
+            .eq('id', projectId)
+            .single();
+          if (projData?.organization_id) {
+            activeOrgId = projData.organization_id;
+          }
+        } catch (e) {
+          console.warn('Could not fetch project organization_id:', e);
+        }
+      }
+
+      // 2. If still not available, fetch from current user profile
+      if (!activeOrgId) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.id) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('organization_id')
+              .eq('id', user.id)
+              .single();
+            if (profile?.organization_id) {
+              activeOrgId = profile.organization_id;
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fetch profile organization_id:', e);
+        }
+      }
+
+      // 3. Fallback to primary organization id if still undefined
+      if (!activeOrgId) {
+        activeOrgId = 'a0000000-0000-0000-0000-000000000001';
+      }
+
       if (isEditMode) {
+        const updatePayload = {
+          ...payload,
+          organization_id: activeOrgId
+        };
+
         const { error: updateErr } = await supabase
           .from('project_payments')
-          .update(payload)
+          .update(updatePayload)
           .eq('id', paymentToEdit.id);
 
         if (updateErr) throw updateErr;
@@ -67,7 +115,7 @@ export default function NewPaymentModal({
       } else {
         const insertPayload = {
           ...payload,
-          organization_id: organizationId
+          organization_id: activeOrgId
         };
 
         const { error: insertErr } = await supabase

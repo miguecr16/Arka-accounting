@@ -9,7 +9,7 @@ import './Dashboard.css';
 
 export default function NewProjectModal({ onClose, onProjectCreated, projectToEdit }) {
   const { t } = useLanguage();
-  const { organizationId } = useOrganization();
+  const { organization, organizationId } = useOrganization();
   const isEditMode = !!projectToEdit;
 
   const [formData, setFormData] = useState({
@@ -205,11 +205,43 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
         scope_details: scopeDetails
       };
 
+      // Retrieve active organization_id with multi-layer fallback
+      let activeOrgId = organization?.id || organizationId;
+
+      // 1. If not available from context, fetch from current user profile
+      if (!activeOrgId) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.id) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('organization_id')
+              .eq('id', user.id)
+              .single();
+            if (profile?.organization_id) {
+              activeOrgId = profile.organization_id;
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fetch profile organization_id:', e);
+        }
+      }
+
+      // 2. Fallback to primary organization id if still undefined
+      if (!activeOrgId) {
+        activeOrgId = 'a0000000-0000-0000-0000-000000000001';
+      }
+
       if (isEditMode) {
         const targetId = projectToEdit.project_id || projectToEdit.id;
+        const updatePayload = {
+          ...payload,
+          organization_id: activeOrgId
+        };
+
         const { error: dbError } = await supabase
           .from('projects')
-          .update(payload)
+          .update(updatePayload)
           .eq('id', targetId);
 
         if (dbError) throw dbError;
@@ -223,7 +255,7 @@ export default function NewProjectModal({ onClose, onProjectCreated, projectToEd
       } else {
         const insertPayload = {
           ...payload,
-          organization_id: organizationId
+          organization_id: activeOrgId
         };
 
         const { error: dbError } = await supabase

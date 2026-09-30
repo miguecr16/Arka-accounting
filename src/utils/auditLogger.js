@@ -7,19 +7,30 @@ import { supabase } from '../supabaseClient';
  * @param {string} params.entity - e.g. 'Proyecto', 'Gasto', 'Change Order'
  * @param {string} params.details - Descriptive summary of the change
  */
-export async function logAuditEvent({ action, entity, details }) {
+export async function logAuditEvent({ action, entity, details, organizationId }) {
   try {
     if (!supabase) return;
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    let targetOrgId = organizationId;
+    if (!targetOrgId) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user.id)
+        .single();
+      targetOrgId = profile?.organization_id || 'a0000000-0000-0000-0000-000000000001';
+    }
+
     const payload = {
       user_id: user.id,
       user_email: user.email || 'unknown@arkadesign.com',
       action: action || 'Acción',
       entity: entity || 'General',
-      details: details || ''
+      details: details || '',
+      organization_id: targetOrgId
     };
 
     const { error } = await supabase

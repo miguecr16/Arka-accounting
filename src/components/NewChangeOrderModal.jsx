@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAuditEvent } from '../utils/auditLogger';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useOrganization } from '../context/OrganizationContext.jsx';
 import { X } from 'lucide-react';
 import './Dashboard.css';
 
 export default function NewChangeOrderModal({ projectId, onClose, onCreated, changeOrderToEdit }) {
   const { t } = useLanguage();
+  const { organization, organizationId } = useOrganization();
   const isEditMode = !!changeOrderToEdit;
 
   const [description, setDescription] = useState('');
@@ -39,10 +41,58 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
         status
       };
 
+      // Retrieve active organization_id with multi-layer fallback
+      let activeOrgId = organization?.id || organizationId;
+
+      // 1. If not available from context, fetch from the parent project (guaranteed to match project RLS)
+      if (!activeOrgId && projectId) {
+        try {
+          const { data: projData } = await supabase
+            .from('projects')
+            .select('organization_id')
+            .eq('id', projectId)
+            .single();
+          if (projData?.organization_id) {
+            activeOrgId = projData.organization_id;
+          }
+        } catch (e) {
+          console.warn('Could not fetch project organization_id:', e);
+        }
+      }
+
+      // 2. If still not available, fetch from current user profile
+      if (!activeOrgId) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.id) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('organization_id')
+              .eq('id', user.id)
+              .single();
+            if (profile?.organization_id) {
+              activeOrgId = profile.organization_id;
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fetch profile organization_id:', e);
+        }
+      }
+
+      // 3. Fallback to primary organization id if still undefined
+      if (!activeOrgId) {
+        activeOrgId = 'a0000000-0000-0000-0000-000000000001';
+      }
+
       if (isEditMode) {
+        const updatePayload = {
+          ...payload,
+          organization_id: activeOrgId
+        };
+
         const { error: dbError } = await supabase
           .from('change_orders')
-          .update(payload)
+          .update(updatePayload)
           .eq('id', changeOrderToEdit.id);
 
         if (dbError) throw dbError;
@@ -54,9 +104,14 @@ export default function NewChangeOrderModal({ projectId, onClose, onCreated, cha
           details: `Actualizó Change Order #${changeOrderToEdit.id}: "${description.trim()}" ($${payload.extra_charge_to_client}, ${status})`
         });
       } else {
+        const insertPayload = {
+          ...payload,
+          organization_id: activeOrgId
+        };
+
         const { error: dbError } = await supabase
           .from('change_orders')
-          .insert([payload]);
+          .insert([insertPayload]);
 
         if (dbError) throw dbError;
 
